@@ -1,15 +1,26 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
+import "@fontsource-variable/raleway";
+import "@fontsource-variable/jetbrains-mono";
+import "@fontsource-variable/space-grotesk";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "Portfolio v2",
-  description: "Independent portfolio foundation; visual design pending.",
+  title: "Lala — Digital Designer",
+  description: "Lala’s personal digital design portfolio.",
 };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>
-    <a href="#main" className="sr-only focus:not-sr-only">Skip to content</a>
-    <header><nav aria-label="Main navigation" className="flex gap-6"><Link href="/">Home</Link><Link href="/work">Work</Link></nav></header>
-    {children}
-    <footer>Portfolio v2 — visual design pending.</footer>
-  </body></html>;
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en">
+      <body>
+        <a href="#main" className="sr-only focus:not-sr-only">
+          Skip to content
+        </a>
+        <SiteHeader />
+        {children}
+        <footer>Portfolio v2 — visual design pending.</footer>
+      </body>
+    </html>
+  );
 }
