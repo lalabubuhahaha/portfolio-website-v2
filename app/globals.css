@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@theme inline {
+  --color-background: var(--page-background);
+  --color-foreground: var(--page-foreground);
+  --font-sans: system-ui, sans-serif;
+}
+:root { --page-background: white; --page-foreground: black; }
+body { margin: 0; background: var(--page-background); color: var(--page-foreground); font-family: var(--font-sans); }
+main, header, footer { max-width: 72rem; margin-inline: auto; padding: 1.5rem; }
+a { text-decoration: underline; text-underline-offset: .2em; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }

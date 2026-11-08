@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Design Study Zeta placeholder</title>
+  <desc id="desc">A monochrome connected node placeholder for a future project cover.</desc>
+  <rect width="1600" height="1000" fill="#e4e4e7"/>
+  <path d="M430 650 800 280l370 370" fill="none" stroke="#18181b" stroke-width="24"/>
+  <circle cx="430" cy="650" r="100" fill="#fafafa" stroke="#18181b" stroke-width="24"/>
+  <circle cx="800" cy="280" r="100" fill="#fafafa" stroke="#18181b" stroke-width="24"/>
+  <circle cx="1170" cy="650" r="100" fill="#fafafa" stroke="#18181b" stroke-width="24"/>
+</svg>

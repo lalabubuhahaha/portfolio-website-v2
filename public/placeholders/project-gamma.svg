@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Professional Project Gamma placeholder</title>
+  <desc id="desc">A monochrome grid placeholder for a future project cover.</desc>
+  <rect width="1600" height="1000" fill="#fafafa"/>
+  <path d="M300 200h1000v600H300zM633 200v600M966 200v600M300 500h1000" fill="none" stroke="#27272a" stroke-width="20"/>
+</svg>

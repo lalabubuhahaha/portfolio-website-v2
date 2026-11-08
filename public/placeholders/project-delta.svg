@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Client Experience Delta placeholder</title>
+  <desc id="desc">A monochrome diagonal composition placeholder for a future project cover.</desc>
+  <rect width="1600" height="1000" fill="#d4d4d8"/>
+  <path d="M200 800 700 200h700L900 800z" fill="#fafafa" stroke="#18181b" stroke-width="24"/>
+</svg>

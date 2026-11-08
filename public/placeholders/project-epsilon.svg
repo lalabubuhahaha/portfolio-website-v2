@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Interface Exploration Epsilon placeholder</title>
+  <desc id="desc">A monochrome series of circles placeholder for a future project cover.</desc>
+  <rect width="1600" height="1000" fill="#f4f4f5"/>
+  <circle cx="500" cy="500" r="240" fill="#fafafa" stroke="#18181b" stroke-width="24"/>
+  <circle cx="800" cy="500" r="240" fill="#e4e4e7" stroke="#18181b" stroke-width="24"/>
+  <circle cx="1100" cy="500" r="240" fill="#a1a1aa" stroke="#18181b" stroke-width="24"/>
+</svg>
