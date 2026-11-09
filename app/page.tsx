@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { GravityHero } from "@/components/gravity/gravity-hero";
+import { GravityStory } from "@/components/gravity/gravity-story";
 import { ProjectCard } from "@/components/project-card";
 import { getItems } from "@/lib/content";
 export default function HomePage() {
   const items = getItems({ featured: true });
   return (
     <main id="main" className="home-main">
-      <GravityHero />
+      <GravityStory />
       <div className="foundation-content">
         <section id="about" className="mb-12" aria-labelledby="about-title">
           <h2 id="about-title" className="text-2xl">

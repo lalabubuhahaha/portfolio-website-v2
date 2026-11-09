@@ -25,9 +25,11 @@ export default function GravityScene() {
     container.append(canvas);
     const world = createGravityWorld(container, renderer);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const mobile = window.matchMedia("(max-width: 767px)");
+    const viewport = container.closest<HTMLElement>(".gravity-viewport");
     let disposed = false;
     let frame = 0;
+    let progressFrame = 0;
+    let lastStaticPose = -1;
     let elapsed = 0;
     let previous = 0;
     let accumulator = 0;
@@ -73,17 +75,51 @@ export default function GravityScene() {
       )
         frame = requestAnimationFrame(tick);
     };
+    const renderStatic = (force = false) => {
+      const progress = world.control.progress;
+      const pose = Math.min(3, Math.max(0, Math.round(progress)));
+      if (!force && pose === lastStaticPose) return;
+      lastStaticPose = pose;
+      world.control.progress = [0, 1, 2.2, 3.45][pose];
+      for (let i = 0; i < 360; i++) {
+        elapsed += 1 / 60;
+        world.simulate(elapsed, false);
+      }
+      world.control.progress = progress;
+      render();
+    };
+    const updateProgress = () => {
+      progressFrame = 0;
+      if (disposed) return;
+      world.control.progress = window.scrollY / (window.innerHeight || 1);
+      const progress = world.control.progress;
+      if (viewport) {
+        viewport.dataset.bgStage = String(
+          progress > 1.55 ? 2 : progress > 0.7 ? 1 : 0,
+        );
+        // Preserve Stage 1's clear Hero text band, then expand the same canvas for the story.
+        const t = Math.max(0, Math.min(1, (progress - 0.3) / (0.8 - 0.3)));
+        const heroFrame = reduced.matches
+          ? progress < 0.5
+            ? 1
+            : 0
+          : 1 - t * t * (3 - 2 * t);
+        viewport.style.setProperty("--hero-frame", String(heroFrame));
+      }
+      container.dataset.progress = progress.toFixed(4);
+      if (reduced.matches) renderStatic();
+    };
+    const scheduleProgress = () => {
+      if (!progressFrame && !disposed)
+        progressFrame = requestAnimationFrame(updateProgress);
+    };
     const setMotion = () => {
       stop();
       accumulator = 0;
       world.mousePos.active = false;
-      world.scatterFar(true);
-      elapsed = 0;
-      if (reduced.matches) {
-        // Settle offscreen before a single static render; no perpetual rAF in reduced motion.
-        for (let i = 0; i < 360; i++) world.simulate(i / 60, false);
-        render();
-      } else start();
+      lastStaticPose = -1;
+      if (reduced.matches) renderStatic();
+      else start();
     };
     const updatePointer = (event: PointerEvent) => {
       if (reduced.matches) return;
@@ -118,7 +154,8 @@ export default function GravityScene() {
     };
     const resize = new ResizeObserver(() => {
       world.resize();
-      if (reduced.matches) render();
+      scheduleProgress();
+      if (reduced.matches) renderStatic(true);
     });
     const intersection = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
@@ -136,15 +173,14 @@ export default function GravityScene() {
     document.addEventListener("visibilitychange", visibility);
     canvas.addEventListener("webglcontextlost", lost);
     reduced.addEventListener("change", setMotion);
-    // Match the 54/96 count if the responsive breakpoint changes, without a second React effect.
-    const breakpoint = () => {
-      window.dispatchEvent(new Event("gravity-breakpoint"));
-    };
-    mobile.addEventListener("change", breakpoint);
+    window.addEventListener("scroll", scheduleProgress, { passive: true });
+    window.addEventListener("resize", scheduleProgress, { passive: true });
     container.dataset.status = "ready";
     container.dataset.ballCount = String(world.balls.length);
-    render(); // Warm the actual scene, then release immediately (no PageLoader).
-    setMotion();
+    render(); // Warm once; scrolling never restarts the entrance.
+    world.start();
+    updateProgress();
+    if (!reduced.matches) start();
     return () => {
       disposed = true;
       stop();
@@ -159,7 +195,9 @@ export default function GravityScene() {
       document.removeEventListener("visibilitychange", visibility);
       canvas.removeEventListener("webglcontextlost", lost);
       reduced.removeEventListener("change", setMotion);
-      mobile.removeEventListener("change", breakpoint);
+      window.removeEventListener("scroll", scheduleProgress);
+      window.removeEventListener("resize", scheduleProgress);
+      cancelAnimationFrame(progressFrame);
       world.dispose();
       renderer.dispose();
       renderer.forceContextLoss();

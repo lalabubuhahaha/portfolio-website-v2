@@ -16,6 +16,10 @@
   --gravity-edge: #c2d1ff;
   --gravity-white: #fff;
   --gravity-muted: #737373;
+  --gravity-lime-inner: #fbffe5;
+  --gravity-lime-edge: #e8ff9c;
+  --gravity-pink-inner: #fff0f1;
+  --gravity-pink-edge: #ffd1d5;
   --gravity-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 html,
@@ -334,4 +338,170 @@ a {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Stage 2: a single sticky viewport lasts for the entire four-section story. */
+.gravity-story {
+  position: relative;
+  isolation: isolate;
+}
+.gravity-viewport {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  margin-bottom: -100svh;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.gravity-viewport .gravity-canvas,
+.gravity-viewport .gravity-static {
+  inset: calc(76px * var(--hero-frame, 1)) 0 calc(25% * var(--hero-frame, 1));
+}
+.gravity-background,
+.gravity-gradient {
+  position: absolute;
+  inset: 0;
+}
+.gravity-gradient {
+  transition: opacity 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.gravity-gradient-blue {
+  background: radial-gradient(
+    circle at center,
+    var(--gravity-white) 0%,
+    var(--gravity-pearl) 35%,
+    var(--gravity-edge) 100%
+  );
+}
+.gravity-gradient-lime {
+  background: radial-gradient(
+    circle at center,
+    var(--gravity-white) 0%,
+    var(--gravity-lime-inner) 38%,
+    var(--gravity-lime-edge) 100%
+  );
+  opacity: 0;
+}
+.gravity-gradient-pink {
+  background: radial-gradient(
+    circle at center,
+    var(--gravity-white) 0%,
+    var(--gravity-pink-inner) 38%,
+    var(--gravity-pink-edge) 100%
+  );
+  opacity: 0;
+}
+.gravity-viewport[data-bg-stage="1"] .gravity-gradient-lime,
+.gravity-viewport[data-bg-stage="2"] .gravity-gradient-pink {
+  opacity: 1;
+}
+.gravity-viewport:has(.gravity-canvas[data-status="ready"]) .gravity-static {
+  visibility: hidden;
+}
+.gravity-story .gravity-hero {
+  background: none;
+  isolation: auto;
+}
+.gravity-story .gravity-hero,
+.gravity-story-section {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+}
+.gravity-story-section {
+  padding: 140px 48px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  pointer-events: none;
+}
+.gravity-story-section a {
+  pointer-events: auto;
+}
+.gravity-story-copy {
+  max-width: 520px;
+}
+.gravity-section-label {
+  font: 11px var(--font-mono);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gravity-accent);
+  margin-bottom: 24px;
+}
+.gravity-story-section h2 {
+  font-size: clamp(42px, 5.6vw, 80px);
+  font-weight: 500;
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+  color: var(--gravity-ink);
+}
+.gravity-story-copy > p:not(.gravity-section-label) {
+  font-size: 18px;
+  line-height: 1.55;
+  margin-top: 32px;
+  max-width: 430px;
+}
+.gravity-shape {
+  justify-content: space-between;
+}
+.gravity-shape-note {
+  align-self: end;
+  max-width: 300px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+.gravity-release {
+  align-items: center;
+  text-align: center;
+}
+.gravity-release .gravity-story-copy > p {
+  margin-inline: auto;
+}
+.gravity-release a {
+  display: inline-block;
+  margin-top: 28px;
+}
+.foundation-content {
+  position: relative;
+  z-index: 2;
+  background: var(--page-background);
+}
+@media (max-width: 767px) {
+  .gravity-story-section {
+    padding: 112px 24px 48px;
+  }
+  .gravity-story-section h2 {
+    font-size: 42px;
+  }
+  .gravity-story-copy > p:not(.gravity-section-label) {
+    font-size: 16px;
+    max-width: 280px;
+  }
+  .gravity-shape-note {
+    max-width: 250px;
+    font-size: 14px;
+  }
+}
+@media (max-height: 650px) {
+  .gravity-story .gravity-hero {
+    min-height: 100svh;
+  }
+  .gravity-hero-copy {
+    padding-bottom: 20px;
+  }
+  .gravity-story-section {
+    padding-block: 90px 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  .gravity-viewport .gravity-canvas,
+  .gravity-viewport .gravity-static {
+    inset: calc(80px * var(--hero-frame, 1)) 0 calc(43% * var(--hero-frame, 1));
+  }
+}
+.gravity-shape .gravity-story-copy {
+  position: sticky;
+  top: 112px;
 }

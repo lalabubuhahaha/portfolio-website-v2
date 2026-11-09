@@ -32,6 +32,7 @@ test("Gravity Hero uses physical spheres, converges, and responds to the pointer
     const meanDistance = () =>
       world.balls.reduce((sum, ball) => sum + ball.position.length(), 0) /
       world.balls.length;
+    world.start();
     world.scatterFar(true);
     const scattered = meanDistance();
     for (let i = 0; i < 360; i++) world.simulate(i / 60, false);
@@ -72,6 +73,138 @@ test("Gravity Hero uses physical spheres, converges, and responds to the pointer
     assert.equal(mobile.balls.length, 54);
   } finally {
     mobile.dispose();
+    delete global.window;
+  }
+});
+
+for (const width of [1440, 390]) {
+  test(`four-mode physical story and reverse recovery at ${width}px`, () => {
+    global.window = { innerWidth: width, devicePixelRatio: 1 };
+    const container = { clientWidth: width, clientHeight: 900 };
+    const world = createGravityWorld(container, {
+      setPixelRatio() {},
+      setSize() {},
+      shadowMap: {},
+      render() {},
+    });
+    const identities = world.balls.map((ball) => [
+      ball,
+      ball.material,
+      ball.sphere.geometry,
+    ]);
+    let time = 0;
+    const advance = (progress, steps) => {
+      world.control.progress = progress;
+      for (let i = 0; i < steps; i++) {
+        time += 1 / 60;
+        world.simulate(time, false);
+      }
+      assert.ok(
+        world.balls.every((ball) => Number.isFinite(ball.position.length())),
+      );
+    };
+    const meanY = () =>
+      world.balls.reduce((sum, ball) => sum + ball.position.y, 0) /
+      world.balls.length;
+    const targetError = () =>
+      world.balls.reduce(
+        (sum, ball) => sum + ball.position.distanceTo(ball.shapeTarget),
+        0,
+      ) / world.balls.length;
+    try {
+      world.start();
+      advance(0, 360);
+      const heroY = meanY();
+      advance(1, 240);
+      assert.ok(meanY() < heroY - 1, `drop mean ${meanY()} from ${heroY}`);
+      const colorAtDrop = world.balls[0].material.color.clone();
+      const beforeHeart = targetError();
+      advance(2.2, 360);
+      assert.ok(
+        targetError() < beforeHeart * 0.2,
+        `heart target error ${targetError()}`,
+      );
+      assert.ok(world.balls.every((ball) => ball.visualScale < ball.radius));
+      assert.ok(
+        ["r", "g", "b"].reduce(
+          (sum, key) =>
+            sum + (colorAtDrop[key] - world.balls[0].material.color[key]) ** 2,
+          0,
+        ) > 0.01,
+      );
+      // Reconstruct normalized rejection-sampled points and validate the actual implicit silhouette.
+      const height = 2 * Math.tan((38 * Math.PI) / 360) * 11;
+      const S = Math.min(
+        height * (width / container.clientHeight) * 0.3,
+        height * 0.27,
+      );
+      for (const ball of world.balls) {
+        const x = ball.shapeTarget.x / S;
+        const y = (ball.shapeTarget.y + height * 0.03) / S - 0.12;
+        assert.ok((x * x + y * y - 1) ** 3 - x * x * y * y * y <= 1e-9);
+      }
+      advance(3.45, 360);
+      assert.ok(world.balls.every((ball) => ball.material.opacity === 0));
+      assert.ok(
+        world.balls.every((ball) => ball.position.z > world.camera.position.z),
+      );
+      advance(3.45, 3600); // A long release remains finite rather than overflowing invisible coordinates.
+      const beforeRecovery = targetError();
+      advance(2.2, 600);
+      assert.ok(
+        targetError() < beforeRecovery * 0.1,
+        `reverse heart target error ${targetError()}`,
+      );
+      assert.ok(world.balls.every((ball) => ball.material.opacity === 1));
+      advance(1, 240);
+      advance(0, 600);
+      assert.ok(Math.abs(meanY()) < 1);
+      assert.ok(
+        world.balls.every((ball) => Math.abs(ball.position.z) <= 2.001),
+      );
+      const targets = world.balls.map((ball) => ball.shapeTarget.clone());
+      container.clientWidth += 50;
+      world.resize();
+      assert.ok(
+        world.balls.some(
+          (ball, index) => ball.shapeTarget.distanceTo(targets[index]) > 0.01,
+        ),
+      );
+      world.balls.forEach((ball, index) => {
+        assert.equal(ball, identities[index][0]);
+        assert.equal(ball.material, identities[index][1]);
+        assert.equal(ball.sphere.geometry, identities[index][2]);
+      });
+    } finally {
+      world.dispose();
+      delete global.window;
+    }
+  });
+}
+
+test("drop floor rebounds a falling sphere with the specified restitution", () => {
+  global.window = { innerWidth: 1440, devicePixelRatio: 1 };
+  const world = createGravityWorld(
+    { clientWidth: 1440, clientHeight: 900 },
+    { setPixelRatio() {}, setSize() {}, shadowMap: {}, render() {} },
+  );
+  try {
+    world.start();
+    world.simulate(0, false);
+    world.control.progress = 1;
+    for (const ball of world.balls) {
+      ball.position.set(1000, 1000, 0);
+      ball.velocity.set(0, 0, 0);
+    }
+    const ball = world.balls[0];
+    const floor = -(2 * Math.tan((38 * Math.PI) / 360) * 11) / 2 + 0.05;
+    ball.position.set(0, floor + ball.radius - 0.01, 0);
+    ball.velocity.set(0, -0.2, 0);
+    world.simulate(3, false);
+    assert.ok(Math.abs(ball.position.y - floor - ball.radius) < 1e-9);
+    assert.ok(Math.abs(ball.velocity.y - (0.2 + 0.011) * 0.992 * 0.65) < 1e-9);
+  } finally {
+    world.dispose();
     delete global.window;
   }
 });

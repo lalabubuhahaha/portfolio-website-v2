@@ -8,17 +8,22 @@ interface Ball {
   meshGroup: THREE.Group;
   sphere: THREE.Mesh<THREE.SphereGeometry, THREE.MeshPhysicalMaterial>;
   material: THREE.MeshPhysicalMaterial;
-  role: string;
+  role: "pastel" | "light" | "medium" | "deep" | "glass";
   isGlass: boolean;
   visualScale: number;
+  shapeTarget: THREE.Vector3;
 }
-// Stage 1 is the supplied Gravity solver at progress=0, without later-stage branches.
+export interface GravityControl {
+  progress: number;
+  started: boolean;
+}
+// Original GetLayers equations; a single world and particle set spans all four modes.
 export function createGravityWorld(
   container: HTMLElement,
   renderer: THREE.WebGLRenderer,
 ) {
+  const control: GravityControl = { progress: 0, started: false };
   const mousePos = { x: 99, y: 99, isDown: false, active: false };
-  const entranceStart = 0;
   const ballColor = "#2F69FF";
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
@@ -81,12 +86,75 @@ export function createGravityWorld(
 
   const isMobile = window.innerWidth < 768;
   const ballCount = isMobile ? 54 : 96;
-  const palette = {
-    pastel: new THREE.Color("#ECEFFF"),
-    light: new THREE.Color("#A8C1FF"),
-    medium: new THREE.Color("#2F69FF"),
-    deep: new THREE.Color("#0A33BF"),
-    glass: new THREE.Color("#4D80FF"),
+  const getDynamicColors = (baseColor: string) => {
+    const hex = baseColor.toLowerCase();
+    if (hex === "#e1fc03") {
+      return {
+        pastel: new THREE.Color("#FBFFE2"),
+        light: new THREE.Color("#EFFE69"),
+        medium: new THREE.Color("#E1FC03"),
+        deep: new THREE.Color("#B1E200"),
+        glass: new THREE.Color("#DCFF32"),
+      };
+    } else if (hex === "#ffc5c2" || hex === "#ffa19e") {
+      return {
+        pastel: new THREE.Color("#FFF5F4"),
+        light: new THREE.Color("#FFECEB"),
+        medium: new THREE.Color("#FFA6B3"),
+        deep: new THREE.Color("#FF4D6D"),
+        glass: new THREE.Color("#FFA6B3"),
+      };
+    } else if (hex === "#96e5ff") {
+      return {
+        pastel: new THREE.Color("#F0F9FF"),
+        light: new THREE.Color("#C9F1FF"),
+        medium: new THREE.Color("#96E5FF"),
+        deep: new THREE.Color("#2BA5FF"),
+        glass: new THREE.Color("#98E4FF"),
+      };
+    } else if (hex === "#2f69ff") {
+      return {
+        pastel: new THREE.Color("#ECEFFF"),
+        light: new THREE.Color("#A8C1FF"),
+        medium: new THREE.Color("#2F69FF"),
+        deep: new THREE.Color("#0A33BF"),
+        glass: new THREE.Color("#4D80FF"),
+      };
+    } else if (hex === "#141414" || hex === "#000000") {
+      return {
+        pastel: new THREE.Color("#D8D8D8"),
+        light: new THREE.Color("#555555"),
+        medium: new THREE.Color("#242424"),
+        deep: new THREE.Color("#0A0A0A"),
+        glass: new THREE.Color("#1F1F1F"),
+      };
+    }
+    const c = new THREE.Color(baseColor);
+    return {
+      pastel: c.clone().offsetHSL(0, -0.15, 0.25),
+      light: c.clone().offsetHSL(0, -0.05, 0.12),
+      medium: c.clone(),
+      deep: c.clone().offsetHSL(0.01, 0.1, -0.12),
+      glass: c.clone(),
+    };
+  };
+
+  const palette = getDynamicColors(ballColor);
+  const isBlack = ["#141414", "#18181b", "#000000"].includes(
+    ballColor.toLowerCase(),
+  );
+
+  // Scroll-driven palettes: hero (base) → volt-lime (drop) → rose-pink (heart).
+  const palHero = palette;
+  const palLime = getDynamicColors("#E1FC03");
+  const palPink = getDynamicColors("#FFC5C2");
+  const ROLES = ["pastel", "light", "medium", "deep", "glass"] as const;
+  const curPal = {
+    pastel: new THREE.Color(),
+    light: new THREE.Color(),
+    medium: new THREE.Color(),
+    deep: new THREE.Color(),
+    glass: new THREE.Color(),
   };
   const sphereGeometry = new THREE.SphereGeometry(1, 48, 48);
   const balls: Ball[] = [];
@@ -102,9 +170,9 @@ export function createGravityWorld(
     let chosenColor = palette.medium;
 
     let sphereMat: THREE.MeshPhysicalMaterial;
-    let role: keyof typeof palette = "medium";
+    let role: Ball["role"] = "medium";
 
-    const isGlass = Math.random() < 0.22;
+    const isGlass = Math.random() < 0.22 && !isBlack;
 
     if (isGlass) {
       sphereMat = new THREE.MeshPhysicalMaterial({
@@ -148,8 +216,8 @@ export function createGravityWorld(
         metalness: 0.0,
         clearcoat: 0.24,
         clearcoatRoughness: 0.35,
-        emissive: chosenColor,
-        emissiveIntensity: 0.08,
+        emissive: isBlack ? new THREE.Color("#000000") : chosenColor,
+        emissiveIntensity: isBlack ? 0.0 : 0.08,
         transparent: true,
       });
     }
@@ -174,9 +242,38 @@ export function createGravityWorld(
       role,
       isGlass,
       visualScale: radius,
+
+      shapeTarget: new THREE.Vector3(),
     });
   }
 
+  const meanRadius = balls.reduce((sum, b) => sum + b.radius, 0) / balls.length;
+  let shapeScale = 1;
+  const inHeart = (x: number, y: number) => {
+    const a = x * x + y * y - 1;
+    return a * a * a - x * x * y * y * y <= 0;
+  };
+  const assignHeartTargets = () => {
+    const S = Math.min(viewportWidth * 0.3, viewportHeight * 0.27);
+    const baseCY = -viewportHeight * 0.03;
+    shapeScale = Math.max(0.3, Math.min(1, (S * 0.45) / 2.3 / meanRadius));
+    for (let i = 0; i < balls.length; i++) {
+      let x = 0,
+        y = 0,
+        tries = 0;
+      do {
+        x = (Math.random() * 2 - 1) * 1.25;
+        y = Math.random() * 2.55 - 1.4; // bbox y ∈ [-1.4, 1.15]
+        tries++;
+      } while (!inHeart(x, y) && tries < 60);
+      balls[i].shapeTarget.set(
+        x * S,
+        (y + 0.12) * S + baseCY,
+        (Math.random() - 0.5) * 0.35,
+      );
+    }
+  };
+  assignHeartTargets();
   const scatterFar = (withInwardVelocity: boolean) => {
     const R = Math.max(viewportWidth, viewportHeight) * 1.5;
     for (const b of balls) {
@@ -196,7 +293,7 @@ export function createGravityWorld(
       }
     }
   };
-
+  scatterFar(false); // parked off-screen until the loader reveals
   const params = {
     gravity: 0,
     rebound: -0.3,
@@ -218,8 +315,15 @@ export function createGravityWorld(
     mouseWorld3D.copy(camera.position).add(dir.multiplyScalar(distance));
   };
   const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const smoothstep = (a: number, b: number, x: number) => {
+    const t = clamp01((x - a) / (b - a));
+    return t * t * (3 - 2 * t);
+  };
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
   const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+  let localStarted = false;
+  let entranceStart = 0;
+
   const diffVec = new THREE.Vector3();
   const collideDiff = new THREE.Vector3();
   const relVel = new THREE.Vector3();
@@ -230,8 +334,36 @@ export function createGravityWorld(
 
   const simulate = (time: number, interact = true) => {
     if (interact) updateMouse3D();
+    const ctrl = control;
 
-    const heroF = 1;
+    if (ctrl?.started && !localStarted) {
+      localStarted = true;
+      entranceStart = time;
+      scatterFar(true);
+    }
+
+    if (!localStarted) return;
+    const progress = ctrl?.progress ?? 0;
+
+    // --- mode blend factors ---
+    const heroF = 1 - smoothstep(0.3, 0.8, progress);
+    const dropRaw = smoothstep(0.4, 0.95, progress);
+    const flyF = smoothstep(2.7, 3.45, progress);
+    const shapeF =
+      smoothstep(1.4, 2.05, progress) * (1 - smoothstep(2.55, 3.0, progress));
+    const dropF = dropRaw * (1 - smoothstep(1.25, 1.75, progress));
+
+    // --- scroll-driven palette morph: hero → volt-lime → rose-pink ---
+    const bLime = smoothstep(0.55, 1.05, progress);
+    const bPink = smoothstep(1.4, 1.95, progress);
+    for (const role of ROLES) {
+      curPal[role]
+        .copy(palHero[role])
+        .lerp(palLime[role], bLime)
+        .lerp(palPink[role], bPink);
+    }
+    hemiLight.groundColor.copy(curPal.medium);
+
     const entranceT = easeOutCubic(clamp01((time - entranceStart) / 2.2));
     const attractionBoost = lerp(7.5, 1, entranceT);
 
@@ -246,12 +378,26 @@ export function createGravityWorld(
     if (mouseSpeed > 3) mouseSpeed = 3;
     prevMouseWorld.copy(mouseWorld3D);
 
-    const damping = params.damping;
+    let damping = 0.91;
+    damping = lerp(damping, 0.992, dropF);
+    damping = lerp(damping, 0.9, shapeF);
+    damping = lerp(damping, 0.985, flyF);
+
+    const camZ = camera.position.z;
     const clusterActive = Math.max(heroF, entranceT < 1 ? 1 : 0);
 
     // 1. ACCELERATIONS
     for (let i = 0; i < balls.length; i++) {
       const b = balls[i];
+      if (
+        b.position.z > camZ + 3 &&
+        flyF > 0.001 &&
+        Math.max(heroF, dropF, shapeF) < 0.001
+      ) {
+        b.velocity.set(0, 0, 0);
+        b.material.opacity = 0;
+        continue;
+      }
 
       if (heroF > 0.01) {
         b.velocity.x +=
@@ -267,6 +413,25 @@ export function createGravityWorld(
         b.velocity.x += (0 - b.position.x) * clusterStrength * 0.38;
         b.velocity.y += (0 - b.position.y) * clusterStrength * 1.85;
         b.velocity.z += (0 - b.position.z) * clusterStrength * 1.8;
+      }
+
+      if (dropF > 0.001) {
+        b.velocity.y -= 0.011 * dropF;
+      }
+
+      if (shapeF > 0.001) {
+        const k = 0.06 * shapeF;
+        b.velocity.x += (b.shapeTarget.x - b.position.x) * k;
+        b.velocity.y += (b.shapeTarget.y - b.position.y) * k;
+        b.velocity.z += (b.shapeTarget.z - b.position.z) * k;
+      }
+
+      if (flyF > 0.001) {
+        const stagger = (b.id * 0.6180339887) % 1;
+        const local = smoothstep(stagger * 0.55, stagger * 0.55 + 0.45, flyF);
+        b.velocity.z += 0.05 * local;
+        b.velocity.x += b.position.x * 0.006 * local;
+        b.velocity.y += b.position.y * 0.006 * local;
       }
 
       if (mousePos && isMouseInteracting) {
@@ -293,10 +458,21 @@ export function createGravityWorld(
 
       b.velocity.multiplyScalar(damping);
       b.position.addScaledVector(b.velocity, 1);
+
+      const c = b.isGlass ? curPal.glass : curPal[b.role];
+      b.material.color.copy(c);
+      if (!isBlack) b.material.emissive.copy(c);
+
+      b.material.opacity =
+        flyF > 0.001 ? 1 - smoothstep(camZ - 2.6, camZ - 0.3, b.position.z) : 1;
+
+      const targetVis = b.radius * (1 - (1 - shapeScale) * shapeF);
+      b.visualScale += (targetVis - b.visualScale) * 0.12;
+      b.sphere.scale.setScalar(b.visualScale);
     }
 
-    // 2. Hero pairwise collisions: four mass-weighted relaxation passes.
-    const collideScale = 0.28;
+    // 2. PAIRWISE COLLISIONS (nearly disabled in shape mode so balls snap onto the silhouette)
+    const collideScale = 0.28 * (1 - 0.93 * shapeF) * (1 - flyF);
     const subSteps = 4;
     for (let step = 0; step < subSteps; step++) {
       for (let i = 0; i < balls.length; i++) {
@@ -341,10 +517,10 @@ export function createGravityWorld(
     const topY = viewportHeight / 2 - 0.05;
     const floorY = -viewportHeight / 2 + 0.05;
     const zBound = 2.0;
-    const restitution = 0.3;
+    const restitution = 0.3 + 0.35 * dropF;
 
-    const contain = time >= 2.2; // Let offscreen scatter actually fly in before applying walls.
-    const zContain = time >= 2.2;
+    const contain = time - entranceStart >= 2.2 && flyF < 0.5;
+    const zContain = time - entranceStart >= 2.2 && flyF < 0.02;
 
     for (let i = 0; i < balls.length; i++) {
       const b = balls[i];
@@ -362,6 +538,10 @@ export function createGravityWorld(
         if (b.position.y - r < floorY) {
           b.position.y = floorY + r;
           if (b.velocity.y < 0) b.velocity.y = -b.velocity.y * restitution;
+          if (dropF > 0.3) {
+            b.velocity.x *= 0.86;
+            b.velocity.z *= 0.86;
+          }
         }
         if (b.position.y + r > topY) {
           b.position.y = topY - r;
@@ -397,10 +577,12 @@ export function createGravityWorld(
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height);
     updateFrustumBounds();
+    assignHeartTargets();
   };
-  resize();
-  scatterFar(false);
   const render = () => renderer.render(scene, camera);
+  const start = () => {
+    control.started = true;
+  };
   const dispose = () => {
     sphereGeometry.dispose();
     for (const ball of balls) ball.material.dispose();
@@ -410,6 +592,8 @@ export function createGravityWorld(
   return {
     balls,
     mousePos,
+    control,
+    start,
     scatterFar,
     simulate,
     render,

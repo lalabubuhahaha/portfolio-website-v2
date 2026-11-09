@@ -1,6 +1,6 @@
 # Portfolio Website v2
 
-Independent portfolio for Lala. Gravity Edition Stage 1 implements the WebGL Hero; later stages are not implemented.
+Independent portfolio for Lala. Gravity Edition Stage 2 implements the four-phase WebGL scroll story; Stage 3 is not implemented.
 
 ## Development
 
@@ -20,6 +20,6 @@ Source main contains only README; the feature branch contains the implemented ap
 - Source `AGENTS.md` rules and `docs/roadmap.md` retained; Next.js dev appended its version-specific guidance to AGENTS.md. Roadmap items are plans, not completion claims.
 - Cards retain `/work/[slug]` link targets from the source. Detail pages and `/about` were not implemented in the source and are not added here; detail URLs currently return 404.
 
-Source website A styles, intro scripts, experimental motion components and Vercel bindings are excluded. Gravity Edition Stage 1 follows the supplied GetLayers specification for the Hero only. See [Stage 1 implementation and validation](docs/gravity-stage-1.md).
+Source website A styles, intro scripts, experimental motion components and Vercel bindings are excluded. Gravity Edition follows the supplied GetLayers specification. See [Stage 2 implementation and validation](docs/gravity-stage-2.md) and the historical [Stage 1 notes](docs/gravity-stage-1.md).
 
 This checkout has an independent root commit and its own GitHub origin. No source Git history, Vercel project, deployment URL, credentials, or deployment hooks are copied. Configure a separate Vercel project only when explicitly requested.
