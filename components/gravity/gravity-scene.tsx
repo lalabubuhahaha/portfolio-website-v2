@@ -24,6 +24,18 @@ export default function GravityScene() {
     }
     container.append(canvas);
     const world = createGravityWorld(container, renderer);
+    const diagnostic = (event: Event) => {
+      const receive = (
+        event as CustomEvent<
+          (snapshot: ReturnType<typeof world.inspect>) => void
+        >
+      ).detail;
+      if (typeof receive === "function") receive(world.inspect());
+    };
+    const diagnosticsEnabled =
+      new URLSearchParams(window.location.search).get("gravity-debug") === "1";
+    if (diagnosticsEnabled)
+      canvas.addEventListener("gravity:inspect", diagnostic);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const viewport = container.closest<HTMLElement>(".gravity-viewport");
     let disposed = false;
@@ -97,14 +109,6 @@ export default function GravityScene() {
         viewport.dataset.bgStage = String(
           progress > 1.55 ? 2 : progress > 0.7 ? 1 : 0,
         );
-        // Preserve Stage 1's clear Hero text band, then expand the same canvas for the story.
-        const t = Math.max(0, Math.min(1, (progress - 0.3) / (0.8 - 0.3)));
-        const heroFrame = reduced.matches
-          ? progress < 0.5
-            ? 1
-            : 0
-          : 1 - t * t * (3 - 2 * t);
-        viewport.style.setProperty("--hero-frame", String(heroFrame));
       }
       container.dataset.progress = progress.toFixed(4);
       if (reduced.matches) renderStatic();
@@ -153,9 +157,14 @@ export default function GravityScene() {
       container.dataset.status = "unavailable";
     };
     const resize = new ResizeObserver(() => {
-      world.resize();
+      const changed = world.resize();
       scheduleProgress();
-      if (reduced.matches) renderStatic(true);
+      // ResizeObserver runs after rAF. setSize clears the drawing buffer, so a
+      // real resize must paint here, before the browser composites this frame.
+      if (changed) {
+        if (reduced.matches) renderStatic(true);
+        else render();
+      }
     });
     const intersection = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
@@ -198,6 +207,7 @@ export default function GravityScene() {
       window.removeEventListener("scroll", scheduleProgress);
       window.removeEventListener("resize", scheduleProgress);
       cancelAnimationFrame(progressFrame);
+      canvas.removeEventListener("gravity:inspect", diagnostic);
       world.dispose();
       renderer.dispose();
       renderer.forceContextLoss();

@@ -6,6 +6,7 @@ interface Ball {
   position: THREE.Vector3;
   velocity: THREE.Vector3;
   meshGroup: THREE.Group;
+  displayAnchor: THREE.Group;
   sphere: THREE.Mesh<THREE.SphereGeometry, THREE.MeshPhysicalMaterial>;
   material: THREE.MeshPhysicalMaterial;
   role: "pastel" | "light" | "medium" | "deep" | "glass";
@@ -23,6 +24,9 @@ export function createGravityWorld(
   renderer: THREE.WebGLRenderer,
 ) {
   const control: GravityControl = { progress: 0, started: false };
+  let resizeCount = 0;
+  let renderCount = 0;
+  let entranceCount = 0;
   const mousePos = { x: 99, y: 99, isDown: false, active: false };
   const ballColor = "#2F69FF";
   const scene = new THREE.Scene();
@@ -34,7 +38,10 @@ export function createGravityWorld(
   );
   camera.position.set(0, 0, 11);
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  let renderWidth = container.clientWidth;
+  let renderHeight = container.clientHeight;
+  let pixelRatio = Math.min(window.devicePixelRatio, 2);
+  renderer.setPixelRatio(pixelRatio);
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
@@ -156,6 +163,9 @@ export function createGravityWorld(
     deep: new THREE.Color(),
     glass: new THREE.Color(),
   };
+  const presentation = new THREE.Group();
+  scene.add(presentation);
+  let horizontalSpread = 1;
   const sphereGeometry = new THREE.SphereGeometry(1, 48, 48);
   const balls: Ball[] = [];
   for (let i = 0; i < ballCount; i++) {
@@ -228,7 +238,9 @@ export function createGravityWorld(
     sphereMesh.castShadow = true;
     sphereMesh.receiveShadow = true;
     group.add(sphereMesh);
-    scene.add(group);
+    const displayAnchor = new THREE.Group();
+    displayAnchor.add(group);
+    presentation.add(displayAnchor);
 
     balls.push({
       id: i,
@@ -237,6 +249,7 @@ export function createGravityWorld(
       position: new THREE.Vector3(0, 0, 0),
       velocity: new THREE.Vector3(),
       meshGroup: group,
+      displayAnchor,
       sphere: sphereMesh,
       material: sphereMat,
       role,
@@ -275,6 +288,7 @@ export function createGravityWorld(
   };
   assignHeartTargets();
   const scatterFar = (withInwardVelocity: boolean) => {
+    if (withInwardVelocity) entranceCount++;
     const R = Math.max(viewportWidth, viewportHeight) * 1.5;
     for (const b of balls) {
       const a = Math.random() * Math.PI * 2;
@@ -304,6 +318,24 @@ export function createGravityWorld(
     bounciness: 0.02,
   };
 
+  // Framing is separate from the solver: no canvas resize, camera/aspect change,
+  // particle reset, or physical radius change while scrolling.
+  const updatePresentation = () => {
+    const heroF = 1 - THREE.MathUtils.smoothstep(control.progress, 0.3, 0.8);
+    const mobile = renderWidth < 768;
+    const top = mobile ? 80 : 76;
+    const bottom = renderHeight * (mobile ? 0.43 : 0.25);
+    const heroScale = Math.max(1, renderHeight - top - bottom) / renderHeight;
+    const scale = THREE.MathUtils.lerp(1, heroScale, heroF);
+    presentation.scale.setScalar(scale);
+    presentation.position.y =
+      ((bottom - top) / (2 * renderHeight)) * viewportHeight * heroF;
+    // Keep the original mobile Hero's wide cluster while each sphere stays round.
+    horizontalSpread = mobile ? THREE.MathUtils.lerp(1, 1 / scale, heroF) : 1;
+    for (const ball of balls)
+      ball.displayAnchor.position.x = ball.position.x * (horizontalSpread - 1);
+    presentation.updateMatrixWorld(true);
+  };
   const mouseProjVec = new THREE.Vector3();
   const mouseWorld3D = new THREE.Vector3();
   const updateMouse3D = () => {
@@ -313,6 +345,9 @@ export function createGravityWorld(
     const dir = mouseProjVec.sub(camera.position).normalize();
     const distance = -camera.position.z / dir.z;
     mouseWorld3D.copy(camera.position).add(dir.multiplyScalar(distance));
+    updatePresentation();
+    presentation.worldToLocal(mouseWorld3D);
+    mouseWorld3D.x /= horizontalSpread;
   };
   const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
   const smoothstep = (a: number, b: number, x: number) => {
@@ -572,14 +607,79 @@ export function createGravityWorld(
   const resize = () => {
     const width = Math.max(1, container.clientWidth);
     const height = Math.max(1, container.clientHeight);
+    const ratio = Math.min(window.devicePixelRatio, 2);
+    if (
+      width === renderWidth &&
+      height === renderHeight &&
+      ratio === pixelRatio
+    )
+      return false;
+    resizeCount++;
+    const dimensionsChanged = width !== renderWidth || height !== renderHeight;
+    if (ratio !== pixelRatio) renderer.setPixelRatio(ratio);
+    renderWidth = width;
+    renderHeight = height;
+    pixelRatio = ratio;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height);
-    updateFrustumBounds();
-    assignHeartTargets();
+    if (dimensionsChanged) {
+      updateFrustumBounds();
+      assignHeartTargets();
+    }
+    return true;
   };
-  const render = () => renderer.render(scene, camera);
+  const render = () => {
+    updatePresentation();
+    renderCount++;
+    renderer.render(scene, camera);
+  };
+  // Read-only, requested only by the opt-in browser diagnostic event.
+  const inspect = () => {
+    scene.updateMatrixWorld(true);
+    camera.updateMatrixWorld(true);
+    const frustum = new THREE.Frustum().setFromProjectionMatrix(
+      new THREE.Matrix4().multiplyMatrices(
+        camera.projectionMatrix,
+        camera.matrixWorldInverse,
+      ),
+    );
+    const average = new THREE.Vector3();
+    let estimatedVisible = 0;
+    for (const ball of balls) {
+      const center = ball.meshGroup.getWorldPosition(new THREE.Vector3());
+      const scale = ball.meshGroup.getWorldScale(new THREE.Vector3());
+      const radius = ball.visualScale * Math.max(scale.x, scale.y, scale.z);
+      if (
+        ball.material.opacity > 0.01 &&
+        frustum.intersectsSphere(new THREE.Sphere(center, radius))
+      )
+        estimatedVisible++;
+      average.add(ball.position);
+    }
+    average.divideScalar(balls.length);
+    return {
+      progress: control.progress,
+      cameraAspect: camera.aspect,
+      frustum: [viewportWidth, viewportHeight],
+      presentation: {
+        scale: presentation.scale.x,
+        offsetY: presentation.position.y,
+        horizontalSpread,
+      },
+      estimatedVisible,
+      total: balls.length,
+      average: average.toArray(),
+      opacity: {
+        min: Math.min(...balls.map((ball) => ball.material.opacity)),
+        max: Math.max(...balls.map((ball) => ball.material.opacity)),
+      },
+      resizeCount,
+      renderCount,
+      entranceCount,
+      meshIds: balls.map((ball) => ball.sphere.uuid),
+    };
+  };
   const start = () => {
     control.started = true;
   };
@@ -591,6 +691,7 @@ export function createGravityWorld(
   };
   return {
     balls,
+    inspect,
     mousePos,
     control,
     start,

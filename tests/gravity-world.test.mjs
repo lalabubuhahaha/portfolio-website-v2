@@ -208,3 +208,68 @@ test("drop floor rebounds a falling sphere with the specified restitution", () =
     delete global.window;
   }
 });
+
+test("scroll framing keeps canvas, camera, solver bounds and meshes stable", () => {
+  for (const width of [1440, 390]) {
+    global.window = { innerWidth: width, devicePixelRatio: 1 };
+    const container = {
+      clientWidth: width,
+      clientHeight: width === 1440 ? 900 : 844,
+    };
+    let sizeWrites = 0;
+    const world = createGravityWorld(container, {
+      setPixelRatio() {},
+      setSize() {
+        sizeWrites++;
+      },
+      shadowMap: {},
+      render() {},
+    });
+    try {
+      world.start();
+      let time = 0;
+      for (let i = 0; i < 360; i++) {
+        time += 1 / 60;
+        world.simulate(time, false);
+      }
+      const aspect = world.camera.aspect;
+      const identities = world.balls.map((ball) => ball.sphere);
+      const bounds = world.inspect().frustum;
+      const targets = world.balls.map((ball) => ball.shapeTarget.clone());
+      const initialWrites = sizeWrites;
+      for (const progress of [
+        0, 0.25, 0.4, 0.55, 0.7, 0.85, 1, 1.25, 1.5, 2, 2.5, 3, 3.45, 2, 1, 0.7,
+        0.4, 0,
+      ]) {
+        world.control.progress = progress;
+        for (let i = 0; i < 60; i++) {
+          time += 1 / 60;
+          world.simulate(time, false);
+        }
+        world.render();
+        assert.equal(world.resize(), false);
+        assert.equal(sizeWrites, initialWrites);
+        assert.equal(world.camera.aspect, aspect);
+        assert.deepEqual(world.inspect().frustum, bounds);
+        assert.equal(world.inspect().entranceCount, 1);
+        world.balls.forEach((ball, index) => {
+          assert.equal(ball.sphere, identities[index]);
+          assert.ok(ball.shapeTarget.equals(targets[index]));
+        });
+        if (progress < 2.7) assert.ok(world.inspect().estimatedVisible > 0);
+      }
+      assert.equal(world.inspect().opacity.min, 1);
+      container.clientHeight += 50;
+      assert.equal(world.resize(), true);
+      assert.equal(world.resize(), false);
+      assert.equal(
+        world.camera.aspect,
+        container.clientWidth / container.clientHeight,
+      );
+      assert.equal(world.inspect().entranceCount, 1);
+    } finally {
+      world.dispose();
+      delete global.window;
+    }
+  }
+});

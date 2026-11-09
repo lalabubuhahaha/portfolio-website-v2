@@ -354,9 +354,11 @@ a {
   overflow: hidden;
   z-index: 0;
 }
-.gravity-viewport .gravity-canvas,
+.gravity-viewport .gravity-canvas {
+  inset: 0;
+}
 .gravity-viewport .gravity-static {
-  inset: calc(76px * var(--hero-frame, 1)) 0 calc(25% * var(--hero-frame, 1));
+  inset: 76px 0 25%;
 }
 .gravity-background,
 .gravity-gradient {
@@ -496,9 +498,8 @@ a {
 }
 
 @media (max-width: 767px) {
-  .gravity-viewport .gravity-canvas,
   .gravity-viewport .gravity-static {
-    inset: calc(80px * var(--hero-frame, 1)) 0 calc(43% * var(--hero-frame, 1));
+    inset: 80px 0 43%;
   }
 }
 .gravity-shape .gravity-story-copy {
