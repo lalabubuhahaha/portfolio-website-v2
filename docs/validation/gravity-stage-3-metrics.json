@@ -1,0 +1,258 @@
+{
+  "1440": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 0.5,
+    "palettes": [
+      {
+        "id": "roseGold",
+        "statePreserved": true,
+        "identity": true,
+        "color": "#2F69FF",
+        "entrance": 1,
+        "resize": 0,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        }
+      },
+      {
+        "id": "pinkBlush",
+        "statePreserved": true,
+        "identity": true,
+        "color": "#FFC5C2",
+        "entrance": 1,
+        "resize": 0,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        }
+      },
+      {
+        "id": "voltLime",
+        "statePreserved": true,
+        "identity": true,
+        "color": "#E1FC03",
+        "entrance": 1,
+        "resize": 0,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        }
+      },
+      {
+        "id": "arcticBlue",
+        "statePreserved": true,
+        "identity": true,
+        "color": "#96E5FF",
+        "entrance": 1,
+        "resize": 0,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        }
+      }
+    ],
+    "scroll": [
+      {"requested":0,"heroColor":"#96E5FF","progress":0,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.6655555555555556,"offsetY":0.6270588424241793,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[0.0179276241633967,1.2615923223872005,1.233744010540283],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":332,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"96e5ff","light":"c9f1ff","pastel":"f0f9ff","deep":"2ba5ff","glass":"98e4ff"}},
+      {"requested":0.25,"heroColor":"#96E5FF","progress":0.25,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.6655555555555556,"offsetY":0.6270588424241793,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[0.01448253020368192,0.17601017879486228,0.05768853387955698],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":339,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"96e5ff","light":"c9f1ff","pastel":"f0f9ff","deep":"2ba5ff","glass":"98e4ff"}},
+      {"requested":0.4,"heroColor":"#96E5FF","progress":0.4,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.7003377777777778,"offsetY":0.5618447228120647,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[0.013467583332885866,0.07651300365382717,-0.1904081675838837],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":346,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"96e5ff","light":"c9f1ff","pastel":"f0f9ff","deep":"2ba5ff","glass":"98e4ff"}},
+      {"requested":0.55,"heroColor":"#96E5FF","progress":0.55,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.8327777777777778,"offsetY":0.3135294212120896,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[0.005809523409637918,-0.027999499768224988,-0.10372463237175418],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":353,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"96e5ff","light":"c9f1ff","pastel":"f0f9ff","deep":"2ba5ff","glass":"98e4ff"}},
+      {"requested":0.7,"heroColor":"#96E5FF","progress":0.7,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.9652177777777777,"offsetY":0.06521411961211471,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[0.006136457729773758,-0.9901331740260861,-0.0378936095841902],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":360,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"aaeae5","light":"d2f4e9","pastel":"f2faf9","deep":"5fb5e5","glass":"aaeae6"}},
+      {"requested":0.85,"heroColor":"#96E5FF","progress":0.85,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[0.007485445698645826,-2.5037583314514125,-0.029365981384344493],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":367,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"cbf4a0","light":"e3fab2","pastel":"f7fded","deep":"93cfa0","glass":"c7f6a4"}},
+      {"requested":1,"heroColor":"#96E5FF","progress":1,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":94,"total":96,"average":[0.04494147929332962,-2.8659322181363596,-0.043689659253614316],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":374,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"dffb2f","light":"eefe71","pastel":"fbffe3","deep":"afe12f","glass":"dafe45"}},
+      {"requested":1.25,"heroColor":"#96E5FF","progress":1.25,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":92,"total":96,"average":[0.07435259374923604,-2.9789323855366665,-0.03143980304432848],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":381,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"e1fc03","light":"effe69","pastel":"fbffe2","deep":"b1e200","glass":"dcff32"}},
+      {"requested":1.5,"heroColor":"#96E5FF","progress":1.5,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[0.02716822286961571,-2.11103510987234,-0.001121016983033013],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":392,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"e4f638","light":"f0fc7c","pastel":"fbfee4","deep":"bada1e","glass":"dff94a"}},
+      {"requested":2,"heroColor":"#96E5FF","progress":2,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.0634834150806255,0.8264713953869685,0.026251836720984578],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":414,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"ffa6b3","light":"ffeceb","pastel":"fff5f4","deep":"ff4d6d","glass":"ffa6b3"}},
+      {"requested":2.5,"heroColor":"#96E5FF","progress":2.5,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.06938620391144767,0.791850729263794,0.016577786997376526],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":425,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"ffa6b3","light":"ffeceb","pastel":"fff5f4","deep":"ff4d6d","glass":"ffa6b3"}},
+      {"requested":3,"heroColor":"#96E5FF","progress":3,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":93,"total":96,"average":[-0.09749126689123272,0.850175275797795,1.1744841466559277],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":432,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"ffa6b3","light":"ffeceb","pastel":"fff5f4","deep":"ff4d6d","glass":"ffa6b3"}},
+      {"requested":3.45,"heroColor":"#96E5FF","progress":3.45,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":0,"total":96,"average":[-0.34276233466054296,2.309915130211805,14.502798246873251],"opacity":{"min":0,"max":0},"resizeCount":0,"renderCount":454,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"ffa6b3","light":"ffeceb","pastel":"fff5f4","deep":"ff4d6d","glass":"ffa6b3"}}
+    ],
+    "reverse": [
+      {"heroColor":"#96E5FF","progress":2.5,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.05707282154574612,0.9162022127532583,0.3066749868988954],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":471,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"ffa6b3","light":"ffeceb","pastel":"fff5f4","deep":"ff4d6d","glass":"ffa6b3"}},
+      {"heroColor":"#96E5FF","progress":2,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.06457824263276263,0.8049537522937317,0.14360658556934786],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":481,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"ffa6b3","light":"ffeceb","pastel":"fff5f4","deep":"ff4d6d","glass":"ffa6b3"}},
+      {"heroColor":"#96E5FF","progress":1.5,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.05769491313120737,-0.26920652515059806,0.13851721830032782],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":491,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"e4f638","light":"f0fc7c","pastel":"fbfee4","deep":"bada1e","glass":"dff94a"}},
+      {"heroColor":"#96E5FF","progress":1,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.07542911771841804,-2.5113948646361357,0.042538274391515155],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":501,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"dffb2f","light":"eefe71","pastel":"fbffe3","deep":"afe12f","glass":"dafe45"}},
+      {"heroColor":"#96E5FF","progress":0.7,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.9652177777777777,"offsetY":0.06521411961211471,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.10363194325904021,-2.869570488152653,0.07014409719292823],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":511,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"aaeae5","light":"d2f4e9","pastel":"f2faf9","deep":"5fb5e5","glass":"aaeae6"}},
+      {"heroColor":"#96E5FF","progress":0.55,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.8327777777777778,"offsetY":0.3135294212120896,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.09075246455250968,-1.825490207680946,0.06630126698612408],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":521,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"96e5ff","light":"c9f1ff","pastel":"f0f9ff","deep":"2ba5ff","glass":"98e4ff"}},
+      {"heroColor":"#96E5FF","progress":0.4,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.7003377777777778,"offsetY":0.5618447228120647,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.08408051014277226,-0.3381340050065352,0.059838566064282235],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":531,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"96e5ff","light":"c9f1ff","pastel":"f0f9ff","deep":"2ba5ff","glass":"98e4ff"}},
+      {"heroColor":"#96E5FF","progress":0,"cameraAspect":1.6,"frustum":[12.120331987796218,7.575207492372636],"presentation":{"scale":0.6655555555555556,"offsetY":0.6270588424241793,"horizontalSpread":1},"estimatedVisible":96,"total":96,"average":[-0.07776177099332321,-0.15628627130815598,0.042396184206245226],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":541,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[1440,900],"roleColors":{"medium":"96e5ff","light":"c9f1ff","pastel":"f0f9ff","deep":"2ba5ff","glass":"98e4ff"}}
+    ],
+    "repeatedSwitch": {
+      "firstGpu": {
+        "geometries": 1,
+        "textures": 2,
+        "programs": 3
+      },
+      "lastGpu": {
+        "geometries": 1,
+        "textures": 2,
+        "programs": 3
+      },
+      "positionsSame": true,
+      "velocitiesSame": true,
+      "meshSame": true,
+      "materialSame": true,
+      "geometrySame": true,
+      "contexts": 1,
+      "entrance": 1,
+      "resizes": 0,
+      "heapBefore": 8468452,
+      "heapAfter": 8562260
+    },
+    "pointer": {
+      "idle": 0.26113589927544634,
+      "hover": 4.6196929410152405,
+      "down": 4.945143284874131,
+      "flick": 11.27590472072833,
+      "recovered": 1.3608627387133054
+    },
+    "slowScroll": {
+      "resizes": 0,
+      "cleared": 0,
+      "samples": 59
+    },
+    "resize": {
+      "canvas": [1280, 820],
+      "aspect": 1.5609756097560976,
+      "contexts": 1
+    },
+    "errors": []
+  },
+  "390": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1,
+    "palettes": [
+      {
+        "id": "roseGold",
+        "statePreserved": true,
+        "identity": true,
+        "color": "#2F69FF",
+        "entrance": 1,
+        "resize": 0,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        }
+      },
+      {
+        "id": "pinkBlush",
+        "statePreserved": true,
+        "identity": true,
+        "color": "#FFC5C2",
+        "entrance": 1,
+        "resize": 0,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        }
+      },
+      {
+        "id": "voltLime",
+        "statePreserved": true,
+        "identity": true,
+        "color": "#E1FC03",
+        "entrance": 1,
+        "resize": 0,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        }
+      },
+      {
+        "id": "arcticBlue",
+        "statePreserved": true,
+        "identity": true,
+        "color": "#96E5FF",
+        "entrance": 1,
+        "resize": 0,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        }
+      }
+    ],
+    "scroll": [
+      {"requested":0,"heroColor":"#96E5FF","progress":0,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.47521327014218007,"offsetY":1.2696550377618876,"horizontalSpread":2.1043183404807024},"estimatedVisible":41,"total":54,"average":[-0.24333668109169343,-0.30494885742748334,1.4436018767963803],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":373,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"98e4ff","medium":"96e5ff","light":"c9f1ff","deep":"2ba5ff","pastel":"f0f9ff"}},
+      {"requested":0.25,"heroColor":"#96E5FF","progress":0.25,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.47521327014218007,"offsetY":1.2696550377618876,"horizontalSpread":2.1043183404807024},"estimatedVisible":45,"total":54,"average":[-0.12564979044876567,-0.03464856856645648,0.2744727570824878],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":380,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"98e4ff","medium":"96e5ff","light":"c9f1ff","deep":"2ba5ff","pastel":"f0f9ff"}},
+      {"requested":0.4,"heroColor":"#96E5FF","progress":0.4004739336492891,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.5302694688989532,"offsetY":1.136453536781679,"horizontalSpread":1.7928994391539625},"estimatedVisible":50,"total":54,"average":[-0.0847376427752944,0.03874137786322477,-0.09931360226933],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":387,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"98e4ff","medium":"96e5ff","light":"c9f1ff","deep":"2ba5ff","pastel":"f0f9ff"}},
+      {"requested":0.55,"heroColor":"#96E5FF","progress":0.5497630331753555,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.7372335640478489,"offsetY":0.635730116978707,"horizontalSpread":1.1784644990680926},"estimatedVisible":54,"total":54,"average":[-0.0671217300744456,-0.1670009664324149,-0.04922529767872399],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":394,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"98e4ff","medium":"96e5ff","light":"c9f1ff","deep":"2ba5ff","pastel":"f0f9ff"}},
+      {"requested":0.7,"heroColor":"#96E5FF","progress":0.7002369668246445,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.9456607333362813,"offsetY":0.13146697456806689,"horizontalSpread":1.0059498955990633},"estimatedVisible":54,"total":54,"average":[-0.0661299782940292,-1.0307877750877885,0.009731151708017489],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":401,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"aaeae6","medium":"aaeae5","light":"d2f4e9","deep":"5fb5e5","pastel":"f2faf9"}},
+      {"requested":0.85,"heroColor":"#96E5FF","progress":0.8495260663507109,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":52,"total":54,"average":[-0.03977251427455363,-2.437573514805496,0.0575953590963216],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":408,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"c7f6a5","medium":"cbf4a0","light":"e3fab2","deep":"93cfa0","pastel":"f7fded"}},
+      {"requested":1,"heroColor":"#96E5FF","progress":1,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":49,"total":54,"average":[-0.06295451209912042,-2.7808243847481537,0.13502680645911852],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":415,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"dafe45","medium":"dffb2f","light":"eefe71","deep":"afe12f","pastel":"fbffe3"}},
+      {"requested":1.25,"heroColor":"#96E5FF","progress":1.25,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":49,"total":54,"average":[-0.13581911068903135,-2.804828813464768,0.13164583961184792],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":422,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"dcff32","medium":"e1fc03","light":"effe69","deep":"b1e200","pastel":"fbffe2"}},
+      {"requested":1.5,"heroColor":"#96E5FF","progress":1.5,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":52,"total":54,"average":[-0.12376310905873875,-2.2757640615843244,0.10334635900922828],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":433,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"dff94a","medium":"e4f638","light":"f0fc7c","deep":"bada1e","pastel":"fbfee4"}},
+      {"requested":2,"heroColor":"#96E5FF","progress":2,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":54,"total":54,"average":[-0.19524219000091644,0.149591063186043,-0.0033191306425060397],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":455,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"ffa6b3","medium":"ffa6b3","light":"ffeceb","deep":"ff4d6d","pastel":"fff5f4"}},
+      {"requested":2.5,"heroColor":"#96E5FF","progress":2.5,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":54,"total":54,"average":[-0.20409009928420427,0.18108133978295682,-0.0010075454999848219],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":466,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"ffa6b3","medium":"ffa6b3","light":"ffeceb","deep":"ff4d6d","pastel":"fff5f4"}},
+      {"requested":3,"heroColor":"#96E5FF","progress":3,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":49,"total":54,"average":[-0.22248774099177862,0.13900679032686056,1.5092654197752362],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":473,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"ffa6b3","medium":"ffa6b3","light":"ffeceb","deep":"ff4d6d","pastel":"fff5f4"}},
+      {"requested":3.45,"heroColor":"#96E5FF","progress":3.4502369668246446,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":0,"total":54,"average":[-0.7118994028117337,0.36549140572521566,14.471703094883999],"opacity":{"min":0,"max":0},"resizeCount":0,"renderCount":495,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"ffa6b3","medium":"ffa6b3","light":"ffeceb","deep":"ff4d6d","pastel":"fff5f4"}}
+    ],
+    "reverse": [
+      {"heroColor":"#96E5FF","progress":2.5,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":54,"total":54,"average":[-0.17030801654561867,0.24841287089047345,0.10337123639166386],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":511,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"ffa6b3","medium":"ffa6b3","light":"ffeceb","deep":"ff4d6d","pastel":"fff5f4"}},
+      {"heroColor":"#96E5FF","progress":2,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":54,"total":54,"average":[-0.19582754299908114,0.17816498765474365,0.10378819577669263],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":521,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"ffa6b3","medium":"ffa6b3","light":"ffeceb","deep":"ff4d6d","pastel":"fff5f4"}},
+      {"heroColor":"#96E5FF","progress":1.5,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":54,"total":54,"average":[-0.14064570690382025,-0.6961802296243899,0.09406060734712417],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":531,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"dff94a","medium":"e4f638","light":"f0fc7c","deep":"bada1e","pastel":"fbfee4"}},
+      {"heroColor":"#96E5FF","progress":1,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":1,"offsetY":0,"horizontalSpread":1},"estimatedVisible":51,"total":54,"average":[-0.042210668362581916,-2.6051943147734304,0.02354301699507502],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":541,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"dafe45","medium":"dffb2f","light":"eefe71","deep":"afe12f","pastel":"fbffe3"}},
+      {"heroColor":"#96E5FF","progress":0.7002369668246445,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.9456607333362813,"offsetY":0.13146697456806689,"horizontalSpread":1.0059498955990633},"estimatedVisible":52,"total":54,"average":[0.006161899711962094,-2.653516623734929,0.04740334738067698],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":551,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"aaeae6","medium":"aaeae5","light":"d2f4e9","deep":"5fb5e5","pastel":"f2faf9"}},
+      {"heroColor":"#96E5FF","progress":0.5497630331753555,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.7372335640478489,"offsetY":0.635730116978707,"horizontalSpread":1.1784644990680926},"estimatedVisible":54,"total":54,"average":[-0.01236340393475251,-1.749413810069126,0.0585192509437252],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":561,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"98e4ff","medium":"96e5ff","light":"c9f1ff","deep":"2ba5ff","pastel":"f0f9ff"}},
+      {"heroColor":"#96E5FF","progress":0.4004739336492891,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.5302694688989532,"offsetY":1.136453536781679,"horizontalSpread":1.7928994391539625},"estimatedVisible":50,"total":54,"average":[0.03804008674934036,-0.3056101242791269,0.07281854799637916],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":571,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"98e4ff","medium":"96e5ff","light":"c9f1ff","deep":"2ba5ff","pastel":"f0f9ff"}},
+      {"heroColor":"#96E5FF","progress":0,"cameraAspect":0.46208530805687204,"frustum":[3.5003920877077346,7.575207492372636],"presentation":{"scale":0.47521327014218007,"offsetY":1.2696550377618876,"horizontalSpread":2.1043183404807024},"estimatedVisible":45,"total":54,"average":[0.09348005147899552,-0.021230090828952185,0.057407713080435734],"opacity":{"min":1,"max":1},"resizeCount":0,"renderCount":581,"entranceCount":1,"gpu":{"geometries":1,"textures":2,"programs":3},"contexts":1,"canvasSame":true,"canvas":[390,844],"roleColors":{"glass":"98e4ff","medium":"96e5ff","light":"c9f1ff","deep":"2ba5ff","pastel":"f0f9ff"}}
+    ],
+    "repeatedSwitch": {
+      "firstGpu": {
+        "geometries": 1,
+        "textures": 2,
+        "programs": 3
+      },
+      "lastGpu": {
+        "geometries": 1,
+        "textures": 2,
+        "programs": 3
+      },
+      "positionsSame": true,
+      "velocitiesSame": true,
+      "meshSame": true,
+      "materialSame": true,
+      "geometrySame": true,
+      "contexts": 1,
+      "entrance": 1,
+      "resizes": 0,
+      "heapBefore": 7720448,
+      "heapAfter": 7862636
+    },
+    "pointer": {
+      "idle": 0.1647635060101297,
+      "hover": 1.7491652354819716,
+      "down": 2.1092531740599485,
+      "flick": 3.9860694580443488,
+      "recovered": 0.43842592496489535
+    },
+    "slowScroll": {
+      "resizes": 0,
+      "cleared": 0,
+      "samples": 59
+    },
+    "resize": {
+      "canvas": [412, 764],
+      "aspect": 0.5392670157068062,
+      "contexts": 1
+    },
+    "errors": []
+  },
+  "lifecycle": {
+    "visibility": "simulated hidden handler stops and resumes",
+    "contexts": {
+      "created": 2,
+      "active": 1
+    },
+    "touch": "Chromium CDP touch drag/tap passed"
+  }
+}

@@ -3,12 +3,23 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { createGravityWorld } from "./gravity-world";
+import { getHeroPalette } from "./gravity-palettes";
+import {
+  getSelectedPalette,
+  subscribeHeroPalette,
+} from "./gravity-palette-store";
 
 export default function GravityScene() {
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    const viewport = container.closest<HTMLElement>(".gravity-viewport");
+    const updateBackground = () => {
+      if (viewport) viewport.dataset.heroPalette = getSelectedPalette();
+    };
+    updateBackground();
+    const unsubscribeBackground = subscribeHeroPalette(updateBackground);
     const canvas = document.createElement("canvas");
     let renderer: THREE.WebGLRenderer;
     try {
@@ -20,7 +31,7 @@ export default function GravityScene() {
       });
     } catch {
       container.dataset.status = "unavailable";
-      return;
+      return unsubscribeBackground;
     }
     container.append(canvas);
     const world = createGravityWorld(container, renderer);
@@ -37,7 +48,6 @@ export default function GravityScene() {
     if (diagnosticsEnabled)
       canvas.addEventListener("gravity:inspect", diagnostic);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const viewport = container.closest<HTMLElement>(".gravity-viewport");
     let disposed = false;
     let frame = 0;
     let progressFrame = 0;
@@ -127,6 +137,15 @@ export default function GravityScene() {
     };
     const updatePointer = (event: PointerEvent) => {
       if (reduced.matches) return;
+      if (
+        document.querySelector("dialog.studio-controls[open]") ||
+        (event.target instanceof Element &&
+          event.target.closest("[data-gravity-ui]"))
+      ) {
+        world.mousePos.active = false;
+        world.mousePos.isDown = false;
+        return;
+      }
       const rect = container.getBoundingClientRect();
       world.mousePos.active =
         event.clientX >= rect.left &&
@@ -184,6 +203,11 @@ export default function GravityScene() {
     reduced.addEventListener("change", setMotion);
     window.addEventListener("scroll", scheduleProgress, { passive: true });
     window.addEventListener("resize", scheduleProgress, { passive: true });
+    world.setHeroColor(getHeroPalette(getSelectedPalette()).ballColor);
+    const unsubscribePalette = subscribeHeroPalette(() => {
+      world.setHeroColor(getHeroPalette(getSelectedPalette()).ballColor);
+      render(); // A static/reduced-motion scene also recolors without advancing physics.
+    });
     container.dataset.status = "ready";
     container.dataset.ballCount = String(world.balls.length);
     render(); // Warm once; scrolling never restarts the entrance.
@@ -192,6 +216,8 @@ export default function GravityScene() {
     if (!reduced.matches) start();
     return () => {
       disposed = true;
+      unsubscribePalette();
+      unsubscribeBackground();
       stop();
       resize.disconnect();
       intersection.disconnect();

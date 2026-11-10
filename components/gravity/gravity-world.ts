@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { HeroColor } from "./gravity-palettes";
 interface Ball {
   id: number;
   radius: number;
@@ -29,6 +30,7 @@ export function createGravityWorld(
   let entranceCount = 0;
   const mousePos = { x: 99, y: 99, isDown: false, active: false };
   const ballColor = "#2F69FF";
+  let heroColor: HeroColor = ballColor;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
     38,
@@ -629,7 +631,32 @@ export function createGravityWorld(
     }
     return true;
   };
+  // Color-only updates. No simulation, scatter, resize, material replacement or shader recompile.
+  const refreshPalette = () => {
+    const bLime = smoothstep(0.55, 1.05, control.progress);
+    const bPink = smoothstep(1.4, 1.95, control.progress);
+    for (const role of ROLES)
+      curPal[role]
+        .copy(palHero[role])
+        .lerp(palLime[role], bLime)
+        .lerp(palPink[role], bPink);
+    hemiLight.groundColor.copy(curPal.medium);
+    for (const ball of balls) {
+      const color = curPal[ball.role];
+      ball.material.color.copy(color);
+      ball.material.emissive.copy(color);
+      if (ball.isGlass) ball.material.attenuationColor.copy(curPal.pastel);
+    }
+  };
+  const setHeroColor = (color: HeroColor) => {
+    if (heroColor === color) return;
+    heroColor = color;
+    const next = getDynamicColors(color);
+    for (const role of ROLES) palHero[role].copy(next[role]);
+    refreshPalette();
+  };
   const render = () => {
+    refreshPalette();
     updatePresentation();
     renderCount++;
     renderer.render(scene, camera);
@@ -659,6 +686,7 @@ export function createGravityWorld(
     }
     average.divideScalar(balls.length);
     return {
+      heroColor,
       progress: control.progress,
       cameraAspect: camera.aspect,
       frustum: [viewportWidth, viewportHeight],
@@ -678,6 +706,20 @@ export function createGravityWorld(
       renderCount,
       entranceCount,
       meshIds: balls.map((ball) => ball.sphere.uuid),
+      materialIds: balls.map((ball) => ball.material.uuid),
+      geometryIds: balls.map((ball) => ball.sphere.geometry.uuid),
+      positions: balls.map((ball) => ball.position.toArray()),
+      velocities: balls.map((ball) => ball.velocity.toArray()),
+      colors: balls.map((ball) => ({
+        role: ball.role,
+        hex: ball.material.color.getHexString(),
+        glass: ball.isGlass,
+      })),
+      gpu: {
+        geometries: renderer.info?.memory.geometries ?? 0,
+        textures: renderer.info?.memory.textures ?? 0,
+        programs: renderer.info?.programs?.length ?? 0,
+      },
     };
   };
   const start = () => {
@@ -692,6 +734,7 @@ export function createGravityWorld(
   return {
     balls,
     inspect,
+    setHeroColor,
     mousePos,
     control,
     start,

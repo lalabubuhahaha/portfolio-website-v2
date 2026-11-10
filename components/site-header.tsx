@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StudioControls } from "@/components/gravity/studio-controls";
 export function SiteHeader() {
   return (
     <header className="site-header">
@@ -7,21 +8,24 @@ export function SiteHeader() {
       </Link>
       <nav aria-label="Main navigation" className="gravity-nav">
         <Link href="/work">Work</Link>
-        <Link href="/#about" className="gravity-glass-link">
-          About{" "}
-          <span aria-hidden="true">
-            <svg
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M6 18 18 6M6 6h12v12" />
-            </svg>
-          </span>
-        </Link>
+        <div className="gravity-header-actions">
+          <StudioControls />
+          <Link href="/#about" className="gravity-glass-link">
+            About{" "}
+            <span aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path d="M6 18 18 6M6 6h12v12" />
+              </svg>
+            </span>
+          </Link>
+        </div>
       </nav>
     </header>
   );

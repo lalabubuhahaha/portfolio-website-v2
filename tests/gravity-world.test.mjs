@@ -273,3 +273,225 @@ test("scroll framing keeps canvas, camera, solver bounds and meshes stable", () 
     }
   }
 });
+
+test("palette updates retain meshes, materials, motion, targets, opacity and Stage 2.1 coordinates", () => {
+  global.window = { innerWidth: 1440, devicePixelRatio: 1 };
+  let writes = 0;
+  const world = createGravityWorld(
+    { clientWidth: 1440, clientHeight: 900 },
+    {
+      setPixelRatio() {},
+      setSize() {
+        writes++;
+      },
+      shadowMap: {},
+      render() {},
+    },
+  );
+  const colors = ["#2F69FF", "#FFC5C2", "#E1FC03", "#96E5FF"];
+  const roles = {
+    "#2F69FF": {
+      pastel: "ecefff",
+      light: "a8c1ff",
+      medium: "2f69ff",
+      deep: "0a33bf",
+      glass: "4d80ff",
+    },
+    "#FFC5C2": {
+      pastel: "fff5f4",
+      light: "ffeceb",
+      medium: "ffa6b3",
+      deep: "ff4d6d",
+      glass: "ffa6b3",
+    },
+    "#E1FC03": {
+      pastel: "fbffe2",
+      light: "effe69",
+      medium: "e1fc03",
+      deep: "b1e200",
+      glass: "dcff32",
+    },
+    "#96E5FF": {
+      pastel: "f0f9ff",
+      light: "c9f1ff",
+      medium: "96e5ff",
+      deep: "2ba5ff",
+      glass: "98e4ff",
+    },
+  };
+  const original = world.balls.map((b) => ({
+    mesh: b.sphere,
+    material: b.material,
+    geometry: b.sphere.geometry,
+    target: b.shapeTarget.toArray(),
+  }));
+  const state = () =>
+    world.balls.map((b) => ({
+      position: b.position.toArray(),
+      velocity: b.velocity.toArray(),
+      rotation: b.meshGroup.quaternion.toArray(),
+      opacity: b.material.opacity,
+    }));
+  try {
+    world.start();
+    let time = 0;
+    const initialWrites = writes;
+    for (const progress of [0, 0.55, 1.1, 2.2, 3.45, 2.2, 0]) {
+      world.control.progress = progress;
+      for (let n = 0; n < 180; n++) {
+        time += 1 / 60;
+        world.simulate(time, false);
+      }
+      const before = state();
+      for (let repeat = 0; repeat < 4; repeat++)
+        for (const color of colors) {
+          world.setHeroColor(color);
+          world.render();
+          assert.deepEqual(state(), before);
+          assert.equal(writes, initialWrites);
+          assert.equal(world.resize(), false);
+          assert.equal(world.inspect().entranceCount, 1);
+          world.balls.forEach((b, i) => {
+            assert.equal(b.sphere, original[i].mesh);
+            assert.equal(b.material, original[i].material);
+            assert.equal(b.sphere.geometry, original[i].geometry);
+            assert.deepEqual(b.shapeTarget.toArray(), original[i].target);
+            if (progress === 0)
+              assert.equal(
+                b.material.color.getHexString(),
+                roles[color][b.role],
+              );
+            if (progress === 1.1)
+              assert.equal(
+                b.material.color.getHexString(),
+                roles["#E1FC03"][b.role],
+              );
+            if (progress === 2.2 || progress === 3.45)
+              assert.equal(
+                b.material.color.getHexString(),
+                roles["#FFC5C2"][b.role],
+              );
+            if (b.isGlass) {
+              assert.equal(b.material.roughness, 0.08);
+              assert.equal(b.material.clearcoat, 1);
+              assert.equal(b.material.clearcoatRoughness, 0.03);
+              assert.equal(b.material.transmission, 0.95);
+              assert.equal(b.material.ior, 1.485);
+              assert.equal(b.material.thickness, 2.2);
+              assert.equal(b.material.emissiveIntensity, 0.12);
+            } else {
+              assert.equal(b.material.roughness, 0.44);
+              assert.equal(b.material.clearcoat, 0.24);
+              assert.equal(b.material.clearcoatRoughness, 0.35);
+              assert.equal(b.material.emissiveIntensity, 0.08);
+            }
+          });
+        }
+    }
+  } finally {
+    world.dispose();
+    delete global.window;
+  }
+});
+
+test("pointer-down, flick momentum and speed cap use the original forces", () => {
+  global.window = { innerWidth: 1440, devicePixelRatio: 1 };
+  const world = createGravityWorld(
+    { clientWidth: 1440, clientHeight: 900 },
+    { setPixelRatio() {}, setSize() {}, shadowMap: {}, render() {} },
+  );
+  try {
+    world.start();
+    world.simulate(0, false);
+    const restore = () =>
+      world.balls.forEach((b, i) => {
+        b.position.set(i === 0 ? 1 : 100 + i * 3, 0, 0);
+        b.velocity.set(0, 0, 0);
+        b.meshGroup.position.copy(b.position);
+      });
+    restore();
+    world.render();
+    const cursorAt = (physicalX) => {
+      const frame = world.inspect().presentation;
+      const p = world.balls[0].position
+        .clone()
+        .set(physicalX * frame.scale, frame.offsetY, 0)
+        .project(world.camera);
+      world.mousePos.x = p.x;
+      world.mousePos.y = p.y;
+    };
+    const measure = (oldX, down, active) => {
+      restore();
+      cursorAt(oldX);
+      world.mousePos.active = false;
+      world.mousePos.isDown = false;
+      world.simulate(0.1, true);
+      restore();
+      cursorAt(0);
+      world.mousePos.active = active;
+      world.mousePos.isDown = down;
+      world.simulate(0.1, true);
+      return world.balls[0].velocity.x;
+    };
+    const base = measure(0, false, false),
+      normal = measure(0, false, true) - base,
+      down = measure(0, true, true) - base,
+      flick = measure(-4, false, true) - base,
+      capped = measure(-100, false, true) - base;
+    assert.ok(normal > 0);
+    assert.ok(down > normal * 1.7);
+    assert.ok(flick > normal * 5);
+    assert.ok(Math.abs(capped - flick) < 1e-8);
+  } finally {
+    world.dispose();
+    delete global.window;
+  }
+});
+
+test("pairwise correction uses mass, reduces overlap, preserves momentum and rotates meshes", () => {
+  global.window = { innerWidth: 1440, devicePixelRatio: 1 };
+  const world = createGravityWorld(
+    { clientWidth: 1440, clientHeight: 900 },
+    { setPixelRatio() {}, setSize() {}, shadowMap: {}, render() {} },
+  );
+  try {
+    world.start();
+    world.simulate(0, false);
+    world.control.progress = 1;
+    world.balls.forEach((b, i) => {
+      b.position.set(100 + i * 3, 0, 0);
+      b.velocity.set(0, 0, 0);
+      b.meshGroup.position.copy(b.position);
+    });
+    const [a, b] = world.balls;
+    a.radius = a.visualScale = 0.4;
+    a.mass = 0.4 ** 3;
+    a.position.set(-0.2, 0, 0);
+    a.meshGroup.position.copy(a.position);
+    a.velocity.set(0.1, 0, 0);
+    b.radius = b.visualScale = 0.8;
+    b.mass = 0.8 ** 3;
+    b.position.set(0.2, 0, 0);
+    b.meshGroup.position.copy(b.position);
+    b.velocity.set(-0.1, 0, 0);
+    const overlap =
+        a.visualScale + b.visualScale - a.position.distanceTo(b.position),
+      momentum = a.mass * a.velocity.x + b.mass * b.velocity.x,
+      q = a.meshGroup.quaternion.clone();
+    world.simulate(3, false);
+    assert.ok(
+      a.visualScale + b.visualScale - a.position.distanceTo(b.position) <
+        overlap,
+    );
+    assert.ok(b.velocity.x - a.velocity.x > 0);
+    assert.ok(
+      Math.abs(
+        a.mass * a.velocity.x + b.mass * b.velocity.x - momentum * 0.992,
+      ) < 1e-10,
+    );
+    assert.ok(!a.meshGroup.quaternion.equals(q));
+  } finally {
+    world.dispose();
+    delete global.window;
+  }
+});
