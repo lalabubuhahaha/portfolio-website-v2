@@ -1,0 +1,658 @@
+{
+  "environment": "Chromium / ANGLE SwiftShader software WebGL; DPR 0.5; actual viewports 1440×900 and 390×844. Not a physical mobile GPU performance measurement.",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "contexts": 1,
+      "scroll": [
+        {
+          "progress": 0,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.25,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.4,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.55,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.7,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.85,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.25,
+          "visible": 95,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.5,
+          "visible": 93,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2.5,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 3,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 3.45,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        }
+      ],
+      "reverse": [
+        {
+          "progress": 3,
+          "visible": 4,
+          "opacity": {
+            "min": 0,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2.5,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.5,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.7,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.4,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        }
+      ],
+      "reveals": [
+        {
+          "text": "[ 02 — Physics ]Let ideas",
+          "state": "visible"
+        },
+        {
+          "text": "[ 03 — Form ]A little cha",
+          "state": "visible"
+        },
+        {
+          "text": "Design is a process of fi",
+          "state": "visible"
+        },
+        {
+          "text": "[ 04 — Release ]Room forw",
+          "state": "visible"
+        },
+        {
+          "text": "About LalaPersonal introd",
+          "state": "visible"
+        },
+        {
+          "text": "Featured work",
+          "state": "visible"
+        },
+        {
+          "text": "Independent Product Alpha",
+          "state": "pending"
+        },
+        {
+          "text": "Professional Project Gamm",
+          "state": "pending"
+        },
+        {
+          "text": "Interface Exploration Eps",
+          "state": "visible"
+        },
+        {
+          "text": "[ Let’s connect ]Ideas wo",
+          "state": "visible"
+        },
+        {
+          "text": "ExploreHome Work About pr",
+          "state": "visible"
+        },
+        {
+          "text": "Field notesMotion Form Ex",
+          "state": "visible"
+        },
+        {
+          "text": "ElsewhereSocial linkscomi",
+          "state": "visible"
+        }
+      ],
+      "marquee": "26s",
+      "errors": [],
+      "loader": {
+        "samples": 39,
+        "neverEnteredWhileVisible": true,
+        "showed100AfterReady": true,
+        "unreadyMax": 2
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "contexts": 1,
+      "scroll": [
+        {
+          "progress": 0,
+          "visible": 41,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.25,
+          "visible": 41,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.4004739336492891,
+          "visible": 43,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.5497630331753555,
+          "visible": 45,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.7002369668246445,
+          "visible": 45,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.8495260663507109,
+          "visible": 45,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1,
+          "visible": 45,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.25,
+          "visible": 46,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.5,
+          "visible": 47,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2.5,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 3,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 3.4502369668246446,
+          "visible": 52,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        }
+      ],
+      "reverse": [
+        {
+          "progress": 3,
+          "visible": 0,
+          "opacity": {
+            "min": 0,
+            "max": 0
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2.5,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.5,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.7002369668246445,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.4004739336492891,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0,
+          "visible": 51,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        }
+      ],
+      "reveals": [
+        {
+          "text": "[ 02 — Physics ]Let ideas",
+          "state": "visible"
+        },
+        {
+          "text": "[ 03 — Form ]A little cha",
+          "state": "visible"
+        },
+        {
+          "text": "Design is a process of fi",
+          "state": "visible"
+        },
+        {
+          "text": "[ 04 — Release ]Room forw",
+          "state": "visible"
+        },
+        {
+          "text": "About LalaPersonal introd",
+          "state": "visible"
+        },
+        {
+          "text": "Featured work",
+          "state": "visible"
+        },
+        {
+          "text": "Independent Product Alpha",
+          "state": "visible"
+        },
+        {
+          "text": "Professional Project Gamm",
+          "state": "visible"
+        },
+        {
+          "text": "Interface Exploration Eps",
+          "state": "visible"
+        },
+        {
+          "text": "[ Let’s connect ]Ideas wo",
+          "state": "visible"
+        },
+        {
+          "text": "ExploreHome Work About pr",
+          "state": "visible"
+        },
+        {
+          "text": "Field notesMotion Form Ex",
+          "state": "visible"
+        },
+        {
+          "text": "ElsewhereSocial linkscomi",
+          "state": "visible"
+        }
+      ],
+      "marquee": "26s",
+      "errors": [],
+      "loader": {
+        "samples": 40,
+        "neverEnteredWhileVisible": true,
+        "showed100AfterReady": true,
+        "unreadyMax": 0
+      }
+    }
+  ],
+  "delayedLoading": [
+    {
+      "mode": "delayed-ready",
+      "before": {
+        "counter": "091%",
+        "hidden": false,
+        "inert": 9,
+        "focus": null
+      },
+      "after": {
+        "entrance": 1,
+        "inert": 0,
+        "canvases": 1
+      }
+    },
+    {
+      "mode": "timeout-late-ready",
+      "before": {
+        "counter": "091%",
+        "hidden": true,
+        "inert": 0,
+        "focus": null
+      },
+      "after": {
+        "entrance": 1,
+        "inert": 0,
+        "canvases": 1
+      }
+    },
+    {
+      "mode": "keyboard-skip",
+      "before": {
+        "counter": "002%",
+        "hidden": true,
+        "inert": 0,
+        "focus": "Lala home"
+      },
+      "after": {
+        "entrance": 1,
+        "inert": 0,
+        "canvases": 1
+      }
+    }
+  ],
+  "fallbacks": {
+    "webglUnavailable": true,
+    "reducedMotionInitialLoad": true,
+    "javascriptDisabled": true
+  },
+  "protectedFiles": "gravity-world.ts, Studio Controls, lib/content, project cards, /work filters and images unchanged from cc53dd4",
+  "nativeInputsAndRoutes": {
+    "keyboardScroll": 738,
+    "touchScroll": 285,
+    "drawerTouchLock": true,
+    "unlocked": true,
+    "filterCounts": [
+      6,
+      3,
+      3
+    ],
+    "crossRouteAbout": true,
+    "errors": []
+  },
+  "cachedRouteReactivation": [
+    {
+      "width": 1440,
+      "height": 900,
+      "contexts": 2,
+      "canvases": 1,
+      "entrance": 1,
+      "inert": 0,
+      "resize": 0,
+      "loaderSampleCount": 57,
+      "entranceCountsWhileLoaderVisible": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "contexts": 2,
+      "canvases": 1,
+      "entrance": 1,
+      "inert": 0,
+      "resize": 0,
+      "loaderSampleCount": 86,
+      "entranceCountsWhileLoaderVisible": [
+        0
+      ]
+    }
+  ]
+}

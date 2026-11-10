@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GravityFooter } from "@/components/gravity/gravity-footer";
 import { SiteHeader } from "@/components/site-header";
 import "@fontsource-variable/raleway";
 import "@fontsource-variable/jetbrains-mono";
@@ -19,7 +20,7 @@ export default function RootLayout({
         </a>
         <SiteHeader />
         {children}
-        <footer>Portfolio v2 — visual design pending.</footer>
+        <GravityFooter />
       </body>
     </html>
   );

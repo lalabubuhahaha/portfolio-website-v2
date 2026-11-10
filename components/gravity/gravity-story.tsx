@@ -1,11 +1,17 @@
 "use client";
 import dynamic from "next/dynamic";
+import { useState } from "react";
+import { createGravityExperience } from "./gravity-experience";
+import { GravityLoader } from "./gravity-loader";
+import { Reveal } from "./reveal";
 import { GravityHero } from "./gravity-hero";
 const GravityScene = dynamic(() => import("./gravity-scene"), { ssr: false });
 
 export function GravityStory() {
+  const [experience] = useState(createGravityExperience);
   return (
     <div className="gravity-story">
+      <GravityLoader experience={experience} />
       <div className="gravity-viewport" data-bg-stage="0">
         <div className="gravity-background" aria-hidden="true">
           <div className="gravity-gradient gravity-gradient-blue" />
@@ -47,7 +53,7 @@ export function GravityStory() {
           </svg>
         </div>
 
-        <GravityScene />
+        <GravityScene experience={experience} />
       </div>
       <GravityHero />
       <section
@@ -55,7 +61,7 @@ export function GravityStory() {
         className="gravity-story-section gravity-drop"
         aria-labelledby="drop-heading"
       >
-        <div className="gravity-story-copy">
+        <Reveal className="gravity-story-copy">
           <p className="gravity-section-label">[ 02 — Physics ]</p>
           <h2 id="drop-heading">
             Let ideas
@@ -67,31 +73,33 @@ export function GravityStory() {
             is a study in motion: structure gives way to gravity, contact, and
             momentum.
           </p>
-        </div>
+        </Reveal>
       </section>
       <section
         id="shape"
         className="gravity-story-section gravity-shape"
         aria-labelledby="shape-heading"
       >
-        <div className="gravity-story-copy">
+        <Reveal className="gravity-story-copy">
           <p className="gravity-section-label">[ 03 — Form ]</p>
           <h2 id="shape-heading">
             A little chaos.
             <br />A clearer form.
           </h2>
-        </div>
-        <p className="gravity-shape-note">
-          Design is a process of finding relationships. Move through the field:
-          each small part can wander, then find its place again.
-        </p>
+        </Reveal>
+        <Reveal className="gravity-shape-note">
+          <p>
+            Design is a process of finding relationships. Move through the
+            field: each small part can wander, then find its place again.
+          </p>
+        </Reveal>
       </section>
       <section
         id="release"
         className="gravity-story-section gravity-release"
         aria-labelledby="release-heading"
       >
-        <div className="gravity-story-copy">
+        <Reveal className="gravity-story-copy">
           <p className="gravity-section-label">[ 04 — Release ]</p>
           <h2 id="release-heading">
             Room for
@@ -105,7 +113,7 @@ export function GravityStory() {
           <a href="#works">
             Explore selected work <span aria-hidden="true">↓</span>
           </a>
-        </div>
+        </Reveal>
       </section>
     </div>
   );

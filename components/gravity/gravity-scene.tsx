@@ -9,7 +9,13 @@ import {
   subscribeHeroPalette,
 } from "./gravity-palette-store";
 
-export default function GravityScene() {
+import type { GravityExperience } from "./gravity-experience";
+
+export default function GravityScene({
+  experience,
+}: {
+  experience: GravityExperience;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const container = containerRef.current;
@@ -31,10 +37,22 @@ export default function GravityScene() {
       });
     } catch {
       container.dataset.status = "unavailable";
+      experience.report("unavailable");
       return unsubscribeBackground;
     }
     container.append(canvas);
-    const world = createGravityWorld(container, renderer);
+    let world: ReturnType<typeof createGravityWorld>;
+    try {
+      world = createGravityWorld(container, renderer);
+    } catch {
+      renderer.dispose();
+      renderer.forceContextLoss();
+      canvas.remove();
+      unsubscribeBackground();
+      container.dataset.status = "unavailable";
+      experience.report("unavailable");
+      return;
+    }
     const diagnostic = (event: Event) => {
       const receive = (
         event as CustomEvent<
@@ -67,6 +85,7 @@ export default function GravityScene() {
       } catch {
         stop();
         container.dataset.status = "unavailable";
+        experience.report("unavailable");
       }
     };
     // Fixed 60Hz physics keeps the supplied per-frame parameters independent of display refresh.
@@ -174,6 +193,7 @@ export default function GravityScene() {
       event.preventDefault();
       stop();
       container.dataset.status = "unavailable";
+      experience.report("unavailable");
     };
     const resize = new ResizeObserver(() => {
       const changed = world.resize();
@@ -211,11 +231,17 @@ export default function GravityScene() {
     container.dataset.status = "ready";
     container.dataset.ballCount = String(world.balls.length);
     render(); // Warm once; scrolling never restarts the entrance.
-    world.start();
+    const unregisterEntrance = experience.register(() => {
+      world.start();
+      lastStaticPose = -1;
+      if (reduced.matches) renderStatic(true);
+    });
+    if (container.dataset.status !== "unavailable") experience.report("ready");
     updateProgress();
     if (!reduced.matches) start();
     return () => {
       disposed = true;
+      unregisterEntrance();
       unsubscribePalette();
       unsubscribeBackground();
       stop();
@@ -239,7 +265,7 @@ export default function GravityScene() {
       renderer.forceContextLoss();
       canvas.remove();
     };
-  }, []);
+  }, [experience]);
   return (
     <div ref={containerRef} className="gravity-canvas" aria-hidden="true" />
   );

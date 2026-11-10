@@ -1,30 +1,36 @@
 import Link from "next/link";
+import { HomeSectionLink } from "@/components/gravity/home-section-link";
+import { GravityArrow } from "@/components/gravity/gravity-arrow";
 import { StudioControls } from "@/components/gravity/studio-controls";
 export function SiteHeader() {
   return (
-    <header className="site-header">
+    <header className="site-header" data-gravity-ui>
       <Link href="/" className="lala-wordmark" aria-label="Lala home">
         LALA
       </Link>
       <nav aria-label="Main navigation" className="gravity-nav">
-        <Link href="/work">Work</Link>
+        <div className="gravity-nav-links">
+          <Link href="/">Home</Link>
+          <Link href="/work">Work</Link>
+          <HomeSectionLink
+            section="about"
+            title="Personal introduction preview"
+          >
+            About
+          </HomeSectionLink>
+        </div>
         <div className="gravity-header-actions">
           <StudioControls />
-          <Link href="/#about" className="gravity-glass-link">
-            About{" "}
-            <span aria-hidden="true">
-              <svg
-                viewBox="0 0 24 24"
-                width="14"
-                height="14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M6 18 18 6M6 6h12v12" />
-              </svg>
+          <HomeSectionLink
+            section="contact"
+            className="gravity-glass-link"
+            aria-label="Contact — details coming soon"
+          >
+            Contact{" "}
+            <span>
+              <GravityArrow />
             </span>
-          </Link>
+          </HomeSectionLink>
         </div>
       </nav>
     </header>
