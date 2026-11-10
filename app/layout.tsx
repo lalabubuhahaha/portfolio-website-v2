@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GravityFooter } from "@/components/gravity/gravity-footer";
+import { SkipToContent } from "@/components/skip-to-content";
 import { SiteHeader } from "@/components/site-header";
 import "@fontsource-variable/raleway";
 import "@fontsource-variable/jetbrains-mono";
@@ -13,11 +14,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
-        <a href="#main" className="sr-only focus:not-sr-only">
-          Skip to content
-        </a>
+        <SkipToContent />
         <SiteHeader />
         {children}
         <GravityFooter />

@@ -1,0 +1,1746 @@
+{
+  "date": "2026-11-10 Asia/Taipei",
+  "baselineCommit": "c83312cc7c0b54d4b49f970b74d742c9edd37f79",
+  "environment": {
+    "browser": "Chromium 156.0.8078.79 / ANGLE SwiftShader",
+    "throttling": "none; localhost production build",
+    "rwdDpr": 1,
+    "fullRegressionDpr": 0.5,
+    "performanceDpr": 1,
+    "caveats": [
+      "Viewport emulation, not physical iOS/Android or a hardware GPU.",
+      "Six-size visual captures use explicit Static WebGL; live Full physics exercised separately at 390 and 1440.",
+      "Lab Event Timing INP samples are short sessions, not field INP / CrUX.",
+      "VRAM bytes are unavailable; WebGL resource counts are provided."
+    ],
+    "playwright": "1.65.0",
+    "axeCorePlaywright": "4.14.0"
+  },
+  "rwd": [
+    {
+      "width": 375,
+      "height": 812,
+      "deviceScaleFactor": 1,
+      "visualMode": "Static WebGL compositions; live Full motion tested separately",
+      "hero": {
+        "balls": 54,
+        "visible": 42,
+        "motion": "static-selected",
+        "aspect": 0.4618226600985222,
+        "canvas": [
+          375,
+          812
+        ],
+        "textTop": 538.109375,
+        "headerBottom": 112,
+        "estimatedTextIntersections": 0,
+        "overflow": 0,
+        "entrance": 1,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        },
+        "rendering": {
+          "calls": 42,
+          "triangles": 189504,
+          "dpr": 1
+        }
+      },
+      "heart": {
+        "visible": 54,
+        "rendering": {
+          "calls": 54,
+          "triangles": 243648,
+          "dpr": 1
+        },
+        "mode": "static-selected"
+      },
+      "work": {
+        "cards": 3,
+        "overflow": 0,
+        "coverRatios": [
+          1.6079158936301794,
+          1.6079158936301794,
+          1.6079158936301794
+        ],
+        "details": 3,
+        "brokenDetailLinks": 0,
+        "canvasHits": 0
+      },
+      "errors": [],
+      "workPage": {
+        "cards": 6,
+        "canvasCount": 0,
+        "overflow": 0
+      },
+      "aboutPage": {
+        "overflow": 0,
+        "draft": true
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 1,
+      "visualMode": "Static WebGL compositions; live Full motion tested separately",
+      "hero": {
+        "balls": 54,
+        "visible": 47,
+        "motion": "static-selected",
+        "aspect": 0.46208530805687204,
+        "canvas": [
+          390,
+          844
+        ],
+        "textTop": 570.109375,
+        "headerBottom": 112,
+        "estimatedTextIntersections": 0,
+        "overflow": 0,
+        "entrance": 1,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        },
+        "rendering": {
+          "calls": 47,
+          "triangles": 212064,
+          "dpr": 1
+        }
+      },
+      "heart": {
+        "visible": 54,
+        "rendering": {
+          "calls": 54,
+          "triangles": 243648,
+          "dpr": 1
+        },
+        "mode": "static-selected"
+      },
+      "work": {
+        "cards": 3,
+        "overflow": 0,
+        "coverRatios": [
+          1.607565011820331,
+          1.607565011820331,
+          1.607565011820331
+        ],
+        "details": 3,
+        "brokenDetailLinks": 0,
+        "canvasHits": 0
+      },
+      "errors": [],
+      "workPage": {
+        "cards": 6,
+        "canvasCount": 0,
+        "overflow": 0
+      },
+      "aboutPage": {
+        "overflow": 0,
+        "draft": true
+      }
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "deviceScaleFactor": 1,
+      "visualMode": "Static WebGL compositions; live Full motion tested separately",
+      "hero": {
+        "balls": 96,
+        "visible": 96,
+        "motion": "static-selected",
+        "aspect": 0.75,
+        "canvas": [
+          768,
+          1024
+        ],
+        "textTop": 805.5,
+        "headerBottom": 96,
+        "estimatedTextIntersections": 0,
+        "overflow": 0,
+        "entrance": 1,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        },
+        "rendering": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        }
+      },
+      "heart": {
+        "visible": 96,
+        "rendering": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        },
+        "mode": "static-selected"
+      },
+      "work": {
+        "cards": 3,
+        "overflow": 0,
+        "coverRatios": [
+          1.6080910240202275,
+          1.6080909768155585,
+          1.6080910240202275
+        ],
+        "details": 3,
+        "brokenDetailLinks": 0,
+        "canvasHits": 0
+      },
+      "errors": [],
+      "workPage": {
+        "cards": 6,
+        "canvasCount": 0,
+        "overflow": 0
+      },
+      "aboutPage": {
+        "overflow": 0,
+        "draft": true
+      }
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "deviceScaleFactor": 1,
+      "visualMode": "Static WebGL compositions; live Full motion tested separately",
+      "hero": {
+        "balls": 96,
+        "visible": 96,
+        "motion": "static-selected",
+        "aspect": 1.3333333333333333,
+        "canvas": [
+          1024,
+          768
+        ],
+        "textTop": 549.5,
+        "headerBottom": 96,
+        "estimatedTextIntersections": 0,
+        "overflow": 0,
+        "entrance": 1,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        },
+        "rendering": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        }
+      },
+      "heart": {
+        "visible": 96,
+        "rendering": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        },
+        "mode": "static-selected"
+      },
+      "work": {
+        "cards": 3,
+        "overflow": 0,
+        "coverRatios": [
+          1.6057605760576057,
+          1.6057607995159957,
+          1.6057605760576057
+        ],
+        "details": 3,
+        "brokenDetailLinks": 0,
+        "canvasHits": 0
+      },
+      "errors": [],
+      "workPage": {
+        "cards": 6,
+        "canvasCount": 0,
+        "overflow": 0
+      },
+      "aboutPage": {
+        "overflow": 0,
+        "draft": true
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "deviceScaleFactor": 1,
+      "visualMode": "Static WebGL compositions; live Full motion tested separately",
+      "hero": {
+        "balls": 96,
+        "visible": 96,
+        "motion": "static-selected",
+        "aspect": 1.6,
+        "canvas": [
+          1440,
+          900
+        ],
+        "textTop": 681.5,
+        "headerBottom": 96,
+        "estimatedTextIntersections": 0,
+        "overflow": 0,
+        "entrance": 1,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        },
+        "rendering": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        }
+      },
+      "heart": {
+        "visible": 96,
+        "rendering": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        },
+        "mode": "static-selected"
+      },
+      "work": {
+        "cards": 3,
+        "overflow": 0,
+        "coverRatios": [
+          1.6039239730226855,
+          1.6039241543375113,
+          1.6039239730226855
+        ],
+        "details": 3,
+        "brokenDetailLinks": 0,
+        "canvasHits": 0
+      },
+      "errors": [],
+      "workPage": {
+        "cards": 6,
+        "canvasCount": 0,
+        "overflow": 0
+      },
+      "aboutPage": {
+        "overflow": 0,
+        "draft": true
+      }
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "deviceScaleFactor": 1,
+      "visualMode": "Static WebGL compositions; live Full motion tested separately",
+      "hero": {
+        "balls": 96,
+        "visible": 96,
+        "motion": "static-selected",
+        "aspect": 1.7777777777777777,
+        "canvas": [
+          1920,
+          1080
+        ],
+        "textTop": 861.5,
+        "headerBottom": 96,
+        "estimatedTextIntersections": 0,
+        "overflow": 0,
+        "entrance": 1,
+        "gpu": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        },
+        "rendering": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        }
+      },
+      "heart": {
+        "visible": 96,
+        "rendering": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        },
+        "mode": "static-selected"
+      },
+      "work": {
+        "cards": 3,
+        "overflow": 0,
+        "coverRatios": [
+          1.6039239730226855,
+          1.6039239730226855,
+          1.6039239730226855
+        ],
+        "details": 3,
+        "brokenDetailLinks": 0,
+        "canvasHits": 0
+      },
+      "errors": [],
+      "workPage": {
+        "cards": 6,
+        "canvasCount": 0,
+        "overflow": 0
+      },
+      "aboutPage": {
+        "overflow": 0,
+        "draft": true
+      }
+    }
+  ],
+  "fullRegression": [
+    {
+      "width": 390,
+      "height": 844,
+      "contexts": 1,
+      "scroll": [
+        {
+          "progress": 0,
+          "visible": 38,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.25,
+          "visible": 43,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.4004739336492891,
+          "visible": 50,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.5497630331753555,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.7002369668246445,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.8495260663507109,
+          "visible": 53,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1,
+          "visible": 51,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.25,
+          "visible": 50,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.5,
+          "visible": 52,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2.5,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 3,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 3.45,
+          "visible": 53,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        }
+      ],
+      "reverse": [
+        {
+          "progress": 3,
+          "visible": 0,
+          "opacity": {
+            "min": 0,
+            "max": 0
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2.5,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.5,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.7002369668246445,
+          "visible": 54,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.4004739336492891,
+          "visible": 47,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0,
+          "visible": 46,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        }
+      ],
+      "contentPaused": true,
+      "pointer": {
+        "idle": 0.24679191835693845,
+        "hover": 3.007674923799188,
+        "down": 3.68883946235705,
+        "flick": 2.854255682103254
+      },
+      "reveals": [
+        {
+          "text": "[ 02 — Physics ]Let ideas",
+          "state": "visible"
+        },
+        {
+          "text": "[ 03 — Form ]A little cha",
+          "state": "visible"
+        },
+        {
+          "text": "Design is a process of fi",
+          "state": "visible"
+        },
+        {
+          "text": "[ 04 — Release ]Room forw",
+          "state": "visible"
+        },
+        {
+          "text": "[ 05 — Selected Work ]Wor",
+          "state": "visible"
+        },
+        {
+          "text": "Independent Product2026In",
+          "state": "visible"
+        },
+        {
+          "text": "Client & Professional Wor",
+          "state": "pending"
+        },
+        {
+          "text": "Independent Product2025In",
+          "state": "pending"
+        },
+        {
+          "text": "[ 06 — About / Expertise ",
+          "state": "visible"
+        },
+        {
+          "text": "[ Let’s connect ]Ideas wo",
+          "state": "visible"
+        },
+        {
+          "text": "ExploreHome Work About pr",
+          "state": "visible"
+        },
+        {
+          "text": "Field notesMotion Form Ex",
+          "state": "visible"
+        },
+        {
+          "text": "ElsewhereSocial linkscomi",
+          "state": "visible"
+        }
+      ],
+      "marquee": "26s",
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "contexts": 1,
+      "scroll": [
+        {
+          "progress": 0,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.25,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.4,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.55,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.7,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.85,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.25,
+          "visible": 94,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.5,
+          "visible": 94,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2.5,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 3,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 3.45,
+          "visible": 95,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        }
+      ],
+      "reverse": [
+        {
+          "progress": 3,
+          "visible": 0,
+          "opacity": {
+            "min": 0,
+            "max": 0
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2.5,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 2,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1.5,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 1,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.7,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0.4,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        },
+        {
+          "progress": 0,
+          "visible": 96,
+          "opacity": {
+            "min": 1,
+            "max": 1
+          },
+          "resize": 0,
+          "entrance": 1
+        }
+      ],
+      "contentPaused": true,
+      "pointer": {
+        "idle": 0.8955797111158741,
+        "hover": 16.45337433812689,
+        "down": 15.95407035877724,
+        "flick": 18.896619283513935
+      },
+      "reveals": [
+        {
+          "text": "[ 02 — Physics ]Let ideas",
+          "state": "visible"
+        },
+        {
+          "text": "[ 03 — Form ]A little cha",
+          "state": "visible"
+        },
+        {
+          "text": "Design is a process of fi",
+          "state": "visible"
+        },
+        {
+          "text": "[ 04 — Release ]Room forw",
+          "state": "visible"
+        },
+        {
+          "text": "[ 05 — Selected Work ]Wor",
+          "state": "visible"
+        },
+        {
+          "text": "Independent Product2026In",
+          "state": "visible"
+        },
+        {
+          "text": "Client & Professional Wor",
+          "state": "visible"
+        },
+        {
+          "text": "Independent Product2025In",
+          "state": "visible"
+        },
+        {
+          "text": "[ 06 — About / Expertise ",
+          "state": "visible"
+        },
+        {
+          "text": "[ Let’s connect ]Ideas wo",
+          "state": "visible"
+        },
+        {
+          "text": "ExploreHome Work About pr",
+          "state": "visible"
+        },
+        {
+          "text": "Field notesMotion Form Ex",
+          "state": "visible"
+        },
+        {
+          "text": "ElsewhereSocial linkscomi",
+          "state": "visible"
+        }
+      ],
+      "marquee": "26s",
+      "errors": []
+    }
+  ],
+  "performance": [
+    {
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "driver": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "automaticMode": "static-performance",
+      "coldLoad": {
+        "lcpMs": 1828,
+        "cls": 0.003980027440594154,
+        "fontsReadyMs": 208.80000000074506,
+        "fontRequests": [
+          {
+            "name": "raleway-latin-wght-normal.20a6ddf1.woff2",
+            "bytes": 48264,
+            "duration": 10.699999999254942
+          },
+          {
+            "name": "space-grotesk-latin-wght-normal.5a0c43ff.woff2",
+            "bytes": 22288,
+            "duration": 10.699999999254942
+          },
+          {
+            "name": "jetbrains-mono-latin-wght-normal.a865edea.woff2",
+            "bytes": 40404,
+            "duration": 10.299999997019768
+          }
+        ]
+      },
+      "autoStaticIdleRenderDelta": 0,
+      "scrollControllerLatencyMs": {
+        "autoStatic": 5.899999998509884,
+        "full": 414.19999999925494
+      },
+      "full": {
+        "renderFps": 5.1932487765904325,
+        "renderedFrames": 26,
+        "windowMs": 5006.5,
+        "actualDrawCallsPerFrame": 95.96153846153847,
+        "rendererInfo": {
+          "calls": 44,
+          "triangles": 198528,
+          "dpr": 1
+        },
+        "gpuResources": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        },
+        "mainThreadTaskSeconds": 0.07267899999999994,
+        "scriptSeconds": 0.039080000000000004,
+        "layoutSeconds": 0
+      },
+      "contentIdleRenderDelta": 0,
+      "autoInteractionMetrics": {
+        "labINPMs": 312,
+        "observedInteractionCount": 2
+      },
+      "interactionMetrics": {
+        "lcpMs": 1828,
+        "cls": 0.003980027440594154,
+        "fontsReadyMs": 208.80000000074506,
+        "fontRequests": [
+          {
+            "name": "raleway-latin-wght-normal.20a6ddf1.woff2",
+            "bytes": 48264,
+            "duration": 10.699999999254942
+          },
+          {
+            "name": "space-grotesk-latin-wght-normal.5a0c43ff.woff2",
+            "bytes": 22288,
+            "duration": 10.699999999254942
+          },
+          {
+            "name": "jetbrains-mono-latin-wght-normal.a865edea.woff2",
+            "bytes": 40404,
+            "duration": 10.299999997019768
+          }
+        ],
+        "longTaskCount": 3,
+        "longTaskMs": 704,
+        "maxLongTaskMs": 437,
+        "labINPMs": 536,
+        "observedInteractionCount": 4,
+        "interactionCount": 4,
+        "drawCalls": 7904,
+        "events": [
+          {
+            "name": "pointerdown",
+            "id": 7172,
+            "duration": 64,
+            "start": 10186.599999997765,
+            "processing": 0.30000000074505806
+          },
+          {
+            "name": "pointerup",
+            "id": 7172,
+            "duration": 64,
+            "start": 10186.89999999851,
+            "processing": 0.09999999776482582
+          },
+          {
+            "name": "click",
+            "id": 7172,
+            "duration": 64,
+            "start": 10186.89999999851,
+            "processing": 12
+          },
+          {
+            "name": "pointerdown",
+            "id": 7179,
+            "duration": 312,
+            "start": 10922.599999997765,
+            "processing": 0.3999999985098839
+          },
+          {
+            "name": "pointerup",
+            "id": 7179,
+            "duration": 312,
+            "start": 10922.599999997765,
+            "processing": 0
+          },
+          {
+            "name": "click",
+            "id": 7179,
+            "duration": 312,
+            "start": 10922.599999997765,
+            "processing": 0.8999999985098839
+          },
+          {
+            "name": "pointerdown",
+            "id": 7186,
+            "duration": 536,
+            "start": 11535.599999997765,
+            "processing": 0.19999999925494194
+          },
+          {
+            "name": "pointerup",
+            "id": 7186,
+            "duration": 536,
+            "start": 11535.599999997765,
+            "processing": 0
+          },
+          {
+            "name": "click",
+            "id": 7186,
+            "duration": 536,
+            "start": 11535.599999997765,
+            "processing": 0.6999999992549419
+          },
+          {
+            "name": "keydown",
+            "id": 7193,
+            "duration": 528,
+            "start": 11540.5,
+            "processing": 4.400000002235174
+          },
+          {
+            "name": "keyup",
+            "id": 7193,
+            "duration": 520,
+            "start": 11545.39999999851,
+            "processing": 0
+          }
+        ],
+        "requests": [
+          {
+            "name": "794-14f5eac35e753b50.js",
+            "encodedBytes": 67734,
+            "transferBytes": 68034
+          },
+          {
+            "name": "4bd1b696-c7408084347438ae.js",
+            "encodedBytes": 64057,
+            "transferBytes": 64357
+          },
+          {
+            "name": "main-app-d728288e3b393f95.js",
+            "encodedBytes": 555,
+            "transferBytes": 855
+          },
+          {
+            "name": "500-491e76f6fe002ef2.js",
+            "encodedBytes": 3244,
+            "transferBytes": 3544
+          },
+          {
+            "name": "437-df77b441101c1a02.js",
+            "encodedBytes": 5514,
+            "transferBytes": 5814
+          },
+          {
+            "name": "page-1cc6cde8699d91a0.js",
+            "encodedBytes": 4013,
+            "transferBytes": 4313
+          },
+          {
+            "name": "layout-b76364e976d7f44a.js",
+            "encodedBytes": 3311,
+            "transferBytes": 3611
+          },
+          {
+            "name": "b536a0f1.93f11712d3f0dd09.js",
+            "encodedBytes": 119142,
+            "transferBytes": 119442
+          },
+          {
+            "name": "2.4b584dfbbe6c4566.js",
+            "encodedBytes": 6871,
+            "transferBytes": 7171
+          },
+          {
+            "name": "page-05b3181f241cf001.js",
+            "encodedBytes": 183,
+            "transferBytes": 483
+          },
+          {
+            "name": "page-eed1ddeae7f36aa9.js",
+            "encodedBytes": 231,
+            "transferBytes": 531
+          }
+        ]
+      },
+      "jsHeapBytes": 10724228,
+      "vramBytes": null,
+      "vramNote": "WebGL/Chromium do not expose reliable driver VRAM bytes. Geometry/texture/program counts are measured, not a byte measurement."
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "driver": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "automaticMode": "static-performance",
+      "coldLoad": {
+        "lcpMs": 900,
+        "cls": 0.00340625,
+        "fontsReadyMs": 224.19999999925494,
+        "fontRequests": [
+          {
+            "name": "raleway-latin-wght-normal.20a6ddf1.woff2",
+            "bytes": 48264,
+            "duration": 72
+          },
+          {
+            "name": "space-grotesk-latin-wght-normal.5a0c43ff.woff2",
+            "bytes": 22288,
+            "duration": 72.10000000149012
+          },
+          {
+            "name": "jetbrains-mono-latin-wght-normal.a865edea.woff2",
+            "bytes": 40404,
+            "duration": 71.90000000223517
+          }
+        ]
+      },
+      "autoStaticIdleRenderDelta": 0,
+      "scrollControllerLatencyMs": {
+        "autoStatic": 610.1999999992549,
+        "full": 1343.9000000022352
+      },
+      "full": {
+        "renderFps": 1.3984616921386477,
+        "renderedFrames": 7,
+        "windowMs": 5005.5,
+        "actualDrawCallsPerFrame": 192,
+        "rendererInfo": {
+          "calls": 96,
+          "triangles": 433152,
+          "dpr": 1
+        },
+        "gpuResources": {
+          "geometries": 1,
+          "textures": 2,
+          "programs": 3
+        },
+        "mainThreadTaskSeconds": 0.04649499999999995,
+        "scriptSeconds": 0.01532700000000009,
+        "layoutSeconds": 0
+      },
+      "contentIdleRenderDelta": 0,
+      "autoInteractionMetrics": {
+        "labINPMs": 40,
+        "observedInteractionCount": 1
+      },
+      "interactionMetrics": {
+        "lcpMs": 900,
+        "cls": 0.00340625,
+        "fontsReadyMs": 224.19999999925494,
+        "fontRequests": [
+          {
+            "name": "raleway-latin-wght-normal.20a6ddf1.woff2",
+            "bytes": 48264,
+            "duration": 72
+          },
+          {
+            "name": "space-grotesk-latin-wght-normal.5a0c43ff.woff2",
+            "bytes": 22288,
+            "duration": 72.10000000149012
+          },
+          {
+            "name": "jetbrains-mono-latin-wght-normal.a865edea.woff2",
+            "bytes": 40404,
+            "duration": 71.90000000223517
+          }
+        ],
+        "longTaskCount": 3,
+        "longTaskMs": 866,
+        "maxLongTaskMs": 620,
+        "labINPMs": 1936,
+        "observedInteractionCount": 4,
+        "interactionCount": 4,
+        "drawCalls": 5987,
+        "events": [
+          {
+            "name": "pointerdown",
+            "id": 5281,
+            "duration": 40,
+            "start": 10956.39999999851,
+            "processing": 0.30000000074505806
+          },
+          {
+            "name": "pointerup",
+            "id": 5281,
+            "duration": 40,
+            "start": 10956.5,
+            "processing": 0.09999999776482582
+          },
+          {
+            "name": "click",
+            "id": 5281,
+            "duration": 40,
+            "start": 10956.5,
+            "processing": 12.199999999254942
+          },
+          {
+            "name": "pointerdown",
+            "id": 5288,
+            "duration": 1192,
+            "start": 11873.89999999851,
+            "processing": 0.3999999985098839
+          },
+          {
+            "name": "pointerup",
+            "id": 5288,
+            "duration": 1192,
+            "start": 11874,
+            "processing": 0
+          },
+          {
+            "name": "click",
+            "id": 5288,
+            "duration": 1192,
+            "start": 11874,
+            "processing": 1
+          },
+          {
+            "name": "pointerdown",
+            "id": 5295,
+            "duration": 1936,
+            "start": 12744.099999997765,
+            "processing": 0.30000000074505806
+          },
+          {
+            "name": "pointerup",
+            "id": 5295,
+            "duration": 1936,
+            "start": 12744.099999997765,
+            "processing": 0
+          },
+          {
+            "name": "click",
+            "id": 5295,
+            "duration": 1936,
+            "start": 12744.099999997765,
+            "processing": 0.6999999992549419
+          },
+          {
+            "name": "keydown",
+            "id": 5302,
+            "duration": 1928,
+            "start": 12749.29999999702,
+            "processing": 6.100000001490116
+          },
+          {
+            "name": "keyup",
+            "id": 5302,
+            "duration": 1920,
+            "start": 12758.89999999851,
+            "processing": 0
+          }
+        ],
+        "requests": [
+          {
+            "name": "4bd1b696-c7408084347438ae.js",
+            "encodedBytes": 64057,
+            "transferBytes": 64357
+          },
+          {
+            "name": "794-14f5eac35e753b50.js",
+            "encodedBytes": 67734,
+            "transferBytes": 68034
+          },
+          {
+            "name": "main-app-d728288e3b393f95.js",
+            "encodedBytes": 555,
+            "transferBytes": 855
+          },
+          {
+            "name": "500-491e76f6fe002ef2.js",
+            "encodedBytes": 3244,
+            "transferBytes": 3544
+          },
+          {
+            "name": "437-df77b441101c1a02.js",
+            "encodedBytes": 5514,
+            "transferBytes": 5814
+          },
+          {
+            "name": "layout-b76364e976d7f44a.js",
+            "encodedBytes": 3311,
+            "transferBytes": 3611
+          },
+          {
+            "name": "page-1cc6cde8699d91a0.js",
+            "encodedBytes": 4013,
+            "transferBytes": 4313
+          },
+          {
+            "name": "b536a0f1.93f11712d3f0dd09.js",
+            "encodedBytes": 119142,
+            "transferBytes": 119442
+          },
+          {
+            "name": "2.4b584dfbbe6c4566.js",
+            "encodedBytes": 6871,
+            "transferBytes": 7171
+          },
+          {
+            "name": "page-eed1ddeae7f36aa9.js",
+            "encodedBytes": 231,
+            "transferBytes": 531
+          },
+          {
+            "name": "page-05b3181f241cf001.js",
+            "encodedBytes": 183,
+            "transferBytes": 483
+          }
+        ]
+      },
+      "jsHeapBytes": 10077436,
+      "vramBytes": null,
+      "vramNote": "WebGL/Chromium do not expose reliable driver VRAM bytes. Geometry/texture/program counts are measured, not a byte measurement."
+    }
+  ],
+  "workPerformance": {
+    "metrics": {
+      "lcpMs": 700,
+      "cls": 0.01643071177084971,
+      "fontsReadyMs": 284.1000000014901,
+      "fontRequests": [
+        {
+          "name": "raleway-latin-wght-normal.20a6ddf1.woff2",
+          "bytes": 48264,
+          "duration": 59.80000000074506
+        },
+        {
+          "name": "space-grotesk-latin-wght-normal.5a0c43ff.woff2",
+          "bytes": 22288,
+          "duration": 61.69999999925494
+        },
+        {
+          "name": "jetbrains-mono-latin-wght-normal.a865edea.woff2",
+          "bytes": 40404,
+          "duration": 62.80000000074506
+        }
+      ],
+      "longTaskCount": 1,
+      "longTaskMs": 52,
+      "maxLongTaskMs": 52,
+      "labINPMs": 160,
+      "observedInteractionCount": 3,
+      "interactionCount": 3,
+      "drawCalls": 0,
+      "events": [
+        {
+          "name": "pointerdown",
+          "id": 8755,
+          "duration": 160,
+          "start": 1340.800000000745,
+          "processing": 0.3999999985098839
+        },
+        {
+          "name": "pointerup",
+          "id": 8755,
+          "duration": 160,
+          "start": 1340.9000000022352,
+          "processing": 0.09999999776482582
+        },
+        {
+          "name": "click",
+          "id": 8755,
+          "duration": 160,
+          "start": 1340.9000000022352,
+          "processing": 3.899999998509884
+        },
+        {
+          "name": "pointerdown",
+          "id": 8762,
+          "duration": 64,
+          "start": 1690.300000000745,
+          "processing": 0.19999999925494194
+        },
+        {
+          "name": "pointerup",
+          "id": 8762,
+          "duration": 64,
+          "start": 1690.300000000745,
+          "processing": 0.09999999776482582
+        },
+        {
+          "name": "click",
+          "id": 8762,
+          "duration": 64,
+          "start": 1690.300000000745,
+          "processing": 1
+        },
+        {
+          "name": "pointerdown",
+          "id": 8769,
+          "duration": 32,
+          "start": 2023.6000000014901,
+          "processing": 0.4000000022351742
+        },
+        {
+          "name": "pointerup",
+          "id": 8769,
+          "duration": 32,
+          "start": 2023.699999999255,
+          "processing": 0.10000000149011612
+        },
+        {
+          "name": "click",
+          "id": 8769,
+          "duration": 32,
+          "start": 2023.699999999255,
+          "processing": 1.5999999977648258
+        }
+      ],
+      "requests": [
+        {
+          "name": "4bd1b696-c7408084347438ae.js",
+          "encodedBytes": 64057,
+          "transferBytes": 64357
+        },
+        {
+          "name": "794-14f5eac35e753b50.js",
+          "encodedBytes": 67734,
+          "transferBytes": 68034
+        },
+        {
+          "name": "main-app-d728288e3b393f95.js",
+          "encodedBytes": 555,
+          "transferBytes": 855
+        },
+        {
+          "name": "500-491e76f6fe002ef2.js",
+          "encodedBytes": 3244,
+          "transferBytes": 3544
+        },
+        {
+          "name": "layout-b76364e976d7f44a.js",
+          "encodedBytes": 3311,
+          "transferBytes": 3611
+        },
+        {
+          "name": "437-df77b441101c1a02.js",
+          "encodedBytes": 5514,
+          "transferBytes": 5814
+        },
+        {
+          "name": "page-eed1ddeae7f36aa9.js",
+          "encodedBytes": 231,
+          "transferBytes": 531
+        },
+        {
+          "name": "page-1cc6cde8699d91a0.js",
+          "encodedBytes": 4013,
+          "transferBytes": 4313
+        },
+        {
+          "name": "page-05b3181f241cf001.js",
+          "encodedBytes": 183,
+          "transferBytes": 483
+        }
+      ]
+    },
+    "canvasCount": 0
+  },
+  "workCLSBeforeSkeleton": 0.400705094819126,
+  "accessibility": [
+    {
+      "path": "/",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "nodes": [
+            {
+              "target": [
+                ".studio-trigger"
+              ],
+              "summary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"studio-controls\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                "a[aria-label=\"Lala home\"]"
+              ],
+              "summary": "Fix all of the following:\n  Axe encountered an error; test the page for this type of problem manually"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "drawer",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "path": "/work",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "nodes": [
+            {
+              "target": [
+                ".studio-trigger"
+              ],
+              "summary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"studio-controls\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                "a[aria-label=\"Lala home\"]"
+              ],
+              "summary": "Fix all of the following:\n  Axe encountered an error; test the page for this type of problem manually"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/about",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "nodes": [
+            {
+              "target": [
+                ".studio-trigger"
+              ],
+              "summary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"studio-controls\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                "a[aria-label=\"Lala home\"]"
+              ],
+              "summary": "Fix all of the following:\n  Axe encountered an error; test the page for this type of problem manually"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "functional": {
+    "counts": [
+      {
+        "query": "",
+        "count": 6
+      },
+      {
+        "query": "?type=independent",
+        "count": 3
+      },
+      {
+        "query": "?type=client",
+        "count": 3
+      },
+      {
+        "query": "?type=invalid",
+        "count": 6
+      },
+      {
+        "query": "?type=client&type=independent",
+        "count": 6
+      }
+    ],
+    "detailRoutes": "not implemented; both published and draft slugs return 404; cards expose status without dead links",
+    "noWebGL": true,
+    "noJS": true,
+    "reducedMotion": true,
+    "keyboardSkip": true,
+    "drawerTrap": true,
+    "escapeFocusRestore": true,
+    "marqueePauseResume": true,
+    "accessibilityTree": true,
+    "errors": []
+  },
+  "cachedRouteReactivation": [
+    {
+      "width": 1440,
+      "height": 900,
+      "contexts": 2,
+      "canvases": 1,
+      "entrance": 1,
+      "inert": 0,
+      "resize": 0,
+      "loaderSampleCount": 50,
+      "entranceCountsWhileLoaderVisible": [
+        0
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "contexts": 2,
+      "canvases": 1,
+      "entrance": 1,
+      "inert": 0,
+      "resize": 0,
+      "loaderSampleCount": 57,
+      "entranceCountsWhileLoaderVisible": [
+        0
+      ]
+    }
+  ],
+  "threeBundle": {
+    "file": "b536a0f1.93f11712d3f0dd09.js",
+    "minifiedBytes": 481576,
+    "gzipBytes": 118259,
+    "workRequestedThreeBundle": false
+  },
+  "knownVisualGap": "Heart targets and forces follow the original specification, but the cleft can be filled by larger spheres. Mobile silhouette clarity is partial, not a visual pass.",
+  "quality": {
+    "automaticSVGFallback": true,
+    "modeSwitchPreservesMeshes": true,
+    "contexts": 1,
+    "entrances": 1,
+    "palettePreservesState": true,
+    "simulatedVisibilityPauseResume": true,
+    "workAnchorPaused": true,
+    "reverseRestartsExistingLoop": true,
+    "consoleErrors": []
+  },
+  "checks": {
+    "typecheck": "pass",
+    "lint": "pass",
+    "gravityTests": {
+      "passed": 15,
+      "total": 15
+    },
+    "productionBuild": "pass",
+    "simulateUnchangedFromStage4": true,
+    "heartTargetsUnchangedFromStage4": true,
+    "libContentAndImagesUnchanged": true
+  }
+}

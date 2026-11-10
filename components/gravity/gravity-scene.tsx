@@ -9,6 +9,15 @@ import {
   subscribeHeroPalette,
 } from "./gravity-palette-store";
 
+import {
+  getMotionPreference,
+  subscribeMotionPreference,
+} from "./gravity-motion-store";
+import {
+  getStoryProgress,
+  shouldUseStaticMotion,
+} from "./gravity-story-progress";
+
 import type { GravityExperience } from "./gravity-experience";
 
 export default function GravityScene({
@@ -21,6 +30,8 @@ export default function GravityScene({
     const container = containerRef.current;
     if (!container) return;
     const viewport = container.closest<HTMLElement>(".gravity-viewport");
+    const readingContent =
+      container.closest(".gravity-story")?.nextElementSibling;
     const updateBackground = () => {
       if (viewport) viewport.dataset.heroPalette = getSelectedPalette();
     };
@@ -74,12 +85,39 @@ export default function GravityScene({
     let previous = 0;
     let accumulator = 0;
     let visible = true;
+    let inStory = true;
+    let performanceLimited = false;
+    let sampleStart = performance.now();
+    let sampleFrames = 0;
+    const isStatic = () =>
+      reduced.matches ||
+      getMotionPreference() === "static" ||
+      (getMotionPreference() === "auto" && performanceLimited);
+    const usesPerformanceFallback = () =>
+      !reduced.matches &&
+      getMotionPreference() === "auto" &&
+      performanceLimited;
+    const resetSample = () => {
+      sampleStart = performance.now();
+      sampleFrames = 0;
+    };
+    const describeMotion = () => {
+      container.dataset.motionMode = reduced.matches
+        ? "static-reduced"
+        : getMotionPreference() === "static"
+          ? "static-selected"
+          : performanceLimited && getMotionPreference() === "auto"
+            ? "static-performance"
+            : "full";
+      container.dataset.activity = inStory ? "story" : "paused-content";
+    };
     const stop = () => {
       cancelAnimationFrame(frame);
       frame = 0;
       previous = 0;
     };
     const render = () => {
+      if (usesPerformanceFallback()) return;
       try {
         world.render();
       } catch {
@@ -91,7 +129,8 @@ export default function GravityScene({
     // Fixed 60Hz physics keeps the supplied per-frame parameters independent of display refresh.
     const tick = (timestamp: number) => {
       frame = 0;
-      if (disposed || reduced.matches || !visible || document.hidden) return;
+      if (disposed || isStatic() || !inStory || !visible || document.hidden)
+        return;
       accumulator += previous
         ? Math.min((timestamp - previous) / 1000, 0.05)
         : 1 / 60;
@@ -103,6 +142,19 @@ export default function GravityScene({
         accumulator -= 1 / 60;
       }
       render();
+      if (!world.control.started) resetSample();
+      else if (getMotionPreference() === "auto") {
+        sampleFrames++;
+        const elapsedMs = performance.now() - sampleStart;
+        if (shouldUseStaticMotion(sampleFrames, elapsedMs)) {
+          performanceLimited = true;
+          describeMotion();
+          stop();
+          renderStatic(true);
+          return;
+        }
+        if (elapsedMs >= 6000 && sampleFrames >= 6) resetSample();
+      }
       if (container.dataset.status !== "unavailable")
         frame = requestAnimationFrame(tick);
     };
@@ -112,11 +164,16 @@ export default function GravityScene({
         !disposed &&
         visible &&
         !document.hidden &&
-        !reduced.matches
-      )
+        !isStatic() &&
+        inStory &&
+        container.dataset.status !== "unavailable"
+      ) {
+        resetSample();
         frame = requestAnimationFrame(tick);
+      }
     };
     const renderStatic = (force = false) => {
+      if (usesPerformanceFallback()) return;
       const progress = world.control.progress;
       const pose = Math.min(3, Math.max(0, Math.round(progress)));
       if (!force && pose === lastStaticPose) return;
@@ -132,7 +189,19 @@ export default function GravityScene({
     const updateProgress = () => {
       progressFrame = 0;
       if (disposed) return;
-      world.control.progress = window.scrollY / (window.innerHeight || 1);
+      const next = getStoryProgress(
+        window.scrollY,
+        window.innerHeight,
+        readingContent?.getBoundingClientRect().top,
+      );
+      world.control.progress = next.progress;
+      inStory = next.active;
+      describeMotion();
+      if (!inStory) {
+        stop();
+        world.mousePos.active = false;
+        world.mousePos.isDown = false;
+      } else if (!isStatic()) start();
       const progress = world.control.progress;
       if (viewport) {
         viewport.dataset.bgStage = String(
@@ -140,7 +209,7 @@ export default function GravityScene({
         );
       }
       container.dataset.progress = progress.toFixed(4);
-      if (reduced.matches) renderStatic();
+      if (isStatic() && inStory) renderStatic();
     };
     const scheduleProgress = () => {
       if (!progressFrame && !disposed)
@@ -151,11 +220,12 @@ export default function GravityScene({
       accumulator = 0;
       world.mousePos.active = false;
       lastStaticPose = -1;
-      if (reduced.matches) renderStatic();
+      describeMotion();
+      if (isStatic() && inStory) renderStatic();
       else start();
     };
     const updatePointer = (event: PointerEvent) => {
-      if (reduced.matches) return;
+      if (isStatic() || !inStory) return;
       if (
         document.querySelector("dialog.studio-controls[open]") ||
         (event.target instanceof Element &&
@@ -201,7 +271,7 @@ export default function GravityScene({
       // ResizeObserver runs after rAF. setSize clears the drawing buffer, so a
       // real resize must paint here, before the browser composites this frame.
       if (changed) {
-        if (reduced.matches) renderStatic(true);
+        if (isStatic()) renderStatic(true);
         else render();
       }
     });
@@ -224,6 +294,11 @@ export default function GravityScene({
     window.addEventListener("scroll", scheduleProgress, { passive: true });
     window.addEventListener("resize", scheduleProgress, { passive: true });
     world.setHeroColor(getHeroPalette(getSelectedPalette()).ballColor);
+    const unsubscribeMotion = subscribeMotionPreference(() => {
+      performanceLimited = false;
+      resetSample();
+      setMotion();
+    });
     const unsubscribePalette = subscribeHeroPalette(() => {
       world.setHeroColor(getHeroPalette(getSelectedPalette()).ballColor);
       render(); // A static/reduced-motion scene also recolors without advancing physics.
@@ -234,15 +309,16 @@ export default function GravityScene({
     const unregisterEntrance = experience.register(() => {
       world.start();
       lastStaticPose = -1;
-      if (reduced.matches) renderStatic(true);
+      if (isStatic()) renderStatic(true);
     });
     if (container.dataset.status !== "unavailable") experience.report("ready");
     updateProgress();
-    if (!reduced.matches) start();
+    if (!isStatic()) start();
     return () => {
       disposed = true;
       unregisterEntrance();
       unsubscribePalette();
+      unsubscribeMotion();
       unsubscribeBackground();
       stop();
       resize.disconnect();

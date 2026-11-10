@@ -1,15 +1,63 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ContentItem } from "@/lib/content";
-interface ProjectCardProps { item: ContentItem; headingLevel?: "h2" | "h3"; }
-export function ProjectCard({ item, headingLevel: Heading = "h2" }: ProjectCardProps) {
-  return <article data-project-card className="space-y-3 border border-foreground/20 p-4">
-    <Link href={`/work/${item.slug}`} aria-label={`View ${item.title}`}>
-      <Image src={item.cover} alt={item.cover_alt} width={800} height={500} className="h-auto w-full" />
-      <Heading className="text-xl font-semibold">{item.title}</Heading>
-    </Link>
-    <p>{item.type === "independent" ? "Independent Product" : "Client & Professional Work"} · <time dateTime={String(item.year)}>{item.year}</time></p>
-    <p>{item.summary}</p>
-    <ul aria-label="Project categories">{item.category.map(category => <li key={category}>{category}</li>)}</ul>
-  </article>;
+import { GravityArrow } from "./gravity/gravity-arrow";
+interface ProjectCardProps {
+  item: ContentItem;
+  headingLevel?: "h2" | "h3";
+  detailAvailable?: boolean;
+}
+export function ProjectCard({
+  item,
+  headingLevel: Heading = "h2",
+  detailAvailable = false,
+}: ProjectCardProps) {
+  const href = `/work/${item.slug}`;
+  return (
+    <article data-project-card className="project-card">
+      <div className="project-cover">
+        <Image
+          src={item.cover}
+          alt={item.cover_alt}
+          width={800}
+          height={500}
+          sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1439px) 45vw, 640px"
+          className="project-cover-image"
+        />
+      </div>
+      <div className="project-card-body">
+        <div className="project-meta">
+          <p>
+            {item.type === "independent"
+              ? "Independent Product"
+              : "Client & Professional Work"}
+          </p>
+          <time dateTime={String(item.year)}>{item.year}</time>
+        </div>
+        <Heading>{item.title}</Heading>
+        <p className="project-summary">{item.summary}</p>
+        <ul aria-label="Project categories" className="project-categories">
+          {item.category.map((category) => (
+            <li key={category}>{category}</li>
+          ))}
+        </ul>
+        {detailAvailable ? (
+          <Link
+            href={href}
+            className="project-view-link"
+            aria-label={`View project: ${item.title}`}
+          >
+            View Project <GravityArrow />
+          </Link>
+        ) : (
+          <div className="project-detail-status" data-planned-route={href}>
+            <span>
+              View Project <GravityArrow />
+            </span>
+            <p>Case study coming soon — detail page not available.</p>
+          </div>
+        )}
+      </div>
+    </article>
+  );
 }

@@ -20,9 +20,14 @@ function SlidersIcon() {
   );
 }
 
+import {
+  useMotionPreference,
+  selectMotionPreference,
+} from "./gravity-motion-store";
 export function StudioControls() {
   const [open, setOpen] = useState(false);
   const selected = useHeroPalette();
+  const motion = useMotionPreference();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -205,6 +210,26 @@ export function StudioControls() {
             </button>
           ))}
         </div>
+        <fieldset className="studio-motion">
+          <legend>Motion</legend>
+          <div>
+            {(["auto", "full", "static"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                aria-pressed={motion === mode}
+                onClick={() => selectMotionPreference(mode)}
+                data-motion={mode}
+              >
+                {mode === "auto" ? "Auto" : mode === "full" ? "Full" : "Static"}
+              </button>
+            ))}
+          </div>
+          <p>
+            Auto uses a lightweight still view on slower devices. Reduced-motion
+            preferences always apply.
+          </p>
+        </fieldset>
         <div className="studio-engine">
           <p>
             <span>Render engine</span>
@@ -218,7 +243,10 @@ export function StudioControls() {
         <button
           type="button"
           className="studio-reset"
-          onClick={() => selectHeroPalette(DEFAULT_HERO_PALETTE)}
+          onClick={() => {
+            selectHeroPalette(DEFAULT_HERO_PALETTE);
+            selectMotionPreference("auto");
+          }}
         >
           <svg
             aria-hidden="true"

@@ -673,6 +673,12 @@ export function createGravityWorld(
     );
     const average = new THREE.Vector3();
     let estimatedVisible = 0;
+    const projectedSpheres: {
+      id: number;
+      x: number;
+      y: number;
+      radius: number;
+    }[] = [];
     for (const ball of balls) {
       const center = ball.meshGroup.getWorldPosition(new THREE.Vector3());
       const scale = ball.meshGroup.getWorldScale(new THREE.Vector3());
@@ -682,6 +688,22 @@ export function createGravityWorld(
         frustum.intersectsSphere(new THREE.Sphere(center, radius))
       )
         estimatedVisible++;
+      if (
+        ball.material.opacity > 0.01 &&
+        center.z < camera.position.z - camera.near
+      ) {
+        const ndc = center.clone().project(camera);
+        projectedSpheres.push({
+          id: ball.id,
+          x: ((ndc.x + 1) * renderWidth) / 2,
+          y: ((1 - ndc.y) * renderHeight) / 2,
+          radius:
+            (radius * renderHeight) /
+            (2 *
+              Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) *
+              (camera.position.z - center.z)),
+        });
+      }
       average.add(ball.position);
     }
     average.divideScalar(balls.length);
@@ -696,6 +718,7 @@ export function createGravityWorld(
         horizontalSpread,
       },
       estimatedVisible,
+      projectedSpheres,
       total: balls.length,
       average: average.toArray(),
       opacity: {
@@ -715,6 +738,11 @@ export function createGravityWorld(
         hex: ball.material.color.getHexString(),
         glass: ball.isGlass,
       })),
+      rendering: {
+        calls: renderer.info?.render?.calls ?? 0,
+        triangles: renderer.info?.render?.triangles ?? 0,
+        dpr: pixelRatio,
+      },
       gpu: {
         geometries: renderer.info?.memory.geometries ?? 0,
         textures: renderer.info?.memory.textures ?? 0,

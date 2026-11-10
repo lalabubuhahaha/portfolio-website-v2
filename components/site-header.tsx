@@ -12,12 +12,7 @@ export function SiteHeader() {
         <div className="gravity-nav-links">
           <Link href="/">Home</Link>
           <Link href="/work">Work</Link>
-          <HomeSectionLink
-            section="about"
-            title="Personal introduction preview"
-          >
-            About
-          </HomeSectionLink>
+          <Link href="/about">About</Link>
         </div>
         <div className="gravity-header-actions">
           <StudioControls />

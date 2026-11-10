@@ -37,7 +37,7 @@ export async function WorkResults({ searchParams }: WorkResultsProps) {
 
   return (
     <div>
-      <nav aria-label="Filter projects" className="mb-10">
+      <nav aria-label="Filter projects" className="project-filters">
         <ul className="flex flex-wrap gap-2">
           {filterOptions.map((option) => {
             const isActive = option.type === activeType;
@@ -47,7 +47,7 @@ export async function WorkResults({ searchParams }: WorkResultsProps) {
                 <Link
                   href={option.href}
                   aria-current={isActive ? "page" : undefined}
-                  className="block border border-foreground/20 px-4 py-2 aria-[current=page]:font-bold"
+                  className="project-filter"
                 >
                   {option.label}
                 </Link>
@@ -57,12 +57,29 @@ export async function WorkResults({ searchParams }: WorkResultsProps) {
         </ul>
       </nav>
 
-      <p className="mb-8 text-sm text-foreground/60" aria-live="polite">
+      <p className="project-results-count" aria-live="polite">
         {items.length} {items.length === 1 ? "project" : "projects"}
       </p>
-      <div className="grid gap-x-6 gap-y-12 md:grid-cols-2 lg:gap-x-8 lg:gap-y-16">
+      <div className="project-grid">
         {items.map((item) => (
           <ProjectCard key={item.id} item={item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function WorkResultsSkeleton() {
+  return (
+    <div className="work-results-loading" role="status">
+      <p>Loading project previews…</p>
+      <div className="project-grid" aria-hidden="true">
+        {[0, 1].map((index) => (
+          <div className="work-loading-card" key={index}>
+            <div />
+            <span />
+            <span />
+          </div>
         ))}
       </div>
     </div>

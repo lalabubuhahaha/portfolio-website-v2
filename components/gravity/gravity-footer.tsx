@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FooterMarquee } from "./footer-marquee";
 import { HomeSectionLink } from "@/components/gravity/home-section-link";
 import { GravityArrow } from "./gravity-arrow";
 import { Reveal } from "./reveal";
@@ -6,20 +7,7 @@ export function GravityFooter() {
   return (
     <footer className="gravity-footer" id="contact">
       <div className="gravity-footer-glow" aria-hidden="true" />
-      <div className="gravity-marquee" aria-hidden="true">
-        <div className="gravity-marquee-track">
-          {[0, 1].map((repeat) => (
-            <div key={repeat}>
-              {["Design", "Explore", "Build", "Create"].map((word) => (
-                <span key={word}>
-                  {word}
-                  <i />
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
+      <FooterMarquee />
       <div className="gravity-footer-body">
         <div className="gravity-footer-grid">
           <Reveal>
@@ -45,9 +33,9 @@ export function GravityFooter() {
               <Link href="/work">
                 Work <GravityArrow />
               </Link>
-              <HomeSectionLink section="about">
+              <Link href="/about">
                 About preview <GravityArrow />
-              </HomeSectionLink>
+              </Link>
             </nav>
           </Reveal>
           <Reveal>

@@ -101,3 +101,19 @@
 - 刪除需要二次確認。
 - 發布後依實際 Next.js 版本使用合適的按需快取更新機制。
 - 不需重新部署即可更新公開內容。
+
+## Gravity Edition — Stage 5 驗收狀態（2026-11-10）
+
+- [x] 四段 Gravity Story 後接 Selected Work、About / Expertise、Contact / Footer。
+- [x] Gravity 風格共用卡片與 Work 篩選介面；公開／草稿過濾不變。
+- [x] 作品區停止 3D 迴圈、回捲恢復；低效能 Auto fallback 與 Full / Static 選項。
+- [x] 六尺寸 Home / Work / About 檢查、軟體 WebGL 實測與 Accessibility 自動／鍵盤檢查。
+- [x] Work 串流載入骨架，修正 Footer 推移造成的高 CLS。
+- [ ] 人工確認愛心凹口／手機輪廓；目前保留 GetLayers 原始方程式、target sampling 與 shapeScale。
+- [ ] 硬體 GPU、真機、DPR 2、Safari 與較長互動會話的效能驗證。
+- [ ] 真實螢幕閱讀器（VoiceOver／NVDA）驗收。
+- [ ] 正式作品內容、封面與 `/work/[slug]` Case Study。現階段卡片明確標示尚未公開，不提供 404 連結。
+- [ ] 由 Lala 確認 About／能力介紹、真實聯絡方式與社群連結。
+- [ ] 人工視覺驗收通過後，另行決定部署；本次不部署或啟動 Supabase／Admin。
+
+詳細結果見 [gravity-stage-5.md](gravity-stage-5.md)。

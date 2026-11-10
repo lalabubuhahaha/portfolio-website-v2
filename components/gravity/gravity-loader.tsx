@@ -22,7 +22,7 @@ export function GravityLoader({
     let done = false;
     const background = Array.from(
       document.querySelectorAll<HTMLElement>(
-        ".site-header, .foundation-content, .gravity-footer, .gravity-story > :not(.gravity-loader), body > a.sr-only",
+        ".site-header, .foundation-content, .gravity-footer, .gravity-story > :not(.gravity-loader), body > a.skip-link",
       ),
     ).map((node) => ({ node, inert: node.inert }));
     const restore = () =>
