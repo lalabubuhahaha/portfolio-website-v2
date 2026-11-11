@@ -30,9 +30,9 @@ export function GravityFooter() {
               <Link href="/">
                 Home <GravityArrow />
               </Link>
-              <Link href="/work">
-                Work <GravityArrow />
-              </Link>
+              <HomeSectionLink section="works">
+                Selected work <GravityArrow />
+              </HomeSectionLink>
               <Link href="/about">
                 About preview <GravityArrow />
               </Link>
@@ -41,8 +41,8 @@ export function GravityFooter() {
           <Reveal>
             <div className="gravity-footer-column">
               <h3>Field notes</h3>
-              <HomeSectionLink section="drop">
-                Motion <GravityArrow />
+              <HomeSectionLink section="works">
+                Work in motion <GravityArrow />
               </HomeSectionLink>
               <HomeSectionLink section="shape">
                 Form <GravityArrow />

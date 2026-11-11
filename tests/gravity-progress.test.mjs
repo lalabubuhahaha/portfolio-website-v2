@@ -34,8 +34,18 @@ test("automatic static motion needs sustained low frame rate, not one slow frame
   assert.equal(shouldUseStaticMotion(24, 6000), true);
 });
 
-test("a Work anchor pauses behind the navigation only after Release reaches its final factor", () => {
+test("the post-story reading surface pauses only after Release reaches its final factor", () => {
   assert.equal(getStoryProgress(3.85 * 900, 900, 128).active, false);
   assert.equal(getStoryProgress(3.85 * 900, 900, 129).active, true);
   assert.equal(getStoryProgress(3.44 * 900, 900, 0).active, true);
+});
+
+test("featured Work inside Drop stays active, and returning from About restores the story", () => {
+  for (const height of [844, 900]) {
+    const workAnchor = height;
+    assert.equal(getStoryProgress(workAnchor, height, 4 * height - workAnchor).active, true);
+    assert.deepEqual(getStoryProgress(4 * height - 128, height, 128), { progress: 3.45, active: false });
+    assert.equal(getStoryProgress(2 * height, height, 2 * height).active, true);
+    assert.equal(getStoryProgress(workAnchor, height, 4 * height - workAnchor).progress, workAnchor / height);
+  }
 });

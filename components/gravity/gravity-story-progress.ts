@@ -7,8 +7,8 @@ export function getStoryProgress(
   const raw = scrollY / (viewportHeight || 1);
   return {
     progress: Math.min(3.45, Math.max(0, raw)),
-    // #works anchors reserve 128px for navigation. Stop when it becomes the
-    // reading surface, but never cut off the original Release transition.
+    // The post-story reading surface reserves 128px for navigation.
+    // Featured work inside Drop stays active; never cut off Release.
     active: raw < 4 && !(raw >= 3.45 && contentTop <= 128),
   };
 }

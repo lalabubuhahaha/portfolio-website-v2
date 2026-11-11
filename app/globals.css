@@ -1575,3 +1575,187 @@ main.portfolio-page {
 .work-loading-card > span:last-child {
   width: 40%;
 }
+
+/* Stage 5.1: foreground previews share the unchanged one-screen Drop phase. */
+.gravity-featured {
+  padding-block: 160px;
+  justify-content: flex-start;
+}
+#works {
+  scroll-margin-top: 0;
+}
+.featured-drop-anchor {
+  position: absolute;
+  top: 0;
+  scroll-margin-top: 0;
+}
+.featured-layout {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 32px;
+  align-items: center;
+}
+.featured-intro {
+  grid-column: span 5;
+}
+.featured-intro .portfolio-text-link {
+  margin-top: 24px;
+}
+.featured-previews {
+  grid-column: span 7;
+  display: grid;
+  gap: 16px;
+  padding-inline: 16px;
+}
+.featured-previews > .gravity-reveal {
+  width: min(100%, 560px);
+  min-width: 0;
+}
+.featured-previews > :nth-child(2) {
+  justify-self: end;
+}
+.featured-previews > :nth-child(3) {
+  margin-left: 16px;
+  width: min(calc(100% - 16px), 560px);
+}
+.featured-preview {
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--gravity-white) 58%, transparent),
+      color-mix(in srgb, var(--gravity-white) 40%, transparent)
+    ) padding-box,
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--gravity-white) 80%, transparent),
+      color-mix(in srgb, var(--gravity-white) 10%, transparent)
+    ) border-box;
+  backdrop-filter: blur(24px);
+  box-shadow:
+    inset 0 1px 2px var(--gravity-white),
+    0 14px 40px -12px color-mix(in srgb, var(--gravity-accent) 18%, transparent);
+  transition: transform 0.4s var(--gravity-ease), box-shadow 0.4s var(--gravity-ease);
+}
+.featured-preview::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 24px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gravity-white), transparent);
+  pointer-events: none;
+}
+.featured-preview-browse {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gravity-accent);
+}
+.featured-preview-link {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 16px;
+  border-radius: inherit;
+  color: var(--gravity-ink);
+  text-decoration: none;
+  pointer-events: auto;
+}
+.featured-preview-cover {
+  aspect-ratio: 8 / 5;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--gravity-pearl) 35%, transparent);
+}
+.featured-preview-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.featured-preview-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--gravity-muted);
+  font: 10px/1.5 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.featured-preview h3 {
+  font-size: clamp(20px, 1.8vw, 26px);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  margin-block: 8px;
+}
+.featured-preview-category {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--gravity-muted);
+}
+.featured-preview-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  font: 9px/1.5 var(--font-mono);
+  color: var(--gravity-muted);
+}
+.featured-preview-status svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+.featured-preview:focus-within {
+  outline: 2px solid var(--gravity-accent);
+  outline-offset: 4px;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .featured-preview:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 44px color-mix(in srgb, var(--gravity-ink) 9%, transparent);
+  }
+}
+@media (max-width: 1023px) {
+  .featured-layout { gap: 24px; }
+  .featured-previews { padding-inline: 0; }
+  .featured-preview-link { grid-template-columns: 100px minmax(0, 1fr); gap: 14px; }
+}
+@media (max-width: 767px) {
+  .gravity-featured {
+    padding: 112px 24px 64px;
+    justify-content: flex-start;
+  }
+  .featured-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .featured-intro, .featured-previews { grid-column: 1; }
+  .featured-intro .gravity-section-label { margin-bottom: 14px; }
+  .featured-intro h2 { font-size: 42px; }
+  .featured-intro > p:not(.gravity-section-label) {
+    margin-top: 14px;
+    max-width: none;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .featured-intro .portfolio-text-link { margin-top: 8px; font-size: 13px; }
+  .featured-previews { gap: 10px; }
+  .featured-previews > :nth-child(n) { margin: 0; width: 100%; }
+  .featured-preview {
+    border-radius: 18px;
+    background-color: color-mix(in srgb, var(--gravity-white) 40%, transparent);
+  }
+  .featured-preview-link { grid-template-columns: 88px minmax(0, 1fr); gap: 12px; padding: 12px; }
+  .featured-preview h3 { font-size: 18px; margin-block: 5px; }
+  .featured-preview-meta { font-size: 9px; gap: 8px; }
+  .featured-preview-category { font-size: 10px; line-height: 1.4; }
+  .featured-preview-status { font-size: 9px; margin-top: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .featured-preview { transition: none; }
+}

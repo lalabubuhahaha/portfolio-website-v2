@@ -19,7 +19,7 @@ export function AboutOverview({
       aria-labelledby={standalone ? "about-draft-title" : "about-title"}
     >
       <div className="portfolio-about-intro">
-        <p className="gravity-section-label">[ 06 — About / Expertise ]</p>
+        <p className="gravity-section-label">[ 05 — About / Expertise ]</p>
         <h2 id={standalone ? "about-draft-title" : "about-title"}>
           Clarity in the interface.
           <br />

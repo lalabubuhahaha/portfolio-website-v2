@@ -1,0 +1,580 @@
+{
+  "renderer": "Chromium ANGLE SwiftShader (software GPU)",
+  "screenshots": "DPR 1, Static real WebGL; each pose settled by the existing Static mode",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "baseline": {
+        "cameraAspect": 1.6,
+        "resizeCount": 0,
+        "meshCount": 96
+      },
+      "layout": {
+        "section": {
+          "top": 0,
+          "bottom": 900,
+          "left": 0,
+          "right": 1440,
+          "height": 900,
+          "scrollHeight": 900
+        },
+        "shape": {
+          "top": 900,
+          "bottom": 1800,
+          "left": 0,
+          "right": 1440,
+          "height": 900,
+          "scrollHeight": 900
+        },
+        "about": {
+          "top": 2700,
+          "bottom": 3391.5,
+          "left": 0,
+          "right": 1440,
+          "height": 691.5,
+          "scrollHeight": 691
+        },
+        "cards": [
+          {
+            "title": "Independent Product Alpha",
+            "year": "2026",
+            "category": "Product Design / AI-assisted Development",
+            "href": "/work?type=independent",
+            "top": 160,
+            "bottom": 296.03125
+          },
+          {
+            "title": "Professional Project Gamma",
+            "year": "2024",
+            "category": "Interface Design / Design System",
+            "href": "/work?type=client",
+            "top": 312.03125,
+            "bottom": 448.0625
+          },
+          {
+            "title": "Interface Exploration Epsilon",
+            "year": "2025",
+            "category": "UI Exploration / Interaction Design",
+            "href": "/work?type=independent",
+            "top": 460.0625,
+            "bottom": 596.09375
+          }
+        ],
+        "overflow": false,
+        "worksCount": 1,
+        "h1": 1
+      },
+      "anchors": [
+        {
+          "selector": ".site-header a[href=\"#works\"]",
+          "top": 0,
+          "progress": 1
+        },
+        {
+          "selector": ".gravity-release a[href=\"#works\"]",
+          "top": 0,
+          "progress": 1
+        },
+        {
+          "selector": ".gravity-footer nav a[href=\"#works\"]",
+          "top": 0,
+          "progress": 1
+        }
+      ],
+      "points": [
+        {
+          "progress": 0,
+          "visible": 96,
+          "renderCount": 36,
+          "background": "0"
+        },
+        {
+          "progress": 0.3,
+          "visible": 96,
+          "renderCount": 38,
+          "background": "0"
+        },
+        {
+          "progress": 0.4,
+          "visible": 96,
+          "renderCount": 40,
+          "background": "0"
+        },
+        {
+          "progress": 0.55,
+          "visible": 96,
+          "renderCount": 42,
+          "background": "0"
+        },
+        {
+          "progress": 0.7,
+          "visible": 96,
+          "renderCount": 44,
+          "background": "0"
+        },
+        {
+          "progress": 0.8,
+          "visible": 96,
+          "renderCount": 46,
+          "background": "1"
+        },
+        {
+          "progress": 0.95,
+          "visible": 96,
+          "renderCount": 48,
+          "background": "1"
+        },
+        {
+          "progress": 1,
+          "visible": 96,
+          "renderCount": 50,
+          "background": "1"
+        },
+        {
+          "progress": 1.25,
+          "visible": 96,
+          "renderCount": 59,
+          "background": "1"
+        },
+        {
+          "progress": 1.4,
+          "visible": 96,
+          "renderCount": 61,
+          "background": "1"
+        },
+        {
+          "progress": 1.55,
+          "visible": 96,
+          "renderCount": 63,
+          "background": "1"
+        },
+        {
+          "progress": 1.75,
+          "visible": 96,
+          "renderCount": 65,
+          "background": "2"
+        },
+        {
+          "progress": 2.05,
+          "visible": 96,
+          "renderCount": 67,
+          "background": "2"
+        },
+        {
+          "progress": 2.55,
+          "visible": 96,
+          "renderCount": 75,
+          "background": "2"
+        },
+        {
+          "progress": 2.7,
+          "visible": 96,
+          "renderCount": 77,
+          "background": "2"
+        },
+        {
+          "progress": 3,
+          "visible": 96,
+          "renderCount": 79,
+          "background": "2"
+        },
+        {
+          "progress": 3.45,
+          "visible": 96,
+          "renderCount": 81,
+          "background": "2"
+        },
+        {
+          "progress": 3,
+          "visible": 90,
+          "renderCount": 83,
+          "background": "2"
+        },
+        {
+          "progress": 2.55,
+          "visible": 96,
+          "renderCount": 85,
+          "background": "2"
+        },
+        {
+          "progress": 2.05,
+          "visible": 96,
+          "renderCount": 87,
+          "background": "2"
+        },
+        {
+          "progress": 1.75,
+          "visible": 96,
+          "renderCount": 89,
+          "background": "2"
+        },
+        {
+          "progress": 1.4,
+          "visible": 96,
+          "renderCount": 91,
+          "background": "1"
+        },
+        {
+          "progress": 1,
+          "visible": 96,
+          "renderCount": 93,
+          "background": "1"
+        },
+        {
+          "progress": 0.55,
+          "visible": 96,
+          "renderCount": 95,
+          "background": "0"
+        },
+        {
+          "progress": 0,
+          "visible": 96,
+          "renderCount": 97,
+          "background": "0"
+        }
+      ],
+      "canvasSizingWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "contextLost": 0,
+      "pointerVelocitiesChanged": true,
+      "postStoryPauseResume": true,
+      "modes": {
+        "full": true,
+        "static": true,
+        "auto": "static-performance",
+        "reducedMotion": true
+      },
+      "workFilters": [
+        6,
+        3,
+        3
+      ],
+      "errors": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "baseline": {
+        "cameraAspect": 0.46208530805687204,
+        "resizeCount": 0,
+        "meshCount": 54
+      },
+      "layout": {
+        "section": {
+          "top": 0,
+          "bottom": 844,
+          "left": 0,
+          "right": 390,
+          "height": 844,
+          "scrollHeight": 844
+        },
+        "shape": {
+          "top": 844,
+          "bottom": 1688,
+          "left": 0,
+          "right": 390,
+          "height": 844,
+          "scrollHeight": 844
+        },
+        "about": {
+          "top": 2574,
+          "bottom": 3591.125,
+          "left": 0,
+          "right": 390,
+          "height": 1017.125,
+          "scrollHeight": 1016
+        },
+        "cards": [
+          {
+            "title": "Independent Product Alpha",
+            "year": "2026",
+            "category": "Product Design / AI-assisted Development",
+            "href": "/work?type=independent",
+            "top": 365.625,
+            "bottom": 488.9375
+          },
+          {
+            "title": "Professional Project Gamma",
+            "year": "2024",
+            "category": "Interface Design / Design System",
+            "href": "/work?type=client",
+            "top": 502.9375,
+            "bottom": 626.25
+          },
+          {
+            "title": "Interface Exploration Epsilon",
+            "year": "2025",
+            "category": "UI Exploration / Interaction Design",
+            "href": "/work?type=independent",
+            "top": 636.25,
+            "bottom": 759.5625
+          }
+        ],
+        "overflow": false,
+        "worksCount": 1,
+        "h1": 1
+      },
+      "anchors": [
+        {
+          "selector": ".site-header a[href=\"#works\"]",
+          "top": 0,
+          "progress": 1
+        },
+        {
+          "selector": ".gravity-release a[href=\"#works\"]",
+          "top": 0,
+          "progress": 1
+        },
+        {
+          "selector": ".gravity-footer nav a[href=\"#works\"]",
+          "top": 0,
+          "progress": 1
+        }
+      ],
+      "points": [
+        {
+          "progress": 0,
+          "visible": 42,
+          "renderCount": 46,
+          "background": "0"
+        },
+        {
+          "progress": 0.29976303317535546,
+          "visible": 42,
+          "renderCount": 48,
+          "background": "0"
+        },
+        {
+          "progress": 0.4004739336492891,
+          "visible": 41,
+          "renderCount": 50,
+          "background": "0"
+        },
+        {
+          "progress": 0.5497630331753555,
+          "visible": 45,
+          "renderCount": 52,
+          "background": "0"
+        },
+        {
+          "progress": 0.7002369668246445,
+          "visible": 44,
+          "renderCount": 54,
+          "background": "1"
+        },
+        {
+          "progress": 0.7997630331753555,
+          "visible": 43,
+          "renderCount": 56,
+          "background": "1"
+        },
+        {
+          "progress": 0.9502369668246445,
+          "visible": 43,
+          "renderCount": 58,
+          "background": "1"
+        },
+        {
+          "progress": 1,
+          "visible": 44,
+          "renderCount": 60,
+          "background": "1"
+        },
+        {
+          "progress": 1.25,
+          "visible": 44,
+          "renderCount": 69,
+          "background": "1"
+        },
+        {
+          "progress": 1.400473933649289,
+          "visible": 44,
+          "renderCount": 71,
+          "background": "1"
+        },
+        {
+          "progress": 1.5497630331753554,
+          "visible": 45,
+          "renderCount": 73,
+          "background": "1"
+        },
+        {
+          "progress": 1.75,
+          "visible": 48,
+          "renderCount": 75,
+          "background": "2"
+        },
+        {
+          "progress": 2.0497630331753554,
+          "visible": 54,
+          "renderCount": 77,
+          "background": "2"
+        },
+        {
+          "progress": 2.5497630331753554,
+          "visible": 54,
+          "renderCount": 85,
+          "background": "2"
+        },
+        {
+          "progress": 2.7002369668246446,
+          "visible": 54,
+          "renderCount": 87,
+          "background": "2"
+        },
+        {
+          "progress": 3,
+          "visible": 54,
+          "renderCount": 89,
+          "background": "2"
+        },
+        {
+          "progress": 3.45,
+          "visible": 54,
+          "renderCount": 91,
+          "background": "2"
+        },
+        {
+          "progress": 3,
+          "visible": 45,
+          "renderCount": 93,
+          "background": "2"
+        },
+        {
+          "progress": 2.5497630331753554,
+          "visible": 53,
+          "renderCount": 95,
+          "background": "2"
+        },
+        {
+          "progress": 2.0497630331753554,
+          "visible": 54,
+          "renderCount": 97,
+          "background": "2"
+        },
+        {
+          "progress": 1.75,
+          "visible": 54,
+          "renderCount": 104,
+          "background": "2"
+        },
+        {
+          "progress": 1.400473933649289,
+          "visible": 54,
+          "renderCount": 106,
+          "background": "1"
+        },
+        {
+          "progress": 1,
+          "visible": 54,
+          "renderCount": 108,
+          "background": "1"
+        },
+        {
+          "progress": 0.5497630331753555,
+          "visible": 54,
+          "renderCount": 110,
+          "background": "0"
+        },
+        {
+          "progress": 0,
+          "visible": 51,
+          "renderCount": 112,
+          "background": "0"
+        }
+      ],
+      "canvasSizingWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "contextLost": 0,
+      "pointerVelocitiesChanged": true,
+      "postStoryPauseResume": true,
+      "modes": {
+        "full": true,
+        "static": true,
+        "auto": "static-performance",
+        "reducedMotion": true
+      },
+      "workFilters": [
+        6,
+        3,
+        3
+      ],
+      "errors": []
+    }
+  ],
+  "stage": "5.1",
+  "baseCommit": "780d5a754f9efff023491c7d115123cb4fea7194",
+  "date": "2026-11-11",
+  "timezone": "Asia/Taipei",
+  "commands": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "test:gravity": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    "build": "passed"
+  },
+  "studioControls": [
+    {
+      "width": 1440,
+      "height": 900,
+      "focusTrap": true,
+      "escapeRestoresFocus": true,
+      "palettes": [
+        {
+          "id": "pinkBlush",
+          "color": "#FFC5C2"
+        },
+        {
+          "id": "voltLime",
+          "color": "#E1FC03"
+        },
+        {
+          "id": "arcticBlue",
+          "color": "#96E5FF"
+        },
+        {
+          "id": "roseGold",
+          "color": "#2F69FF"
+        }
+      ],
+      "meshMaterialPositionPreserved": true,
+      "reset": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "focusTrap": true,
+      "escapeRestoresFocus": true,
+      "palettes": [
+        {
+          "id": "pinkBlush",
+          "color": "#FFC5C2"
+        },
+        {
+          "id": "voltLime",
+          "color": "#E1FC03"
+        },
+        {
+          "id": "arcticBlue",
+          "color": "#96E5FF"
+        },
+        {
+          "id": "roseGold",
+          "color": "#2F69FF"
+        }
+      ],
+      "meshMaterialPositionPreserved": true,
+      "reset": true
+    }
+  ],
+  "limitations": [
+    "Software GPU only; no hardware GPU or physical device performance claim.",
+    "Primary screenshots use existing Static WebGL poses; Full motion is validated separately.",
+    "Existing Static mode only redraws when its discrete pose changes, so palette updates within one pose are not continuous.",
+    "Existing Stage 5 heart notch readability and unpublished case studies remain unchanged."
+  ]
+}

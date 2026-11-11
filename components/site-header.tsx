@@ -11,7 +11,7 @@ export function SiteHeader() {
       <nav aria-label="Main navigation" className="gravity-nav">
         <div className="gravity-nav-links">
           <Link href="/">Home</Link>
-          <Link href="/work">Work</Link>
+          <HomeSectionLink section="works">Work</HomeSectionLink>
           <Link href="/about">About</Link>
         </div>
         <div className="gravity-header-actions">

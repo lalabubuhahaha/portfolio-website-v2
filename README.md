@@ -1,6 +1,6 @@
 # Portfolio Website v2
 
-Independent portfolio for Lala. Gravity Edition Stage 2 implements the four-phase WebGL scroll story; Stage 3 is not implemented.
+Independent portfolio for Lala. Gravity Edition Stage 5.1 brings featured work into the first section after Hero while preserving the four-phase WebGL story. See [Stage 5.1 placement refinement](docs/gravity-stage-5-1.md) for layout, navigation, and validation details.
 
 ## Development
 

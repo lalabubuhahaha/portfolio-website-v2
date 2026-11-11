@@ -1,13 +1,13 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { createGravityExperience } from "./gravity-experience";
 import { GravityLoader } from "./gravity-loader";
 import { Reveal } from "./reveal";
 import { GravityHero } from "./gravity-hero";
 const GravityScene = dynamic(() => import("./gravity-scene"), { ssr: false });
 
-export function GravityStory() {
+export function GravityStory({ featuredWork }: { featuredWork: ReactNode }) {
   const [experience] = useState(createGravityExperience);
   return (
     <div className="gravity-story">
@@ -56,25 +56,7 @@ export function GravityStory() {
         <GravityScene experience={experience} />
       </div>
       <GravityHero />
-      <section
-        id="drop"
-        className="gravity-story-section gravity-drop"
-        aria-labelledby="drop-heading"
-      >
-        <Reveal className="gravity-story-copy">
-          <p className="gravity-section-label">[ 02 — Physics ]</p>
-          <h2 id="drop-heading">
-            Let ideas
-            <br />
-            find their weight.
-          </h2>
-          <p>
-            I explore how an interface responds, adapts, and feels. This field
-            is a study in motion: structure gives way to gravity, contact, and
-            momentum.
-          </p>
-        </Reveal>
-      </section>
+      {featuredWork}
       <section
         id="shape"
         className="gravity-story-section gravity-shape"
@@ -107,11 +89,11 @@ export function GravityStory() {
             what comes next.
           </h2>
           <p>
-            From an idea to something you can explore. Keep scrolling to
-            discover selected independent products and client work.
+            Space for the next idea. Continue to the interests behind the work,
+            or return to the selected previews.
           </p>
           <a href="#works">
-            Explore selected work <span aria-hidden="true">↓</span>
+            Back to selected work <span aria-hidden="true">↑</span>
           </a>
         </Reveal>
       </section>

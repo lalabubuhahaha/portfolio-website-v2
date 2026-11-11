@@ -5,9 +5,8 @@ import { Reveal } from "@/components/gravity/reveal";
 export default function HomePage() {
   return (
     <main id="main" tabIndex={-1} className="home-main">
-      <GravityStory />
+      <GravityStory featuredWork={<SelectedWork />} />
       <div className="foundation-content">
-        <SelectedWork />
         <Reveal>
           <AboutOverview />
         </Reveal>

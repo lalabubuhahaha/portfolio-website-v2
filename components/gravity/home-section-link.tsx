@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import type { ComponentProps } from "react";
 
 type Props = Omit<ComponentProps<"a">, "href"> & {
-  section: "about" | "contact" | "drop" | "shape" | "release";
+  section: "works" | "about" | "contact" | "drop" | "shape" | "release";
 };
 export function HomeSectionLink({ section, children, ...props }: Props) {
   const pathname = usePathname();
