@@ -1,6 +1,6 @@
 # Portfolio Website v2
 
-Independent portfolio for Lala. Gravity Edition Stage 5.1 brings featured work into the first section after Hero while preserving the four-phase WebGL story. See [Stage 5.1 placement refinement](docs/gravity-stage-5-1.md) for layout, navigation, and validation details.
+Independent portfolio for Lala. Gravity Edition Stage 5.2 sequences the Hero-to-Selected-Work foreground transition and aligns featured previews while preserving the four-phase WebGL story. See [Stage 5.2 transition refinement](docs/gravity-stage-5-2.md) for behavior and validation details.
 
 ## Development
 

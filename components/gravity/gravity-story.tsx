@@ -1,16 +1,19 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { createGravityExperience } from "./gravity-experience";
 import { GravityLoader } from "./gravity-loader";
 import { Reveal } from "./reveal";
 import { GravityHero } from "./gravity-hero";
+import { useHeroWorkTransition } from "./use-hero-work-transition";
 const GravityScene = dynamic(() => import("./gravity-scene"), { ssr: false });
 
 export function GravityStory({ featuredWork }: { featuredWork: ReactNode }) {
   const [experience] = useState(createGravityExperience);
+  const storyRef = useRef<HTMLDivElement>(null);
+  useHeroWorkTransition(storyRef);
   return (
-    <div className="gravity-story">
+    <div ref={storyRef} className="gravity-story">
       <GravityLoader experience={experience} />
       <div className="gravity-viewport" data-bg-stage="0">
         <div className="gravity-background" aria-hidden="true">

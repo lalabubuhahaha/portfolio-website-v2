@@ -1,0 +1,398 @@
+{
+  "baseCommit": "edc5d7805f7dc9e3b9e56d1d9eb277a868b20467",
+  "screenshots": "Full WebGL at DPR 1 after initial Static warm-up; actual continuous wheel scrolling",
+  "gpu": "SwiftShader software GPU",
+  "stage": "5.2",
+  "date": "2026-11-11",
+  "timezone": "Asia/Taipei",
+  "commands": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "test:gravity": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    "build": "passed"
+  },
+  "viewports": [
+    {
+      "w": 1440,
+      "h": 900,
+      "heroStartMatchesBaseline": true,
+      "reverseRestored": true,
+      "fastJumpAndFragments": true,
+      "reducedMotion": true,
+      "keyboard": true,
+      "meshMaterialCameraPreserved": true,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "contextLost": 0,
+      "errors": [],
+      "noJavaScriptVisible": true,
+      "sampledFrames": 87,
+      "simultaneousFullyVisibleHeadlinesOver80Percent": 0,
+      "sectionHeight": 900,
+      "horizontalOverflow": false,
+      "cardAlignment": [
+        {
+          "left": 637.328125,
+          "width": 560,
+          "top": 160,
+          "bottom": 296.03125
+        },
+        {
+          "left": 637.328125,
+          "width": 560,
+          "top": 312.03125,
+          "bottom": 448.0625
+        },
+        {
+          "left": 637.328125,
+          "width": 560,
+          "top": 464.0625,
+          "bottom": 600.09375
+        }
+      ],
+      "cardGaps": [
+        16,
+        16
+      ],
+      "snapshots": [
+        {
+          "fraction": 0,
+          "scrollY": 0,
+          "heroOpacity": 1,
+          "introOpacity": 0,
+          "cardOpacities": [
+            0,
+            0,
+            0
+          ],
+          "world": {
+            "progress": 0,
+            "renderCount": 23,
+            "visible": 96
+          }
+        },
+        {
+          "fraction": 0.16,
+          "scrollY": 144,
+          "heroOpacity": 0.859963,
+          "introOpacity": 0,
+          "cardOpacities": [
+            0,
+            0,
+            0
+          ],
+          "world": {
+            "progress": 0.16,
+            "renderCount": 34,
+            "visible": 96
+          }
+        },
+        {
+          "fraction": 0.3,
+          "scrollY": 270,
+          "heroOpacity": 0.285772,
+          "introOpacity": 0,
+          "cardOpacities": [
+            0,
+            0,
+            0
+          ],
+          "world": {
+            "progress": 0.3,
+            "renderCount": 45,
+            "visible": 96
+          }
+        },
+        {
+          "fraction": 0.42,
+          "scrollY": 378,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            1,
+            0
+          ],
+          "world": {
+            "progress": 0.42,
+            "renderCount": 58,
+            "visible": 96
+          }
+        },
+        {
+          "fraction": 0.56,
+          "scrollY": 504,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            1,
+            0
+          ],
+          "world": {
+            "progress": 0.56,
+            "renderCount": 69,
+            "visible": 96
+          }
+        },
+        {
+          "fraction": 0.72,
+          "scrollY": 648,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            1,
+            1
+          ],
+          "world": {
+            "progress": 0.72,
+            "renderCount": 82,
+            "visible": 96
+          }
+        },
+        {
+          "fraction": 0.86,
+          "scrollY": 774,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            1,
+            1
+          ],
+          "world": {
+            "progress": 0.86,
+            "renderCount": 93,
+            "visible": 96
+          }
+        },
+        {
+          "fraction": 1,
+          "scrollY": 900,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            1,
+            1
+          ],
+          "world": {
+            "progress": 1,
+            "renderCount": 105,
+            "visible": 94
+          }
+        }
+      ]
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "heroStartMatchesBaseline": true,
+      "reverseRestored": true,
+      "fastJumpAndFragments": true,
+      "reducedMotion": true,
+      "keyboard": true,
+      "meshMaterialCameraPreserved": true,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "contextLost": 0,
+      "errors": [],
+      "noJavaScriptVisible": true,
+      "sampledFrames": 88,
+      "simultaneousFullyVisibleHeadlinesOver80Percent": 0,
+      "sectionHeight": 844,
+      "horizontalOverflow": false,
+      "cardAlignment": [
+        {
+          "left": 24,
+          "width": 342,
+          "top": 369.625,
+          "bottom": 492.9375
+        },
+        {
+          "left": 24,
+          "width": 342,
+          "top": 502.9375,
+          "bottom": 626.25
+        },
+        {
+          "left": 24,
+          "width": 342,
+          "top": 636.25,
+          "bottom": 759.5625
+        }
+      ],
+      "cardGaps": [
+        10,
+        10
+      ],
+      "snapshots": [
+        {
+          "fraction": 0,
+          "scrollY": 0,
+          "heroOpacity": 1,
+          "introOpacity": 0,
+          "cardOpacities": [
+            0,
+            0,
+            0
+          ],
+          "world": {
+            "progress": 0,
+            "renderCount": 27,
+            "visible": 45
+          }
+        },
+        {
+          "fraction": 0.16,
+          "scrollY": 135,
+          "heroOpacity": 0.860114,
+          "introOpacity": 0,
+          "cardOpacities": [
+            0,
+            0,
+            0
+          ],
+          "world": {
+            "progress": 0.15995260663507108,
+            "renderCount": 38,
+            "visible": 45
+          }
+        },
+        {
+          "fraction": 0.3,
+          "scrollY": 253,
+          "heroOpacity": 0.286728,
+          "introOpacity": 0,
+          "cardOpacities": [
+            0,
+            0,
+            0
+          ],
+          "world": {
+            "progress": 0.29976303317535546,
+            "renderCount": 52,
+            "visible": 45
+          }
+        },
+        {
+          "fraction": 0.42,
+          "scrollY": 354,
+          "heroOpacity": 8.38449e-06,
+          "introOpacity": 0.996075,
+          "cardOpacities": [
+            0,
+            0,
+            0
+          ],
+          "world": {
+            "progress": 0.4194312796208531,
+            "renderCount": 63,
+            "visible": 50
+          }
+        },
+        {
+          "fraction": 0.56,
+          "scrollY": 473,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            0,
+            0
+          ],
+          "world": {
+            "progress": 0.5604265402843602,
+            "renderCount": 74,
+            "visible": 54
+          }
+        },
+        {
+          "fraction": 0.72,
+          "scrollY": 608,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            1,
+            0
+          ],
+          "world": {
+            "progress": 0.7203791469194313,
+            "renderCount": 87,
+            "visible": 54
+          }
+        },
+        {
+          "fraction": 0.86,
+          "scrollY": 726,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            1,
+            0.997924
+          ],
+          "world": {
+            "progress": 0.8601895734597157,
+            "renderCount": 99,
+            "visible": 49
+          }
+        },
+        {
+          "fraction": 1,
+          "scrollY": 844,
+          "heroOpacity": 0,
+          "introOpacity": 1,
+          "cardOpacities": [
+            1,
+            1,
+            1
+          ],
+          "world": {
+            "progress": 1,
+            "renderCount": 110,
+            "visible": 52
+          }
+        }
+      ]
+    }
+  ],
+  "foregroundTimingWithWebGLUnavailable": {
+    "mode": "WebGL unavailable fallback, foreground timing only; Full screenshots/regression tested separately",
+    "introAt": 3440.4000000003725,
+    "cardsAt": [
+      3555.600000000559,
+      3739.2000000001863,
+      4688.700000000186
+    ],
+    "firstCardAfterIntroMs": 115.20000000018626,
+    "secondCardAfterFirstMs": 183.59999999962747,
+    "thirdCardAfterSecondMs": 949.5,
+    "fastJumpTo65PercentInstant": true
+  },
+  "liveReducedMotionProbe": {
+    "media": true,
+    "events": [
+      true
+    ],
+    "modeLabel": "full",
+    "foregroundTransition": "0s",
+    "heroOpacityAtLocalProgress0_3": 1,
+    "renderCountSamplesAt1500msIntervals": [
+      23,
+      23,
+      23,
+      23
+    ]
+  },
+  "limitations": [
+    "SwiftShader software GPU; Full subtle 120ms staggering can occur between sampled frames and still requires hardware GPU visual acceptance.",
+    "Existing 3D container mode label can remain Full after a live reduced-motion toggle, while render count stops; scene source was not changed."
+  ]
+}

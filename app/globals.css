@@ -1610,16 +1610,9 @@ main.portfolio-page {
   gap: 16px;
   padding-inline: 16px;
 }
-.featured-previews > .gravity-reveal {
+.featured-previews > .featured-reveal {
   width: min(100%, 560px);
   min-width: 0;
-}
-.featured-previews > :nth-child(2) {
-  justify-self: end;
-}
-.featured-previews > :nth-child(3) {
-  margin-left: 16px;
-  width: min(calc(100% - 16px), 560px);
 }
 .featured-preview {
   position: relative;
@@ -1745,7 +1738,7 @@ main.portfolio-page {
   }
   .featured-intro .portfolio-text-link { margin-top: 8px; font-size: 13px; }
   .featured-previews { gap: 10px; }
-  .featured-previews > :nth-child(n) { margin: 0; width: 100%; }
+  .featured-previews > .featured-reveal { width: 100%; }
   .featured-preview {
     border-radius: 18px;
     background-color: color-mix(in srgb, var(--gravity-white) 40%, transparent);
@@ -1758,4 +1751,35 @@ main.portfolio-page {
 }
 @media (prefers-reduced-motion: reduce) {
   .featured-preview { transition: none; }
+}
+
+/* Stage 5.2: foreground sequencing, separate from the continuous WebGL story. */
+.gravity-hero-copy[data-hero-exited="true"] {
+  visibility: hidden;
+}
+.featured-reveal {
+  transition:
+    opacity 0.8s var(--gravity-ease),
+    transform 0.8s var(--gravity-ease);
+  transition-delay: var(--work-reveal-delay, 0ms);
+}
+.featured-reveal[data-work-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(28px);
+  visibility: hidden;
+}
+.featured-reveal[data-work-reveal="visible"] {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+.featured-reveal[data-work-reveal="instant"],
+.featured-reveal:focus-within {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .featured-reveal { transition: none; }
 }

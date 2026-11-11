@@ -2,7 +2,6 @@ import Link from "next/link";
 import { GravityArrow } from "@/components/gravity/gravity-arrow";
 import { getItems } from "@/lib/content";
 import { FeaturedProjectPreview } from "./featured-project-preview";
-import { Reveal } from "@/components/gravity/reveal";
 
 export function SelectedWork() {
   const items = getItems({ featured: true });
@@ -15,7 +14,10 @@ export function SelectedWork() {
       {/* Preserve the Hero's original Scroll fragment without changing its content. */}
       <span id="drop" className="featured-drop-anchor" aria-hidden="true" />
       <div className="featured-layout">
-        <Reveal className="gravity-story-copy featured-intro">
+        <div
+          className="gravity-story-copy featured-intro featured-reveal"
+          data-work-reveal
+        >
           <p className="gravity-section-label">[ 02 — Selected Work ]</p>
           <h2 id="featured-title">
             Ideas take
@@ -29,16 +31,16 @@ export function SelectedWork() {
           <Link href="/work" className="portfolio-text-link" data-gravity-ui>
             View all work <GravityArrow />
           </Link>
-        </Reveal>
+        </div>
         <div
           className="featured-previews"
           role="group"
           aria-label="Featured project previews"
         >
           {items.map((item) => (
-            <Reveal key={item.id}>
+            <div key={item.id} className="featured-reveal" data-work-reveal>
               <FeaturedProjectPreview item={item} />
-            </Reveal>
+            </div>
           ))}
         </div>
       </div>
