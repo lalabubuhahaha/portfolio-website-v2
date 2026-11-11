@@ -1,6 +1,6 @@
 # Portfolio Website v2
 
-Independent portfolio for Lala. Gravity Edition Stage 5.3 increases desktop Hero sphere presence and removes the full-width header background while preserving the four-phase WebGL story. See [Stage 5.3 composition refinement](docs/gravity-stage-5-3.md) for measurements and validation details.
+Independent portfolio for Lala. Gravity Edition Stage 5.3.1 preserves the larger Hero composition while enforcing spherical meshes and circular 3D projection. See [Sphere Integrity Fix](docs/gravity-stage-5-3-1.md) for causes, projection design, and validation.
 
 ## Development
 

@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createGravityWorld } from "../.next/gravity-test/gravity-world.js";
+const cameraAspect = camera => (camera.right - camera.left) / (camera.top - camera.bottom);
 
 test("Gravity Hero uses physical spheres, converges, and responds to the pointer", () => {
   global.window = { innerWidth: 1440, devicePixelRatio: 3 };
@@ -18,7 +19,7 @@ test("Gravity Hero uses physical spheres, converges, and responds to the pointer
   );
   try {
     assert.equal(world.balls.length, 96);
-    assert.equal(world.camera.fov, 38);
+    assert.equal(world.camera.isOrthographicCamera, true);
     assert.equal(world.camera.position.z, 11);
     assert.equal(world.balls[0].sphere.geometry.parameters.widthSegments, 48);
     for (const ball of world.balls) {
@@ -232,7 +233,7 @@ test("scroll framing keeps canvas, camera, solver bounds and meshes stable", () 
         time += 1 / 60;
         world.simulate(time, false);
       }
-      const aspect = world.camera.aspect;
+      const aspect = cameraAspect(world.camera);
       const identities = world.balls.map((ball) => ball.sphere);
       const bounds = world.inspect().frustum;
       const targets = world.balls.map((ball) => ball.shapeTarget.clone());
@@ -249,7 +250,7 @@ test("scroll framing keeps canvas, camera, solver bounds and meshes stable", () 
         world.render();
         assert.equal(world.resize(), false);
         assert.equal(sizeWrites, initialWrites);
-        assert.equal(world.camera.aspect, aspect);
+        assert.equal(cameraAspect(world.camera), aspect);
         assert.deepEqual(world.inspect().frustum, bounds);
         assert.equal(world.inspect().entranceCount, 1);
         world.balls.forEach((ball, index) => {
@@ -262,10 +263,7 @@ test("scroll framing keeps canvas, camera, solver bounds and meshes stable", () 
       container.clientHeight += 50;
       assert.equal(world.resize(), true);
       assert.equal(world.resize(), false);
-      assert.equal(
-        world.camera.aspect,
-        container.clientWidth / container.clientHeight,
-      );
+      assert.ok(Math.abs(cameraAspect(world.camera) - container.clientWidth / container.clientHeight) < 1e-12);
       assert.equal(world.inspect().entranceCount, 1);
     } finally {
       world.dispose();
@@ -342,6 +340,7 @@ test("palette updates retain meshes, materials, motion, targets, opacity and Sta
         time += 1 / 60;
         world.simulate(time, false);
       }
+      world.render(); // Establish the canonical rendered rotation before color-only updates.
       const before = state();
       for (let repeat = 0; repeat < 4; repeat++)
         for (const color of colors) {
@@ -547,7 +546,7 @@ test("Hero presentation resizes continuously and maps off-center pointer coordin
     for (const progress of [0.3, 0.31, 0.55, 0.79, 0.8, 1, 2.2, 3.45, 0]) {
       world.control.progress = progress; world.render();
       assert.equal(sizeWrites, writes);
-      assert.equal(world.camera.fov, 38);
+      assert.equal(world.camera.isOrthographicCamera, true);
       assert.equal(world.camera.position.z, 11);
       if (progress >= 0.8) {
         assert.equal(world.inspect().presentation.scale, 1);
@@ -555,4 +554,83 @@ test("Hero presentation resizes continuously and maps off-center pointer coordin
       }
     }
   } finally { world.dispose(); delete global.window; }
+});
+
+test("a scalar sphere still has an oval off-axis perspective contour", async () => {
+  const THREE = await import("three");
+  const camera = new THREE.PerspectiveCamera(38, 1708 / 900, 0.1, 100);
+  camera.updateMatrixWorld(true);
+  const center = new THREE.Vector3(5, 2, -10), radius = 0.8;
+  const normal = center.clone().normalize();
+  const u = normal.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
+  const v = normal.clone().cross(u).normalize();
+  const tangentCenter = center.clone().multiplyScalar(1 - radius ** 2 / center.lengthSq());
+  const tangentRadius = radius * Math.sqrt(1 - radius ** 2 / center.lengthSq());
+  const radial = new THREE.Vector2(center.x, center.y).normalize();
+  const perpendicular = new THREE.Vector2(-radial.y, radial.x);
+  const major = [], minor = [];
+  for (let i = 0; i < 720; i++) {
+    const angle = i * Math.PI / 360;
+    const ndc = tangentCenter.clone()
+      .addScaledVector(u, Math.cos(angle) * tangentRadius)
+      .addScaledVector(v, Math.sin(angle) * tangentRadius).project(camera);
+    const point = new THREE.Vector2(ndc.x * 1708 / 2, ndc.y * 900 / 2);
+    major.push(point.dot(radial)); minor.push(point.dot(perpendicular));
+  }
+  const ratio = (Math.max(...major) - Math.min(...major)) /
+    (Math.max(...minor) - Math.min(...minor));
+  assert.ok(ratio > 1.1, "uniform scale alone cannot correct perspective silhouette distortion");
+});
+
+test("every sphere stays uniformly scaled with circular projected contours across all stages and resizes", async () => {
+  const THREE = await import("three");
+  for (const [width, height] of [[1440,900],[1708,900],[1920,1080],[2560,1440],[390,844]]) {
+    global.window = { innerWidth: width, devicePixelRatio: 1 };
+    const container = { clientWidth: width, clientHeight: height };
+    let writes = 0;
+    const world = createGravityWorld(container, {
+      setPixelRatio() {}, setSize() { writes++; }, shadowMap: {}, render() {},
+    });
+    try {
+      assert.equal(world.camera.isOrthographicCamera, true);
+      world.start(); let time = 0;
+      const meshes = world.balls.map(b => b.sphere), initialWrites = writes;
+      const check = () => {
+        world.render(); const info = world.inspect();
+        assert.equal(info.entranceCount, 1);
+        for (const [i, ball] of world.balls.entries()) {
+          assert.equal(ball.sphere, meshes[i]);
+          assert.equal(ball.sphere.geometry.type, "SphereGeometry");
+          for (const node of [ball.sphere, ball.meshGroup, ball.displayAnchor, ball.displayAnchor.parent]) {
+            assert.equal(node.scale.x, node.scale.y);
+            assert.equal(node.scale.y, node.scale.z);
+            assert.ok(node.scale.x > 0 && Number.isFinite(node.scale.x));
+          }
+          const scale = ball.sphere.getWorldScale(new THREE.Vector3());
+          assert.ok(Math.abs(scale.x - scale.y) < 1e-10 && Math.abs(scale.y - scale.z) < 1e-10, JSON.stringify({width, progress:world.control.progress,id:ball.id,scale:scale.toArray(),quaternionLength:ball.meshGroup.quaternion.length()}));
+          assert.ok(Math.abs(info.sphereIntegrity[i].projectedAxisRatio - 1) < 1e-10);
+          if (ball.material.opacity < 0.01) continue;
+          // Independently project the world-space sphere's silhouette circle.
+          const center = ball.sphere.getWorldPosition(new THREE.Vector3());
+          assert.ok(center.z + scale.x < world.camera.position.z - world.camera.near);
+          assert.ok(center.z - scale.x > world.camera.position.z - world.camera.far);
+          const projectedCenter = center.clone().project(world.camera);
+          const distances = [];
+          for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 8) {
+            const p = center.clone().add(new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0).multiplyScalar(scale.x)).project(world.camera);
+            distances.push(Math.hypot((p.x - projectedCenter.x) * container.clientWidth / 2, (p.y - projectedCenter.y) * container.clientHeight / 2));
+          }
+          assert.ok(Math.max(...distances) / Math.min(...distances) - 1 < 1e-7);
+        }
+      };
+      for (const progress of [0,0.55,1,2.2,3,3.45,2.2,0]) {
+        world.control.progress = progress;
+        for (let i = 0; i < 120; i++) { time += 1 / 60; world.simulate(time, false); }
+        check(); assert.equal(writes, initialWrites);
+      }
+      container.clientWidth += 100; container.clientHeight += 40;
+      assert.equal(world.resize(), true); check();
+      assert.ok(Math.abs(cameraAspect(world.camera) - container.clientWidth / container.clientHeight) < 1e-12);
+    } finally { world.dispose(); delete global.window; }
+  }
 });

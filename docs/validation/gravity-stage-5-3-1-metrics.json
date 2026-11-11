@@ -1,0 +1,342 @@
+{
+  "stage": "5.3.1",
+  "date": "2026-11-11",
+  "timezone": "Asia/Taipei",
+  "baseCommit": "4f00c0979e1713daf145a87baa5a772e949b4fb0",
+  "commands": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "test:gravity": {
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0
+    },
+    "build": "passed"
+  },
+  "rootCauses": [
+    "Off-axis perspective projection produces an elliptical silhouette even for a uniformly scaled 3D sphere.",
+    "Accumulated non-unit rolling quaternions can deform the effective world matrix."
+  ],
+  "rotationReproBeforeNormalization": {
+    "viewportWidth": 1440,
+    "progress": 1,
+    "ballId": 30,
+    "quaternionLength": 0.9961075423526534,
+    "effectiveWorldScale": [
+      0.5505162498630453,
+      0.551464578766269,
+      0.5570367190996403
+    ]
+  },
+  "solution": "Real OrthographicCamera, uniform depth compensation with real SphereGeometry and PBR lighting, and render-time quaternion normalization. No 2D planes, sprites, masks or CSS stretch.",
+  "comparison": [
+    {
+      "w": 1440,
+      "h": 900,
+      "beforePerspectiveMaxAxisRatioEstimate": 1.0726371482450487,
+      "afterActualMaxAxisRatio": 1.0000000000000107,
+      "sphereCount": 96,
+      "beforeWidth": 73.1674344037019,
+      "afterWidth": 72.71764142374279,
+      "afterHeight": 454.79133788172385,
+      "textOverlap": 0,
+      "headerUnchanged": true,
+      "heroTextRectsUnchanged": true,
+      "projection": "OrthographicCamera",
+      "canvas": {
+        "canvasCss": [
+          1440,
+          900
+        ],
+        "buffer": [
+          1440,
+          900
+        ],
+        "transform": "none",
+        "motionMode": "static-selected"
+      },
+      "allLocalAndAnchorScalesUniform": true,
+      "maxWorldScaleAxisRatio": 1.0000000000000107
+    },
+    {
+      "w": 1708,
+      "h": 900,
+      "beforePerspectiveMaxAxisRatioEstimate": 1.1002261857971227,
+      "afterActualMaxAxisRatio": 1.0000000000000087,
+      "sphereCount": 96,
+      "beforeWidth": 75.60017992841709,
+      "afterWidth": 77.19587916949328,
+      "afterHeight": 454.7669842296824,
+      "textOverlap": 0,
+      "headerUnchanged": true,
+      "heroTextRectsUnchanged": true,
+      "projection": "OrthographicCamera",
+      "canvas": {
+        "canvasCss": [
+          1708,
+          900
+        ],
+        "buffer": [
+          1708,
+          900
+        ],
+        "transform": "none",
+        "motionMode": "static-selected"
+      },
+      "allLocalAndAnchorScalesUniform": true,
+      "maxWorldScaleAxisRatio": 1.0000000000000089
+    },
+    {
+      "w": 1920,
+      "h": 1080,
+      "beforePerspectiveMaxAxisRatioEstimate": 1.0862484687217224,
+      "afterActualMaxAxisRatio": 1.0000000000000098,
+      "sphereCount": 96,
+      "beforeWidth": 74.68526460188721,
+      "afterWidth": 69.77435925442651,
+      "afterHeight": 558.4111484654231,
+      "textOverlap": 0,
+      "headerUnchanged": true,
+      "heroTextRectsUnchanged": true,
+      "projection": "OrthographicCamera",
+      "canvas": {
+        "canvasCss": [
+          1920,
+          1080
+        ],
+        "buffer": [
+          1920,
+          1080
+        ],
+        "transform": "none",
+        "motionMode": "static-selected"
+      },
+      "allLocalAndAnchorScalesUniform": true,
+      "maxWorldScaleAxisRatio": 1.0000000000000078
+    },
+    {
+      "w": 2560,
+      "h": 1440,
+      "beforePerspectiveMaxAxisRatioEstimate": 1.0866640979060946,
+      "afterActualMaxAxisRatio": 1.000000000000011,
+      "sphereCount": 96,
+      "beforeWidth": 74.85389372468151,
+      "afterWidth": 70.93321362184305,
+      "afterHeight": 819.1942011878659,
+      "textOverlap": 0,
+      "headerUnchanged": true,
+      "heroTextRectsUnchanged": true,
+      "projection": "OrthographicCamera",
+      "canvas": {
+        "canvasCss": [
+          2560,
+          1440
+        ],
+        "buffer": [
+          2560,
+          1440
+        ],
+        "transform": "none",
+        "motionMode": "static-selected"
+      },
+      "allLocalAndAnchorScalesUniform": true,
+      "maxWorldScaleAxisRatio": 1.0000000000000078
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "beforePerspectiveMaxAxisRatioEstimate": 1.0317327759652388,
+      "afterActualMaxAxisRatio": 1.0000000000000084,
+      "sphereCount": 54,
+      "beforeWidth": 136.0692003146202,
+      "afterWidth": 122.32913785870281,
+      "afterHeight": 242.9773283768676,
+      "textOverlap": 0,
+      "headerUnchanged": true,
+      "heroTextRectsUnchanged": true,
+      "projection": "OrthographicCamera",
+      "canvas": {
+        "canvasCss": [
+          390,
+          844
+        ],
+        "buffer": [
+          390,
+          844
+        ],
+        "transform": "none",
+        "motionMode": "static-selected"
+      },
+      "allLocalAndAnchorScalesUniform": true,
+      "maxWorldScaleAxisRatio": 1.00000000000001
+    }
+  ],
+  "protectedSource": {
+    "simulate": {
+      "unchanged": true,
+      "sha256": "7fbb876e2d634cda896cc0a8c15b74c6907d0bbdb3dc205bbe861cb636bd5093"
+    },
+    "scatter": {
+      "unchanged": true,
+      "sha256": "78f9d21a0d2d941e69856ca0c47fc0160e6fe1af30cb1a913edc91520e9f2346"
+    },
+    "geometryAndMaterials": {
+      "unchanged": true,
+      "sha256": "87d7bdf50fb53aa6fadb19d4a2d10703b070c9f499a513112927aa83e6a4f5e2"
+    },
+    "palette": {
+      "unchanged": true,
+      "sha256": "7481a403884f71250341af9ff5317cbc250b7f91b5ef87c5a4df8f49ad3b557e"
+    }
+  },
+  "regression": [
+    {
+      "w": 1440,
+      "h": 900,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "contextLost": 0,
+      "errors": [],
+      "sampleCount": 20,
+      "maxProjectedAxisRatio": 1.000000000000011,
+      "heroStart": {
+        "scale": 0.7454222222222223,
+        "offsetY": 0.6270588424241793,
+        "horizontalSpread": 1.232173622704508
+      },
+      "heroReturn": {
+        "scale": 0.7454222222222223,
+        "offsetY": 0.6270588424241793,
+        "horizontalSpread": 1.232173622704508
+      }
+    },
+    {
+      "w": 1708,
+      "h": 900,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "palette": [
+        "pinkBlush",
+        "voltLime",
+        "arcticBlue",
+        "roseGold"
+      ],
+      "controlsFocusAndEscape": true,
+      "pointerInteraction": true,
+      "auto": "static-performance",
+      "staticFull": true,
+      "resizePreservesAndRepaints": true,
+      "liveReducedMotionStopsPainting": true,
+      "initialReducedMotion": true,
+      "contextLost": 0,
+      "errors": [],
+      "sampleCount": 20,
+      "maxProjectedAxisRatio": 1.0000000000000129,
+      "heroStart": {
+        "scale": 0.7454222222222223,
+        "offsetY": 0.6270588424241793,
+        "horizontalSpread": 1.5181189723256852
+      },
+      "heroReturn": {
+        "scale": 0.7454222222222223,
+        "offsetY": 0.6270588424241793,
+        "horizontalSpread": 1.5181189723256852
+      }
+    },
+    {
+      "w": 1920,
+      "h": 1080,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "contextLost": 0,
+      "errors": [],
+      "sampleCount": 20,
+      "maxProjectedAxisRatio": 1.0000000000000127,
+      "heroStart": {
+        "scale": 0.7611851851851852,
+        "offsetY": 0.6803658581112461,
+        "horizontalSpread": 1.3407302452316079
+      },
+      "heroReturn": {
+        "scale": 0.7611851851851852,
+        "offsetY": 0.6803658581112461,
+        "horizontalSpread": 1.3407302452316079
+      }
+    },
+    {
+      "w": 2560,
+      "h": 1440,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "contextLost": 0,
+      "errors": [],
+      "sampleCount": 20,
+      "maxProjectedAxisRatio": 1.0000000000000098,
+      "heroStart": {
+        "scale": 0.780888888888889,
+        "offsetY": 0.7469996277200793,
+        "horizontalSpread": 1.3069003984063747
+      },
+      "heroReturn": {
+        "scale": 0.780888888888889,
+        "offsetY": 0.7469996277200793,
+        "horizontalSpread": 1.3069003984063747
+      }
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "palette": [
+        "pinkBlush",
+        "voltLime",
+        "arcticBlue",
+        "roseGold"
+      ],
+      "controlsFocusAndEscape": true,
+      "pointerInteraction": true,
+      "auto": "static-performance",
+      "staticFull": true,
+      "resizePreservesAndRepaints": true,
+      "liveReducedMotionStopsPainting": true,
+      "initialReducedMotion": true,
+      "contextLost": 0,
+      "errors": [],
+      "sampleCount": 20,
+      "maxProjectedAxisRatio": 1.0000000000000127,
+      "heroStart": {
+        "scale": 0.47521327014218007,
+        "offsetY": 1.2696550377618876,
+        "horizontalSpread": 2.1043183404807024
+      },
+      "heroReturn": {
+        "scale": 0.47521327014218007,
+        "offsetY": 1.2696550377618876,
+        "horizontalSpread": 2.1043183404807024
+      }
+    }
+  ],
+  "verificationScope": {
+    "fullRoundtripViewports": 5,
+    "roundtripProgressSamplesPerViewport": 20,
+    "paletteControlsPointerModesResizeReducedMotionViewports": [
+      1708,
+      390
+    ]
+  },
+  "imageMethod": "DPR 1 Static real WebGL after Loader; Full cross-stage regression separately at DPR 0.5. Randomized population/pose is not pixel-identical between versions.",
+  "notVerified": [
+    "Hardware GPU / physical devices and sustained real-device performance",
+    "Final human visual acceptance"
+  ],
+  "notes": [
+    "Projected circle ratios have normal floating point roundoff near 1.0.",
+    "Screen-edge cropping, occlusion and glass refraction images are separate from geometric sphere contours."
+  ]
+}

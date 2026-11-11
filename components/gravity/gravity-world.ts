@@ -32,12 +32,19 @@ export function createGravityWorld(
   const ballColor = "#2F69FF";
   let heroColor: HeroColor = ballColor;
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(
-    38,
-    container.clientWidth / container.clientHeight,
-    0.1,
+  // Keep the legacy 38-degree framing at the z=0 plane, without off-axis conics.
+  const projectionHeight = 2 * Math.tan(THREE.MathUtils.degToRad(38 / 2)) * 11;
+  const projectionWidth =
+    projectionHeight * (container.clientWidth / container.clientHeight);
+  const camera = new THREE.OrthographicCamera(
+    -projectionWidth / 2,
+    projectionWidth / 2,
+    projectionHeight / 2,
+    -projectionHeight / 2,
+    -100,
     100,
   );
+  // An orthographic near plane may be negative: keep growing Release spheres intact.
   camera.position.set(0, 0, 11);
 
   let renderWidth = container.clientWidth;
@@ -86,10 +93,14 @@ export function createGravityWorld(
   let viewportWidth = 10;
   let viewportHeight = 6;
   const updateFrustumBounds = () => {
-    const fovRad = THREE.MathUtils.degToRad(camera.fov);
-    viewportHeight = 2 * Math.tan(fovRad / 2) * camera.position.z;
+    viewportHeight = projectionHeight;
     viewportWidth =
       viewportHeight * (container.clientWidth / container.clientHeight);
+    camera.left = -viewportWidth / 2;
+    camera.right = viewportWidth / 2;
+    camera.top = viewportHeight / 2;
+    camera.bottom = -viewportHeight / 2;
+    camera.updateProjectionMatrix();
   };
   updateFrustumBounds();
 
@@ -349,8 +360,25 @@ export function createGravityWorld(
       mobileWeight,
     );
     horizontalSpread = THREE.MathUtils.lerp(1, heroSpread, heroF);
-    for (const ball of balls)
-      ball.displayAnchor.position.x = ball.position.x * (horizontalSpread - 1);
+    for (const ball of balls) {
+      // Rendering must use a pure rotation, even after accumulated rolling updates.
+      // This does not change the solver's positions, velocities or collision parameters.
+      if (Math.abs(ball.meshGroup.quaternion.lengthSq() - 1) > 1e-14)
+        ball.meshGroup.quaternion.normalize();
+      // A real 3D sphere under an orthographic camera has a circular silhouette.
+      // Uniform depth scaling retains the previous apparent size and Release growth.
+      const depth = Math.max(
+        0.1,
+        camera.position.z - ball.position.z * scale,
+      );
+      const depthScale = camera.position.z / depth;
+      ball.displayAnchor.scale.setScalar(depthScale);
+      ball.displayAnchor.position.set(
+        depthScale * ball.position.x * (horizontalSpread - 1),
+        (depthScale - 1) * presentation.position.y / scale,
+        (1 - depthScale) * ball.position.z,
+      );
+    }
     presentation.updateMatrixWorld(true);
   };
   const mouseProjVec = new THREE.Vector3();
@@ -359,9 +387,9 @@ export function createGravityWorld(
     if (!mousePos) return;
     mouseProjVec.set(mousePos.x, mousePos.y, 0.5);
     mouseProjVec.unproject(camera);
-    const dir = mouseProjVec.sub(camera.position).normalize();
-    const distance = -camera.position.z / dir.z;
-    mouseWorld3D.copy(camera.position).add(dir.multiplyScalar(distance));
+    // Orthographic picking rays are parallel; intersect the same physical z=0 plane.
+    mouseWorld3D.copy(mouseProjVec);
+    mouseWorld3D.z = 0;
     updatePresentation();
     presentation.worldToLocal(mouseWorld3D);
     mouseWorld3D.x /= horizontalSpread;
@@ -637,8 +665,6 @@ export function createGravityWorld(
     renderWidth = width;
     renderHeight = height;
     pixelRatio = ratio;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
     renderer.setSize(width, height);
     if (dimensionsChanged) {
       updateFrustumBounds();
@@ -712,11 +738,7 @@ export function createGravityWorld(
           id: ball.id,
           x: ((ndc.x + 1) * renderWidth) / 2,
           y: ((1 - ndc.y) * renderHeight) / 2,
-          radius:
-            (radius * renderHeight) /
-            (2 *
-              Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) *
-              (camera.position.z - center.z)),
+          radius: (radius * renderHeight) / viewportHeight,
         });
       }
       average.add(ball.position);
@@ -725,7 +747,28 @@ export function createGravityWorld(
     return {
       heroColor,
       progress: control.progress,
-      cameraAspect: camera.aspect,
+      cameraAspect: renderWidth / renderHeight,
+      projection: camera.type,
+      sphereIntegrity: balls.map((ball) => {
+        const worldScale = ball.sphere.getWorldScale(new THREE.Vector3());
+        const mvp = new THREE.Matrix4()
+          .multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
+          .multiply(ball.sphere.matrixWorld).elements;
+        // Gram matrix of the actual model-to-pixel projection, not a declared scale flag.
+        const a = [mvp[0], mvp[4], mvp[8]].map(v => v * renderWidth / 2);
+        const b = [mvp[1], mvp[5], mvp[9]].map(v => v * renderHeight / 2);
+        const xx = a.reduce((sum, v) => sum + v * v, 0);
+        const yy = b.reduce((sum, v) => sum + v * v, 0);
+        const xy = a.reduce((sum, v, i) => sum + v * b[i], 0);
+        const discriminant = Math.hypot(xx - yy, 2 * xy);
+        return {
+          id: ball.id,
+          meshScale: ball.sphere.scale.toArray(),
+          anchorScale: ball.displayAnchor.scale.toArray(),
+          worldScale: worldScale.toArray(),
+          projectedAxisRatio: Math.sqrt((xx + yy + discriminant) / (xx + yy - discriminant)),
+        };
+      }),
       frustum: [viewportWidth, viewportHeight],
       presentation: {
         scale: presentation.scale.x,
