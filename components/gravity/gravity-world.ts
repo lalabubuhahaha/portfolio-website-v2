@@ -324,16 +324,31 @@ export function createGravityWorld(
   // particle reset, or physical radius change while scrolling.
   const updatePresentation = () => {
     const heroF = 1 - THREE.MathUtils.smoothstep(control.progress, 0.3, 0.8);
-    const mobile = renderWidth < 768;
-    const top = mobile ? 80 : 76;
-    const bottom = renderHeight * (mobile ? 0.43 : 0.25);
-    const heroScale = Math.max(1, renderHeight - top - bottom) / renderHeight;
+    const mobileWeight = 1 - THREE.MathUtils.smoothstep(renderWidth, 640, 1024);
+    const top = THREE.MathUtils.lerp(76, 80, mobileWeight);
+    const bottom = renderHeight * THREE.MathUtils.lerp(0.25, 0.43, mobileWeight);
+    const baseHeroScale = Math.max(1, renderHeight - top - bottom) / renderHeight;
+    // A continuous desktop-only composition ramp; sphere radii and solver stay intact.
+    const desktopWeight = THREE.MathUtils.smoothstep(renderWidth, 1024, 1440);
+    const heroScale = baseHeroScale * (1 + 0.12 * desktopWeight);
     const scale = THREE.MathUtils.lerp(1, heroScale, heroF);
     presentation.scale.setScalar(scale);
     presentation.position.y =
       ((bottom - top) / (2 * renderHeight)) * viewportHeight * heroF;
-    // Keep the original mobile Hero's wide cluster while each sphere stays round.
-    horizontalSpread = mobile ? THREE.MathUtils.lerp(1, 1 / scale, heroF) : 1;
+    // Spread centers, not sphere geometry; the existing inverse pointer map uses this factor.
+    const aspect = renderWidth / renderHeight;
+    // Calibrated at 16:9; compensate for aspect and the reserved Hero text band.
+    const desktopSpread = Math.max(
+      1,
+      1.34 * (aspect / (16 / 9)) * (0.68 / baseHeroScale) *
+        (1 + 0.05 * THREE.MathUtils.smoothstep(aspect, 1.78, 1.95)),
+    );
+    const heroSpread = THREE.MathUtils.lerp(
+      THREE.MathUtils.lerp(1, desktopSpread, desktopWeight),
+      1 / scale,
+      mobileWeight,
+    );
+    horizontalSpread = THREE.MathUtils.lerp(1, heroSpread, heroF);
     for (const ball of balls)
       ball.displayAnchor.position.x = ball.position.x * (horizontalSpread - 1);
     presentation.updateMatrixWorld(true);

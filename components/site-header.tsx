@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { HomeSectionLink } from "@/components/gravity/home-section-link";
 import { GravityArrow } from "@/components/gravity/gravity-arrow";
+import { HeaderContrast } from "@/components/gravity/header-contrast";
 import { StudioControls } from "@/components/gravity/studio-controls";
 export function SiteHeader() {
   return (
     <header className="site-header" data-gravity-ui>
+      <HeaderContrast />
       <Link href="/" className="lala-wordmark" aria-label="Lala home">
         LALA
       </Link>

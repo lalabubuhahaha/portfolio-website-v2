@@ -415,7 +415,7 @@ test("pointer-down, flick momentum and speed cap use the original forces", () =>
       const frame = world.inspect().presentation;
       const p = world.balls[0].position
         .clone()
-        .set(physicalX * frame.scale, frame.offsetY, 0)
+        .set(physicalX * frame.scale * frame.horizontalSpread, frame.offsetY, 0)
         .project(world.camera);
       world.mousePos.x = p.x;
       world.mousePos.y = p.y;
@@ -494,4 +494,65 @@ test("pairwise correction uses mass, reduces overlap, preserves momentum and rot
     world.dispose();
     delete global.window;
   }
+});
+
+test("Hero presentation resizes continuously and maps off-center pointer coordinates back to physics", () => {
+  global.window = { innerWidth: 1708, devicePixelRatio: 1 };
+  const container = { clientWidth: 1708, clientHeight: 900 };
+  let sizeWrites = 0;
+  const world = createGravityWorld(container, {
+    setPixelRatio() {}, setSize() { sizeWrites++; }, shadowMap: {}, render() {},
+  });
+  try {
+    world.start();
+    world.simulate(0, false);
+    const identities = world.balls.map(b => b.sphere);
+    const reset = () => world.balls.forEach((b, i) => {
+      b.position.set(i === 0 ? 1 : 100 + i * 3, 0, 0);
+      b.velocity.set(0, 0, 0);
+      b.meshGroup.position.copy(b.position);
+    });
+    const impulse = (physicalX, active) => {
+      reset(); world.render();
+      const frame = world.inspect().presentation;
+      const point = world.balls[0].position.clone()
+        .set(physicalX * frame.scale * frame.horizontalSpread, frame.offsetY, 0)
+        .project(world.camera);
+      // Warm the pointer history at exactly the same point, removing flick momentum.
+      world.mousePos.x = point.x; world.mousePos.y = point.y;
+      world.mousePos.active = active;
+      world.simulate(10);
+      reset(); world.simulate(10);
+      return world.balls[0].velocity.x;
+    };
+    const base = impulse(1, false);
+    assert.ok(Math.abs(impulse(1, true) - base) < 1e-8);
+    const right = impulse(0.7, true) - base;
+    const left = impulse(1.3, true) - base;
+    assert.ok(right > 0 && left < 0);
+    assert.ok(Math.abs(right + left) < 1e-8);
+    // Real resizes retain the same meshes; responsive transitions have no step.
+    for (const boundary of [640, 768, 1024, 1440]) {
+      const frames = [];
+      for (const width of [boundary - 1, boundary, boundary + 1]) {
+        container.clientWidth = width;
+        world.resize(); world.render();
+        frames.push(world.inspect().presentation);
+        world.balls.forEach((b,i) => assert.equal(b.sphere, identities[i]));
+      }
+      assert.ok(Math.abs(frames[2].scale - frames[0].scale) < 0.005);
+      assert.ok(Math.abs(frames[2].horizontalSpread - frames[0].horizontalSpread) < 0.01);
+    }
+    const writes = sizeWrites;
+    for (const progress of [0.3, 0.31, 0.55, 0.79, 0.8, 1, 2.2, 3.45, 0]) {
+      world.control.progress = progress; world.render();
+      assert.equal(sizeWrites, writes);
+      assert.equal(world.camera.fov, 38);
+      assert.equal(world.camera.position.z, 11);
+      if (progress >= 0.8) {
+        assert.equal(world.inspect().presentation.scale, 1);
+        assert.equal(world.inspect().presentation.horizontalSpread, 1);
+      }
+    }
+  } finally { world.dispose(); delete global.window; }
 });

@@ -1,0 +1,669 @@
+{
+  "stage": "5.3",
+  "date": "2026-11-11",
+  "timezone": "Asia/Taipei",
+  "baseCommit": "5668dcca3f6db5a7b21421766cbc759492f071ef",
+  "method": "Chromium Static real WebGL, DPR 1, projected visible sphere center/radius union; Full regression separately at DPR 0.5. Randomized population/pose is not a pixel-identical cohort.",
+  "commands": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "test:gravity": {
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    "build": "passed"
+  },
+  "comparison": [
+    {
+      "viewport": [
+        1440,
+        900
+      ],
+      "beforeProjectedWidthPercent": 53.42858053045363,
+      "afterProjectedWidthPercent": 71.80687603177728,
+      "beforeVisibleWidthPercent": 53.42858053045363,
+      "afterVisibleWidthPercent": 71.80687603177728,
+      "beforeHeight": 431.2158940758931,
+      "afterHeight": 439.1643970267363,
+      "textOverlapBefore": 0,
+      "textOverlapAfter": 0,
+      "edgeIntersectingSpheresBefore": 0,
+      "edgeIntersectingSpheresAfter": 0,
+      "heroTextRectsUnchanged": true,
+      "headerRectUnchanged": true,
+      "navGlassStylesUnchanged": true,
+      "headerAfter": {
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 1440,
+          "bottom": 96,
+          "width": 1440,
+          "height": 96
+        },
+        "background": "rgba(0, 0, 0, 0)",
+        "image": "none",
+        "blur": "none",
+        "border": "0px",
+        "shadow": "none",
+        "before": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "after": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": [
+        1708,
+        900
+      ],
+      "beforeProjectedWidthPercent": 43.39287917138273,
+      "afterProjectedWidthPercent": 73.91986867872922,
+      "beforeVisibleWidthPercent": 43.39287917138273,
+      "afterVisibleWidthPercent": 73.91986867872922,
+      "beforeHeight": 397.3442136546919,
+      "afterHeight": 445.3373570942347,
+      "textOverlapBefore": 0,
+      "textOverlapAfter": 0,
+      "edgeIntersectingSpheresBefore": 0,
+      "edgeIntersectingSpheresAfter": 0,
+      "heroTextRectsUnchanged": true,
+      "headerRectUnchanged": true,
+      "navGlassStylesUnchanged": true,
+      "headerAfter": {
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 1708,
+          "bottom": 96,
+          "width": 1708,
+          "height": 96
+        },
+        "background": "rgba(0, 0, 0, 0)",
+        "image": "none",
+        "blur": "none",
+        "border": "0px",
+        "shadow": "none",
+        "before": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "after": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "beforeProjectedWidthPercent": 49.232050596596046,
+      "afterProjectedWidthPercent": 69.97182116689774,
+      "beforeVisibleWidthPercent": 49.232050596596046,
+      "afterVisibleWidthPercent": 69.97182116689774,
+      "beforeHeight": 513.9040111973582,
+      "afterHeight": 548.5380117853163,
+      "textOverlapBefore": 0,
+      "textOverlapAfter": 0,
+      "edgeIntersectingSpheresBefore": 0,
+      "edgeIntersectingSpheresAfter": 0,
+      "heroTextRectsUnchanged": true,
+      "headerRectUnchanged": true,
+      "navGlassStylesUnchanged": true,
+      "headerAfter": {
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 96,
+          "width": 1920,
+          "height": 96
+        },
+        "background": "rgba(0, 0, 0, 0)",
+        "image": "none",
+        "blur": "none",
+        "border": "0px",
+        "shadow": "none",
+        "before": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "after": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": [
+        2560,
+        1440
+      ],
+      "beforeProjectedWidthPercent": 51.89497256694394,
+      "afterProjectedWidthPercent": 73.49828587319529,
+      "beforeVisibleWidthPercent": 51.89497256694394,
+      "afterVisibleWidthPercent": 73.49828587319529,
+      "beforeHeight": 690.6508930054049,
+      "afterHeight": 779.009702512664,
+      "textOverlapBefore": 0,
+      "textOverlapAfter": 0,
+      "edgeIntersectingSpheresBefore": 0,
+      "edgeIntersectingSpheresAfter": 0,
+      "heroTextRectsUnchanged": true,
+      "headerRectUnchanged": true,
+      "navGlassStylesUnchanged": true,
+      "headerAfter": {
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 2560,
+          "bottom": 96,
+          "width": 2560,
+          "height": 96
+        },
+        "background": "rgba(0, 0, 0, 0)",
+        "image": "none",
+        "blur": "none",
+        "border": "0px",
+        "shadow": "none",
+        "before": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "after": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box"
+      },
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "beforeProjectedWidthPercent": 127.49550008971752,
+      "afterProjectedWidthPercent": 122.26135203915366,
+      "beforeVisibleWidthPercent": 100.0,
+      "afterVisibleWidthPercent": 100.0,
+      "beforeHeight": 244.64358008537886,
+      "afterHeight": 251.3684560846729,
+      "textOverlapBefore": 0,
+      "textOverlapAfter": 0,
+      "edgeIntersectingSpheresBefore": 8,
+      "edgeIntersectingSpheresAfter": 7,
+      "heroTextRectsUnchanged": true,
+      "headerRectUnchanged": true,
+      "navGlassStylesUnchanged": true,
+      "headerAfter": {
+        "box": {
+          "left": 0,
+          "top": 0,
+          "right": 390,
+          "bottom": 112,
+          "width": 390,
+          "height": 112
+        },
+        "background": "rgba(0, 0, 0, 0)",
+        "image": "none",
+        "blur": "none",
+        "border": "0px",
+        "shadow": "none",
+        "before": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "after": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box"
+      },
+      "horizontalOverflow": false
+    }
+  ],
+  "protectedFunctions": {
+    "cameraRendererLights": {
+      "unchanged": true,
+      "sha256": "fa8b952fdb41f9a06d5903d3ed314aa35fedc285071f89f1a0f45d8eb4277c28"
+    },
+    "frustum": {
+      "unchanged": true,
+      "sha256": "490fdc3c23df2e71e059a10e366937b78da1289fc397059deb868234e69109de"
+    },
+    "sphereConstruction": {
+      "unchanged": true,
+      "sha256": "87d7bdf50fb53aa6fadb19d4a2d10703b070c9f499a513112927aa83e6a4f5e2"
+    },
+    "scatter": {
+      "unchanged": true,
+      "sha256": "78f9d21a0d2d941e69856ca0c47fc0160e6fe1af30cb1a913edc91520e9f2346"
+    },
+    "simulate": {
+      "unchanged": true,
+      "sha256": "7fbb876e2d634cda896cc0a8c15b74c6907d0bbdb3dc205bbe861cb636bd5093"
+    },
+    "resize": {
+      "unchanged": true,
+      "sha256": "6933c23702dd9d6694555ca501615c568ca58d9fcd7ddd847bab411ea0357210"
+    },
+    "pointerInverse": {
+      "unchanged": true,
+      "sha256": "a5d0f2202ad1b06d4b2a38ccba7ddcb634b49caab12059558e5879b101a5ade2"
+    }
+  },
+  "regression": [
+    {
+      "w": 1440,
+      "h": 900,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "contextLost": 0,
+      "errors": [],
+      "sampleCount": 13,
+      "heroStart": {
+        "scale": 0.7454222222222223,
+        "offsetY": 0.6270588424241793,
+        "horizontalSpread": 1.232173622704508
+      },
+      "heroReturn": {
+        "scale": 0.7454222222222223,
+        "offsetY": 0.6270588424241793,
+        "horizontalSpread": 1.232173622704508
+      },
+      "dropFrames": [
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        },
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        },
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        }
+      ]
+    },
+    {
+      "w": 1708,
+      "h": 900,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "palette": [
+        "pinkBlush",
+        "voltLime",
+        "arcticBlue",
+        "roseGold"
+      ],
+      "controlsFocusAndEscape": true,
+      "pointerInteraction": true,
+      "auto": "static-performance",
+      "staticFull": true,
+      "resizePreservesAndRepaints": true,
+      "liveReducedMotionStopsPainting": true,
+      "initialReducedMotion": true,
+      "contextLost": 0,
+      "errors": [],
+      "footerHoverFocusAndEscape": true,
+      "sampleCount": 13,
+      "heroStart": {
+        "scale": 0.7454222222222223,
+        "offsetY": 0.6270588424241793,
+        "horizontalSpread": 1.5181189723256852
+      },
+      "heroReturn": {
+        "scale": 0.7454222222222223,
+        "offsetY": 0.6270588424241793,
+        "horizontalSpread": 1.5181189723256852
+      },
+      "dropFrames": [
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        },
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        },
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        }
+      ]
+    },
+    {
+      "w": 1920,
+      "h": 1080,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "contextLost": 0,
+      "errors": [],
+      "sampleCount": 13,
+      "heroStart": {
+        "scale": 0.7611851851851852,
+        "offsetY": 0.6803658581112461,
+        "horizontalSpread": 1.3407302452316079
+      },
+      "heroReturn": {
+        "scale": 0.7611851851851852,
+        "offsetY": 0.6803658581112461,
+        "horizontalSpread": 1.3407302452316079
+      },
+      "dropFrames": [
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        },
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        },
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        }
+      ]
+    },
+    {
+      "w": 2560,
+      "h": 1440,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "contextLost": 0,
+      "errors": [],
+      "sampleCount": 13,
+      "heroStart": {
+        "scale": 0.780888888888889,
+        "offsetY": 0.7469996277200793,
+        "horizontalSpread": 1.3069003984063747
+      },
+      "heroReturn": {
+        "scale": 0.780888888888889,
+        "offsetY": 0.7469996277200793,
+        "horizontalSpread": 1.3069003984063747
+      },
+      "dropFrames": [
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        },
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        },
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        }
+      ]
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "canvasSizeWritesDuringScroll": 0,
+      "entranceCount": 1,
+      "meshMaterialGeometryCameraPreserved": true,
+      "palette": [
+        "pinkBlush",
+        "voltLime",
+        "arcticBlue",
+        "roseGold"
+      ],
+      "controlsFocusAndEscape": true,
+      "pointerInteraction": true,
+      "auto": "static-performance",
+      "staticFull": true,
+      "resizePreservesAndRepaints": true,
+      "liveReducedMotionStopsPainting": true,
+      "initialReducedMotion": true,
+      "contextLost": 0,
+      "errors": [],
+      "footerHoverFocusAndEscape": true,
+      "sampleCount": 13,
+      "heroStart": {
+        "scale": 0.47521327014218007,
+        "offsetY": 1.2696550377618876,
+        "horizontalSpread": 2.1043183404807024
+      },
+      "heroReturn": {
+        "scale": 0.47521327014218007,
+        "offsetY": 1.2696550377618876,
+        "horizontalSpread": 2.1043183404807024
+      },
+      "dropFrames": [
+        {
+          "scale": 1,
+          "offsetY": 0,
+          "horizontalSpread": 1
+        }
+      ]
+    }
+  ],
+  "tenSeedSamples": [
+    {
+      "width": 1440,
+      "height": 900,
+      "min": 65.37514952020064,
+      "max": 73.64567659699384,
+      "avg": 69.98933295152433,
+      "top": 129.81367506612713,
+      "bottom": 622.0180501960439
+    },
+    {
+      "width": 1708,
+      "height": 900,
+      "min": 67.61364019987809,
+      "max": 76.60863533260775,
+      "avg": 71.64373869914648,
+      "top": 132.65782650950612,
+      "bottom": 609.6481132517304
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "min": 63.4529385241722,
+      "max": 72.88365073411948,
+      "avg": 70.31158277052253,
+      "top": 135.4341645502052,
+      "bottom": 734.0429412490945
+    },
+    {
+      "width": 2560,
+      "height": 1440,
+      "min": 63.56740061292678,
+      "max": 73.08602403443685,
+      "avg": 70.4994055923424,
+      "top": 155.90708111596192,
+      "bottom": 976.1004702221219
+    }
+  ],
+  "verificationScope": {
+    "fullRoundtripViewports": 5,
+    "paletteControlsModesPointerResizeReducedMotionViewports": [
+      1708,
+      390
+    ],
+    "presentationBreakpointUnitChecks": [
+      640,
+      768,
+      1024,
+      1440
+    ]
+  },
+  "notVerified": [
+    "Hardware GPU / physical devices and sustained real-device performance",
+    "Final human visual acceptance"
+  ],
+  "limitations": [
+    "Floating randomized clusters vary; 68–75% is a visual target, not a fixed width clamp.",
+    "Mobile preserves the existing intentional edge crop; raw projected extent exceeds visible viewport width."
+  ],
+  "finalHeaderReview": [
+    {
+      "w": 1708,
+      "h": 900,
+      "backgrounds": [
+        {
+          "name": "blue",
+          "surface": "light",
+          "background": "rgba(0, 0, 0, 0)",
+          "image": "none",
+          "blur": "none",
+          "border": "0px",
+          "shadow": "none",
+          "logo": "rgb(10, 10, 10)",
+          "logoTextShadow": "none",
+          "navInk": "rgb(26, 26, 26)",
+          "navBackground": "color(srgb 1 1 1 / 0.35)",
+          "navBlur": "blur(20px)",
+          "navBorder": "1px",
+          "trigger": "rgb(10, 10, 10)",
+          "triggerBackground": "color(srgb 1 1 1 / 0.2)",
+          "contact": "rgb(26, 26, 26)",
+          "contactBackground": "color(srgb 1 1 1 / 0.2)"
+        },
+        {
+          "name": "lime",
+          "surface": "light",
+          "background": "rgba(0, 0, 0, 0)",
+          "image": "none",
+          "blur": "none",
+          "border": "0px",
+          "shadow": "none",
+          "logo": "rgb(10, 10, 10)",
+          "logoTextShadow": "none",
+          "navInk": "rgb(26, 26, 26)",
+          "navBackground": "color(srgb 1 1 1 / 0.35)",
+          "navBlur": "blur(20px)",
+          "navBorder": "1px",
+          "trigger": "rgb(10, 10, 10)",
+          "triggerBackground": "color(srgb 1 1 1 / 0.2)",
+          "contact": "rgb(26, 26, 26)",
+          "contactBackground": "color(srgb 1 1 1 / 0.2)"
+        },
+        {
+          "name": "pink",
+          "surface": "light",
+          "background": "rgba(0, 0, 0, 0)",
+          "image": "none",
+          "blur": "none",
+          "border": "0px",
+          "shadow": "none",
+          "logo": "rgb(10, 10, 10)",
+          "logoTextShadow": "none",
+          "navInk": "rgb(26, 26, 26)",
+          "navBackground": "color(srgb 1 1 1 / 0.35)",
+          "navBlur": "blur(20px)",
+          "navBorder": "1px",
+          "trigger": "rgb(10, 10, 10)",
+          "triggerBackground": "color(srgb 1 1 1 / 0.2)",
+          "contact": "rgb(26, 26, 26)",
+          "contactBackground": "color(srgb 1 1 1 / 0.2)"
+        },
+        {
+          "name": "footer",
+          "viewportHeight": 600,
+          "surface": "dark",
+          "background": "rgba(0, 0, 0, 0)",
+          "image": "none",
+          "blur": "none",
+          "border": "0px",
+          "shadow": "none",
+          "logo": "rgb(255, 255, 255)",
+          "logoTextShadow": "rgb(10, 10, 10) 0px 1px 3px, rgb(10, 10, 10) 0px -1px 3px",
+          "navInk": "rgb(255, 255, 255)",
+          "navBackground": "color(srgb 0.0392157 0.0392157 0.0392157 / 0.65)",
+          "navBlur": "blur(20px)",
+          "navBorder": "1px",
+          "trigger": "rgb(255, 255, 255)",
+          "triggerBackground": "color(srgb 0.0392157 0.0392157 0.0392157 / 0.65)",
+          "contact": "rgb(255, 255, 255)",
+          "contactBackground": "color(srgb 0.0392157 0.0392157 0.0392157 / 0.65)"
+        }
+      ],
+      "footerHoverFocusAndEscape": true
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "backgrounds": [
+        {
+          "name": "blue",
+          "surface": "light",
+          "background": "rgba(0, 0, 0, 0)",
+          "image": "none",
+          "blur": "none",
+          "border": "0px",
+          "shadow": "none",
+          "logo": "rgb(10, 10, 10)",
+          "logoTextShadow": "none",
+          "navInk": "rgb(26, 26, 26)",
+          "navBackground": "color(srgb 1 1 1 / 0.35)",
+          "navBlur": "blur(20px)",
+          "navBorder": "1px",
+          "trigger": "rgb(10, 10, 10)",
+          "triggerBackground": "color(srgb 1 1 1 / 0.2)",
+          "contact": "rgb(26, 26, 26)",
+          "contactBackground": "color(srgb 1 1 1 / 0.2)"
+        },
+        {
+          "name": "lime",
+          "surface": "light",
+          "background": "rgba(0, 0, 0, 0)",
+          "image": "none",
+          "blur": "none",
+          "border": "0px",
+          "shadow": "none",
+          "logo": "rgb(10, 10, 10)",
+          "logoTextShadow": "none",
+          "navInk": "rgb(26, 26, 26)",
+          "navBackground": "color(srgb 1 1 1 / 0.35)",
+          "navBlur": "blur(20px)",
+          "navBorder": "1px",
+          "trigger": "rgb(10, 10, 10)",
+          "triggerBackground": "color(srgb 1 1 1 / 0.2)",
+          "contact": "rgb(26, 26, 26)",
+          "contactBackground": "color(srgb 1 1 1 / 0.2)"
+        },
+        {
+          "name": "pink",
+          "surface": "light",
+          "background": "rgba(0, 0, 0, 0)",
+          "image": "none",
+          "blur": "none",
+          "border": "0px",
+          "shadow": "none",
+          "logo": "rgb(10, 10, 10)",
+          "logoTextShadow": "none",
+          "navInk": "rgb(26, 26, 26)",
+          "navBackground": "color(srgb 1 1 1 / 0.35)",
+          "navBlur": "blur(20px)",
+          "navBorder": "1px",
+          "trigger": "rgb(10, 10, 10)",
+          "triggerBackground": "color(srgb 1 1 1 / 0.2)",
+          "contact": "rgb(26, 26, 26)",
+          "contactBackground": "color(srgb 1 1 1 / 0.2)"
+        },
+        {
+          "name": "footer",
+          "viewportHeight": 844,
+          "surface": "dark",
+          "background": "rgba(0, 0, 0, 0)",
+          "image": "none",
+          "blur": "none",
+          "border": "0px",
+          "shadow": "none",
+          "logo": "rgb(255, 255, 255)",
+          "logoTextShadow": "rgb(10, 10, 10) 0px 1px 3px, rgb(10, 10, 10) 0px -1px 3px",
+          "navInk": "rgb(255, 255, 255)",
+          "navBackground": "color(srgb 0.0392157 0.0392157 0.0392157 / 0.65)",
+          "navBlur": "blur(20px)",
+          "navBorder": "1px",
+          "trigger": "rgb(255, 255, 255)",
+          "triggerBackground": "color(srgb 0.0392157 0.0392157 0.0392157 / 0.65)",
+          "contact": "rgb(255, 255, 255)",
+          "contactBackground": "color(srgb 0.0392157 0.0392157 0.0392157 / 0.65)"
+        }
+      ],
+      "footerHoverFocusAndEscape": true
+    }
+  ],
+  "headerFooterContrast": "Local dark glass tint and glyph shadow protect controls against the white marquee; outer header remains transparent."
+}

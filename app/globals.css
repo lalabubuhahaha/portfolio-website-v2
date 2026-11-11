@@ -1107,11 +1107,24 @@ html[data-gravity-entrance="loading"] .site-header {
   visibility: hidden;
 }
 .site-header {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--gravity-white) 65%, transparent),
-    color-mix(in srgb, var(--gravity-white) 30%, transparent)
-  );
+  background: transparent;
+}
+.site-header[data-surface="dark"] .lala-wordmark,
+.site-header[data-surface="dark"] .gravity-nav-links,
+.site-header[data-surface="dark"] .studio-trigger,
+.site-header[data-surface="dark"] .gravity-glass-link {
+  color: var(--gravity-white);
+}
+.site-header[data-surface="dark"] .lala-wordmark {
+  text-shadow: 0 1px 3px var(--gravity-ink), 0 -1px 3px var(--gravity-ink);
+}
+.site-header[data-surface="dark"] .gravity-nav-links,
+.site-header[data-surface="dark"] .studio-trigger,
+.site-header[data-surface="dark"] .gravity-glass-link {
+  background-color: color-mix(in srgb, var(--gravity-ink) 65%, transparent);
+}
+.site-header[data-surface="dark"] .studio-trigger:hover {
+  background-color: color-mix(in srgb, var(--gravity-ink) 55%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
   html[data-gravity-entrance="loading"] .site-header {
