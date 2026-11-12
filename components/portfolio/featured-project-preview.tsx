@@ -19,7 +19,7 @@ export function FeaturedProjectPreview({ item }: { item: ContentItem }) {
             alt={item.cover_alt}
             width={800}
             height={500}
-            sizes="(max-width: 767px) 88px, 160px"
+            sizes="(max-width: 767px) 104px, (max-width: 1023px) 140px, (max-width: 1439px) 20vw, 280px"
           />
         </div>
         <div className="featured-preview-copy">
