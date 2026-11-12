@@ -509,11 +509,6 @@ a {
     inset: 80px 0 43%;
   }
 }
-.gravity-shape .gravity-story-copy {
-  position: sticky;
-  top: 112px;
-}
-
 /* Stage 3 controls: layout of the story and fixed WebGL surface is unchanged. */
 .gravity-header-actions {
   display: flex;
