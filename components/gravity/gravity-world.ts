@@ -15,11 +15,21 @@ interface Ball {
   visualScale: number;
   shapeTarget: THREE.Vector3;
 }
+export interface PhysicsStepSample {
+  id: number;
+  position: number[];
+  velocity: number[];
+  forceDelta: number[];
+  collisions: number;
+  correction: number[];
+  boundary: boolean;
+  progress: number;
+}
 export interface GravityControl {
   progress: number;
   started: boolean;
 }
-// Original GetLayers equations; a single world and particle set spans all four modes.
+// GetLayers forces with stabilized contacts; one particle set spans all four modes.
 export function createGravityWorld(
   container: HTMLElement,
   renderer: THREE.WebGLRenderer,
@@ -404,6 +414,10 @@ export function createGravityWorld(
   let localStarted = false;
   let entranceStart = 0;
 
+  // Reused scratch storage: no per-step allocation unless diagnostics are enabled.
+  const integratedPositions = balls.map(() => new THREE.Vector3());
+  const floorImpacts = new Float64Array(balls.length);
+  const constraintDelta = new THREE.Vector3();
   const diffVec = new THREE.Vector3();
   const collideDiff = new THREE.Vector3();
   const relVel = new THREE.Vector3();
@@ -412,6 +426,11 @@ export function createGravityWorld(
   const prevMouseWorld = new THREE.Vector3();
   let mouseSpeed = 0;
 
+  // Opt-in per-step telemetry: no sample arrays are allocated in normal rendering.
+  let stepObserver: ((samples: PhysicsStepSample[]) => void) | undefined;
+  const observeSteps = (observer?: typeof stepObserver) => {
+    stepObserver = observer;
+  };
   const simulate = (time: number, interact = true) => {
     if (interact) updateMouse3D();
     const ctrl = control;
@@ -466,6 +485,10 @@ export function createGravityWorld(
     const camZ = camera.position.z;
     const clusterActive = Math.max(heroF, entranceT < 1 ? 1 : 0);
 
+    const samples: PhysicsStepSample[] | undefined = stepObserver ? balls.map(b => ({
+      id: b.id, position: [], velocity: [], forceDelta: b.velocity.toArray(),
+      collisions: 0, correction: [0, 0, 0], boundary: false, progress,
+    })) : undefined;
     // 1. ACCELERATIONS
     for (let i = 0; i < balls.length; i++) {
       const b = balls[i];
@@ -536,6 +559,11 @@ export function createGravityWorld(
         }
       }
 
+      if (samples) {
+        samples[i].forceDelta = b.velocity.toArray().map(
+          (v, axis) => v - samples[i].forceDelta[axis],
+        );
+      }
       b.velocity.multiplyScalar(damping);
       b.position.addScaledVector(b.velocity, 1);
 
@@ -553,8 +581,20 @@ export function createGravityWorld(
 
     // 2. PAIRWISE COLLISIONS (nearly disabled in shape mode so balls snap onto the silhouette)
     const collideScale = 0.28 * (1 - 0.93 * shapeF) * (1 - flyF);
+    // These are contact solver iterations, not four integrations of external forces.
     const subSteps = 4;
+    for (let i = 0; i < balls.length; i++) {
+      integratedPositions[i].copy(balls[i].position);
+      floorImpacts[i] = balls[i].position.y - balls[i].visualScale < -viewportHeight / 2 + 0.05
+        ? balls[i].velocity.y : 0;
+    }
     for (let step = 0; step < subSteps; step++) {
+      // Solve support and sphere contacts together, rather than letting the final
+      // floor clamp undo all four sphere passes on the next frame.
+      for (const b of balls) {
+        if (time - entranceStart >= 2.2 && flyF < 0.5)
+          b.position.y = Math.max(b.position.y, -viewportHeight / 2 + 0.05 + b.visualScale);
+      }
       for (let i = 0; i < balls.length; i++) {
         for (let j = i + 1; j < balls.length; j++) {
           const b1 = balls[i];
@@ -577,11 +617,21 @@ export function createGravityWorld(
               overlap * ratio2 * collideScale,
             );
 
+            if (samples) {
+              for (const [index, factor] of [[i, -ratio1], [j, ratio2]]) {
+                samples[index].collisions++;
+                collideDiff.toArray().forEach((v, axis) => {
+                  samples[index].correction[axis] += v * overlap * factor * collideScale;
+                });
+              }
+            }
             relVel.subVectors(b2.velocity, b1.velocity);
             const velAlongNormal = relVel.dot(collideDiff);
-            if (velAlongNormal < -0.0001) {
+            // Restitution is for impacts, not persistent compressed contacts.
+            // Heart already softens positional contacts; blend impulses likewise.
+            if (velAlongNormal < -0.02) {
               const impulse =
-                (-(1 + params.bounciness) * velAlongNormal) /
+                (-(1 + params.bounciness) * velAlongNormal * (1 - shapeF)) /
                 (1 / b1.mass + 1 / b2.mass);
               b1.velocity.addScaledVector(collideDiff, -impulse / b1.mass);
               b2.velocity.addScaledVector(collideDiff, impulse / b2.mass);
@@ -589,6 +639,15 @@ export function createGravityWorld(
           }
         }
       }
+    }
+
+    // Carry the mass-weighted positional correction into the next step. Otherwise
+    // attraction/gravity keeps driving into a contact that was just projected out.
+    // This preserves tangential drift and pointer forces; there is no sleeping.
+    for (let i = 0; i < balls.length; i++) {
+      balls[i].velocity.add(
+        constraintDelta.subVectors(balls[i].position, integratedPositions[i]),
+      );
     }
 
     // 3. VIEWPORT WALLS + BOUNCY FLOOR
@@ -607,6 +666,10 @@ export function createGravityWorld(
       const r = b.visualScale;
 
       if (contain) {
+        // 0.025 world units/step exceeds one gravity step (0.011 * damping).
+        // Only a floor contact uses this restitution cutoff; upward mouse force
+        // and all unconstrained velocities continue normally.
+        if (floorImpacts[i] < -0.025) b.velocity.y = -floorImpacts[i] * restitution;
         if (b.position.x < -xBound - r) {
           b.position.x = -xBound - r;
           b.velocity.x *= params.rebound;
@@ -617,7 +680,9 @@ export function createGravityWorld(
 
         if (b.position.y - r < floorY) {
           b.position.y = floorY + r;
-          if (b.velocity.y < 0) b.velocity.y = -b.velocity.y * restitution;
+          if (b.velocity.y < 0) {
+            b.velocity.y = b.velocity.y < -0.025 ? -b.velocity.y * restitution : 0;
+          }
           if (dropF > 0.3) {
             b.velocity.x *= 0.86;
             b.velocity.z *= 0.86;
@@ -639,6 +704,16 @@ export function createGravityWorld(
         }
       }
 
+      if (samples) {
+        samples[i].position = b.position.toArray();
+        samples[i].velocity = b.velocity.toArray();
+        samples[i].boundary =
+          (contain && (
+            b.position.y <= floorY + r + 1e-6 ||
+            b.position.y >= topY - r - 1e-6 ||
+            Math.abs(b.position.x) >= xBound + r - 1e-6
+          )) || (zContain && Math.abs(b.position.z) >= zBound - 1e-6);
+      }
       deltaPos.copy(b.position).sub(b.meshGroup.position);
       if (deltaPos.lengthSq() > 0.000001) {
         rotAxis.set(deltaPos.y, -deltaPos.x, 0).normalize();
@@ -647,6 +722,7 @@ export function createGravityWorld(
       }
       b.meshGroup.position.copy(b.position);
     }
+    if (samples) stepObserver?.(samples);
   };
 
   const resize = () => {
@@ -819,6 +895,7 @@ export function createGravityWorld(
   };
   return {
     balls,
+    observeSteps,
     inspect,
     setHeroColor,
     mousePos,
