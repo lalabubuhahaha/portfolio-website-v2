@@ -1,0 +1,29 @@
+[
+  {
+    "check": "real touch drag and touch cancel keep original mood",
+    "passed": true
+  },
+  {
+    "check": "outside portrait touch scrolling",
+    "passed": true
+  },
+  {
+    "check": "keyboard pull and release",
+    "passed": true
+  },
+  {
+    "check": "active drag rAF timing, software WebGL",
+    "frames": 59,
+    "meanMs": 80.78474576271186,
+    "p95Ms": 150,
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+  },
+  {
+    "check": "route exit removes portrait canvas",
+    "passed": true
+  },
+  {
+    "check": "failed texture load preserves static fallback",
+    "passed": true
+  }
+]

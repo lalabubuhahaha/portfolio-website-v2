@@ -1,0 +1,104 @@
+{
+  "results": [
+    {
+      "check": "all eleven textures preloaded",
+      "passed": true
+    },
+    {
+      "check": "scripted pull 0",
+      "state": {
+        "phase": "IDLE",
+        "mood": 10,
+        "blend": 0,
+        "displacement": {
+          "x": 0,
+          "y": 0
+        },
+        "velocity": {
+          "x": 0,
+          "y": 0
+        },
+        "switched": true
+      }
+    },
+    {
+      "check": "scripted pull 1",
+      "state": {
+        "phase": "IDLE",
+        "mood": 8,
+        "blend": 0,
+        "displacement": {
+          "x": 0,
+          "y": 0
+        },
+        "velocity": {
+          "x": 0,
+          "y": 0
+        },
+        "switched": true
+      }
+    },
+    {
+      "check": "scripted pull 2",
+      "state": {
+        "phase": "IDLE",
+        "mood": 7,
+        "blend": 0,
+        "displacement": {
+          "x": 0,
+          "y": 0
+        },
+        "velocity": {
+          "x": 0,
+          "y": 0
+        },
+        "switched": true
+      }
+    },
+    {
+      "check": "three real pointer drags and releases",
+      "passed": true
+    },
+    {
+      "check": "actual WebGL context loss and recovery",
+      "passed": true
+    },
+    {
+      "check": "layout 390x844",
+      "passed": true
+    },
+    {
+      "check": "layout 768x1024",
+      "passed": true
+    },
+    {
+      "check": "layout 1024x768",
+      "passed": true
+    },
+    {
+      "check": "layout 1440x900",
+      "passed": true
+    },
+    {
+      "check": "layout 1920x1080",
+      "passed": true
+    },
+    {
+      "check": "layout 2560x1440",
+      "passed": true
+    },
+    {
+      "check": "reduced motion without overshoot",
+      "passed": true
+    },
+    {
+      "check": "no WebGL static fallback",
+      "passed": true
+    },
+    {
+      "check": "home has no portrait renderer",
+      "passed": true
+    }
+  ],
+  "errors": []
+}
