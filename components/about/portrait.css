@@ -1,59 +1,71 @@
-main.about-page {
-  max-width: 100rem;
-  padding-inline: clamp(1.5rem, 5vw, 6rem);
+main.portfolio-page.about-page {
+  --portrait-paper: #b8b3b2;
+  --portrait-top: #b3aead;
+  --portrait-middle: #bcb7b6;
+  --portrait-bottom: #b0aaaa;
+  --portrait-glass: color-mix(in srgb, var(--gravity-white) 28%, transparent);
+  max-width: none;
+  padding: 0;
+  background: none;
 }
 .about-portrait-hero {
+  --portrait-hero-height: max(48rem, 100svh);
   display: grid;
-  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  grid-template-columns: minmax(0, .44fr) minmax(0, .56fr);
   align-items: center;
-  gap: clamp(2rem, 4vw, 4.5rem);
-  min-height: min(50rem, calc(100svh - 10rem));
-  padding-block: 1rem 3rem;
+  height: var(--portrait-hero-height);
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(to bottom, var(--portrait-top), var(--portrait-middle) 55%, var(--portrait-bottom));
 }
-.about-portrait-hero .portfolio-page-heading { margin: 0; padding-block: 2rem; }
-.about-portrait-hero h1 { font-size: clamp(3.5rem, 6vw, 7rem); line-height: 1.02; letter-spacing: -.065em; }
-.about-portrait-hero .portfolio-page-heading > p:last-child { max-width: 28rem; line-height: 1.8; }
+.about-portrait-hero .portfolio-page-heading {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 5rem 0 2rem max(6vw, calc((100vw - 104rem) / 2));
+}
+.about-portrait-hero h1 { font-size: clamp(4.5rem, 7.7vw, 9rem); line-height: .98; letter-spacing: -.065em; white-space: nowrap; }
+.about-portrait-hero .portfolio-page-heading > p:last-child { max-width: 26rem; padding-right: 1rem; line-height: 1.8; color: var(--gravity-muted); }
 .about-portrait {
+  position: relative;
+  align-self: stretch;
   margin: 0;
   min-width: 0;
   width: 100%;
-  max-width: min(100%, calc(100svh - 12rem));
-  justify-self: center;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--gravity-edge) 55%, var(--page-background));
-  border-radius: 1.5rem;
-  background: var(--page-background);
 }
-.about-portrait-stage { position: relative; aspect-ratio: 1.1; overflow: hidden; background: var(--gravity-pearl); }
-/* Shared crop for the static fallback and canvas: 28% larger, with headroom.
-   Pointer coordinates continue to use the actual square canvas rectangle. */
-.about-portrait-image { position: absolute; width: 128%; aspect-ratio: 1; left: -14%; top: -8%; }
+.about-portrait-stage { position: absolute; inset: 0; overflow: hidden; background: var(--portrait-paper); }
+/* Side blending affects the shared studio backdrop, never cuts out the person
+   and never fades the body at the bottom. The original photo stays underneath. */
+.about-portrait-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, black 25%, transparent 45%);
+  background: linear-gradient(to right, var(--portrait-paper), transparent 18%, transparent 72%, var(--portrait-paper) 94%);
+}
+/* The square canvas keeps its existing UV and pointer coordinate system.
+   Bottom alignment cuts the torso exactly at the full-height hero boundary. */
+.about-portrait-image { position: absolute; width: clamp(var(--portrait-hero-height), 128%, calc(var(--portrait-hero-height) * 1.04)); aspect-ratio: 1; left: -22%; bottom: 0; }
 .about-portrait-still { object-fit: contain; }
 .about-portrait-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: grab; touch-action: none; user-select: none; }
 .about-portrait-canvas[data-ready='false'] { pointer-events: none; touch-action: auto; }
 .about-portrait-canvas[data-ready='true'] { opacity: 1; }
 .about-portrait-canvas[data-dragging='true'] { cursor: grabbing; }
-.about-portrait-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  min-height: 4rem;
-  padding: .75rem 1.25rem;
-  border-top: 1px solid color-mix(in srgb, var(--gravity-edge) 55%, var(--page-background));
-  font: .65rem var(--font-mono);
-  color: var(--gravity-accent);
-}
-.about-portrait-controls button { border: 1px solid var(--gravity-edge); background: var(--gravity-white); border-radius: 2rem; padding: .7rem 1rem; cursor: pointer; }
-.about-portrait-hint { transition: opacity .5s; }
+.about-portrait-controls { position: absolute; z-index: 3; right: clamp(1.5rem, 4vw, 5rem); bottom: 2rem; display: flex; align-items: center; gap: .75rem; color: var(--gravity-accent); pointer-events: none; }
+.about-portrait-hint { padding: .85rem 1rem; border: 1px solid color-mix(in srgb, var(--gravity-white) 40%, transparent); border-radius: 2rem; background: var(--portrait-glass); backdrop-filter: blur(12px); font: .65rem var(--font-mono); transition: opacity .5s; }
 .about-portrait-hint[data-played='true'] { opacity: 0; }
-@media (min-width: 1920px) { main.about-page { max-width: 120rem; } }
+.about-portrait-controls button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 1px solid color-mix(in srgb, var(--gravity-white) 40%, transparent); background: var(--portrait-glass); backdrop-filter: blur(12px); border-radius: 50%; cursor: pointer; pointer-events: auto; }
+.about-portrait-controls svg { width: 1rem; height: 1rem; }
+main.about-page > .portfolio-about { max-width: 90rem; margin-inline: auto; padding: clamp(4rem, 7vw, 7rem) clamp(1.5rem, 6vw, 6rem); }
 @media (max-width: 767px) {
-  .about-portrait-hero { grid-template-columns: 1fr; gap: 1.75rem; min-height: auto; padding-block: 0 3rem; }
-  .about-portrait-hero .portfolio-page-heading { padding-block: 1.5rem 0; }
-  .about-portrait-stage { aspect-ratio: 1; }
-  .about-portrait { max-width: 100%; border-radius: 1.125rem; }
-  .about-portrait-hero h1 { font-size: clamp(3rem, 11vw, 5rem); }
-  .about-portrait-controls { padding-inline: 1rem; gap: .5rem; }
+  .about-portrait-hero { --portrait-paper: #beb7b7; background: var(--portrait-paper); height: auto; grid-template-columns: 1fr; }
+  .about-portrait-hero .portfolio-page-heading { padding: 10rem 1.5rem 2rem; }
+  .about-portrait-hero h1 { font-size: clamp(3rem, 12vw, 5rem); }
+  .about-portrait-hero .portfolio-page-heading > p:last-child { max-width: 28rem; padding-right: 0; }
+  .about-portrait { aspect-ratio: 1; }
+  .about-portrait-image { width: 128%; left: -14%; top: -8%; bottom: auto; }
+  .about-portrait-stage::after { background: linear-gradient(to right, var(--portrait-paper), transparent 12%, transparent 88%, var(--portrait-paper)); }
+  .about-portrait-controls { right: 1.5rem; bottom: 1.25rem; }
 }
 @media (prefers-reduced-motion: reduce) { .about-portrait-hint { transition: none; } }

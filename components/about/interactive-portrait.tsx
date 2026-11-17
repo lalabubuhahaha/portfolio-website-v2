@@ -26,7 +26,7 @@ export function InteractivePortrait() {
     </div>
     <figcaption className="about-portrait-controls">
       <span className="about-portrait-hint" data-played={played}>{ready ? 'Drag to play.' : 'A little more about me.'}</span>
-      {ready && <button type="button" onClick={() => controls.current?.reset()}>Reset portrait <span aria-hidden="true">↺</span></button>}
+      {ready && <button type="button" aria-label="Reset portrait" title="Reset portrait" onClick={() => controls.current?.reset()}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1.4 6.5M4 4v6h6" /></svg></button>}
     </figcaption>
     <span className="sr-only">Drag the portrait to stretch it. Release to reveal another expression. Reset portrait restores the original expression. Reduced motion removes bounce and blur.</span>
   </figure>;

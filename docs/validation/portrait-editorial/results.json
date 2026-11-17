@@ -1,0 +1,66 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "height": 900,
+      "heroHeight": 900,
+      "heroTop": 0,
+      "stageBottom": 900,
+      "heroBottom": 900,
+      "canvasBottom": 900,
+      "border": "0px",
+      "radius": "0px",
+      "overflow": false
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "heroHeight": 768,
+      "heroTop": 0,
+      "stageBottom": 768,
+      "heroBottom": 768,
+      "canvasBottom": 768,
+      "border": "0px",
+      "radius": "0px",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "heroHeight": 781.421875,
+      "heroTop": 0,
+      "stageBottom": 781.421875,
+      "heroBottom": 781.421875,
+      "canvasBottom": 859.421875,
+      "border": "0px",
+      "radius": "0px",
+      "overflow": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "heroHeight": 1080,
+      "heroTop": 0,
+      "stageBottom": 1080,
+      "heroBottom": 1080,
+      "canvasBottom": 1080,
+      "border": "0px",
+      "radius": "0px",
+      "overflow": false
+    },
+    {
+      "width": 2560,
+      "height": 1440,
+      "heroHeight": 1440,
+      "heroTop": 0,
+      "stageBottom": 1440,
+      "heroBottom": 1440,
+      "canvasBottom": 1440,
+      "border": "0px",
+      "radius": "0px",
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "interaction": "grimace, spring, new mood, reset passed at every size"
+}
