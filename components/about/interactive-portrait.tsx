@@ -19,8 +19,10 @@ export function InteractivePortrait() {
   }, []);
   return <figure className="about-portrait" aria-label="Interactive portrait of Lala">
     <div className="about-portrait-stage">
+      <div className="about-portrait-image">
       <Image src="/images/about/faces/face00.webp" alt="Lala in a black shirt, looking towards the camera with a natural expression" fill sizes="(max-width: 767px) 100vw, 60vw" priority className="about-portrait-still" />
       <canvas ref={canvas} className="about-portrait-canvas" data-ready={ready} tabIndex={ready ? 0 : -1} role="img" aria-label="Lala’s elastic portrait. Hold an arrow key to pull; release to spring back. Escape resets." />
+      </div>
     </div>
     <figcaption className="about-portrait-controls">
       <span className="about-portrait-hint" data-played={played}>{ready ? 'Drag to play.' : 'A little more about me.'}</span>

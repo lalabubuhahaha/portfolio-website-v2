@@ -102,7 +102,6 @@ export async function mountPortrait(canvas: HTMLCanvasElement, onReady: (ready: 
     material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms: {
       baseTexture: { value: textures[0] }, moodTexture: { value: textures[0] }, grimaceTexture: { value: textures[GRIMACE] },
       grab: { value: new THREE.Vector2() }, displacement: { value: new THREE.Vector2() }, velocity: { value: new THREE.Vector2() },
-      pageColor: { value: new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--page-background").trim()) },
       blend: { value: 0 }, radius: { value: PORTRAIT.warpRadius }, blur: { value: 0 },
     } });
     scene.add(new THREE.Mesh(geometry, material)); resize(); observer.observe(canvas);

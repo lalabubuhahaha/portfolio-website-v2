@@ -5,7 +5,6 @@ precision highp float;
 varying vec2 vUv;
 uniform sampler2D baseTexture, moodTexture, grimaceTexture;
 uniform vec2 grab, displacement, velocity;
-uniform vec3 pageColor;
 uniform float blend, radius, blur;
 // A smooth stationary velocity field. Its time-one flow defines the forward
 // smudge; integrating the negative field gives each pixel's inverse map.
@@ -33,12 +32,7 @@ void main(){
  vec2 streak=velocity*blur;
  vec3 color=portrait(p);
  if(blur>0.) color=color*.5+portrait(clamp(p+streak,.001,.999))*.25+portrait(clamp(p-streak,.001,.999))*.25;
- // Shared chroma/luminance matte keeps dark hair and clothing while
- // lifting the neutral studio backdrop into the existing page tone.
- float chroma=max(max(color.r,color.g),color.b)-min(min(color.r,color.g),color.b);
- float darkest=min(min(color.r,color.g),color.b);
- float subject=max(1.-smoothstep(.09,.26,darkest),smoothstep(.09,.19,chroma));
- gl_FragColor=vec4(mix(pageColor,color,subject),1.);
+ gl_FragColor=vec4(color,1.);
  #include <tonemapping_fragment>
  #include <colorspace_fragment>
 }`;

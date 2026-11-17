@@ -1,0 +1,32 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "heroHeight": 771.8125,
+      "stageHeight": 641.8125,
+      "imageZoom": 1.2799884915014164,
+      "panelBottom": 883.8125,
+      "mask": "none"
+    },
+    {
+      "width": 1024,
+      "overflow": false,
+      "heroHeight": 608,
+      "stageHeight": 458.53125,
+      "imageZoom": 1.2799789349772313,
+      "panelBottom": 710.265625,
+      "mask": "none"
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "heroHeight": 707.34375,
+      "stageHeight": 340,
+      "imageZoom": 1.2799632352941177,
+      "panelBottom": 811.34375,
+      "mask": "none"
+    }
+  ],
+  "interaction": "grimace, spring, new mood, reset passed at all three sizes"
+}
