@@ -115,37 +115,39 @@ main.about-page > .portfolio-about {
 @media (prefers-reduced-motion: reduce) { .about-portrait-hint { transition: none; } }
 
 .about-portrait-pinch {
+  /* The supplied closed pose pinches at (19, 46) on its 104-unit viewBox. */
+  --pinch-size: 48px;
   display: none;
   position: fixed;
   inset: 0 auto auto 0;
   z-index: 40;
-  width: 42px;
-  height: 42px;
-  overflow: visible;
+  width: var(--pinch-size);
+  height: var(--pinch-size);
   pointer-events: none;
-  transform: translate(calc(var(--pointer-x) - 12px), calc(var(--pointer-y) - 12px));
-  fill: var(--gravity-white);
-  stroke: var(--gravity-ink);
-  stroke-width: 1.25;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  transform: translate(
+    calc(var(--pointer-x) - var(--pinch-size) * 19 / 104),
+    calc(var(--pointer-y) - var(--pinch-size) * 46 / 104)
+  );
 }
 
-.about-pinch-index { --pinch-open: 18deg; transform-origin: 24px 19px; }
-.about-pinch-thumb { --pinch-open: -20deg; transform-origin: 25px 23px; }
+.about-portrait-pinch img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+}
 
 @media (hover: hover) and (pointer: fine) {
   .about-portrait-canvas[data-ready='true'][data-pinch-cursor] { cursor: none; }
   .about-portrait-pinch[data-state] { display: block; }
+  .about-portrait-pinch[data-state='held'] .about-pinch-closed { visibility: visible; }
 
   @media (prefers-reduced-motion: no-preference) {
-    .about-portrait-pinch[data-state='ready'] :is(.about-pinch-index, .about-pinch-thumb) {
-      animation: about-pinch 1.15s ease-in-out infinite;
-    }
+    .about-portrait-pinch[data-state='ready'] .about-pinch-animated { visibility: visible; }
   }
-}
 
-@keyframes about-pinch {
-  0%, 100% { transform: none; }
-  50% { transform: rotate(var(--pinch-open)); }
+  @media (prefers-reduced-motion: reduce) {
+    .about-portrait-pinch[data-state='ready'] .about-pinch-closed { visibility: visible; }
+  }
 }

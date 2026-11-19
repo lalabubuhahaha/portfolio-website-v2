@@ -26,6 +26,7 @@ export async function mountPortrait(canvas: HTMLCanvasElement, onReady: (ready: 
     if (disposed || lost || !material) return;
     material.uniforms.moodTexture.value = textures[physics.mood];
     material.uniforms.blend.value = physics.blend;
+    material.uniforms.fullFrameMood.value = moods[physics.mood].fullFrame;
     material.uniforms.grab.value.set(physics.grab.x, physics.grab.y);
     material.uniforms.displacement.value.set(physics.displacement.x, physics.displacement.y);
     material.uniforms.velocity.value.set(physics.velocity.x, physics.velocity.y);
@@ -102,7 +103,7 @@ export async function mountPortrait(canvas: HTMLCanvasElement, onReady: (ready: 
     material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms: {
       baseTexture: { value: textures[0] }, moodTexture: { value: textures[0] }, grimaceTexture: { value: textures[GRIMACE] },
       grab: { value: new THREE.Vector2() }, displacement: { value: new THREE.Vector2() }, velocity: { value: new THREE.Vector2() },
-      blend: { value: 0 }, radius: { value: PORTRAIT.warpRadius }, blur: { value: 0 },
+      blend: { value: 0 }, fullFrameMood: { value: false }, radius: { value: PORTRAIT.warpRadius }, blur: { value: 0 },
     } });
     scene.add(new THREE.Mesh(geometry, material)); resize(); observer.observe(canvas);
     for (const [name, listener] of [['pointerdown', down], ['pointermove', move], ['pointerup', release], ['pointercancel', release], ['lostpointercapture', release]] as const) canvas.addEventListener(name, listener);

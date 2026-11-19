@@ -6,6 +6,7 @@ varying vec2 vUv;
 uniform sampler2D baseTexture, moodTexture, grimaceTexture;
 uniform vec2 grab, displacement, velocity;
 uniform float blend, radius, blur;
+uniform bool fullFrameMood;
 // A smooth stationary velocity field. Its time-one flow defines the forward
 // smudge; integrating the negative field gives each pixel's inverse map.
 vec2 field(vec2 p){
@@ -25,6 +26,8 @@ vec3 portrait(vec2 p){
  float mask=1.-smoothstep(.65,1.15,length(f));
  vec3 mood=texture2D(moodTexture,p).rgb;
  vec3 grimace=texture2D(grimaceTexture,p).rgb;
+ // Both sampling paths reach the same covered grimace before the mood switches.
+ if (fullFrameMood) return mix(mood,mix(base,grimace,mask),blend);
  return mix(base,mix(mood,grimace,blend),mask);
 }
 void main(){
