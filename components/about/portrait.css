@@ -1,71 +1,110 @@
 main.portfolio-page.about-page {
   --portrait-paper: #b8b3b2;
-  --portrait-top: #b3aead;
-  --portrait-middle: #bcb7b6;
-  --portrait-bottom: #b0aaaa;
-  --portrait-glass: color-mix(in srgb, var(--gravity-white) 28%, transparent);
+  --portrait-glass: color-mix(in srgb, var(--gravity-white) 48%, transparent);
+  --about-gutter: clamp(2rem, 8.5vw, 8rem);
   max-width: none;
   padding: 0;
   background: none;
 }
+
 .about-portrait-hero {
-  --portrait-hero-height: max(48rem, 100svh);
+  --portrait-size: clamp(25rem, 52.5vw, 47rem);
   display: grid;
-  grid-template-columns: minmax(0, .44fr) minmax(0, .56fr);
+  grid-template-columns: minmax(0, 1fr) var(--portrait-size);
   align-items: center;
-  height: var(--portrait-hero-height);
-  overflow: hidden;
+  padding: clamp(0rem, 7rem - 8vw, 3rem) max(11vw, calc((100% - 82rem) / 2)) 0 var(--about-gutter);
   isolation: isolate;
-  background: linear-gradient(to bottom, var(--portrait-top), var(--portrait-middle) 55%, var(--portrait-bottom));
+  background: var(--portrait-paper);
+  border-bottom: 1px solid color-mix(in srgb, var(--gravity-ink) 12%, var(--portrait-paper));
 }
+
 .about-portrait-hero .portfolio-page-heading {
-  position: relative;
-  z-index: 2;
   margin: 0;
-  padding: 5rem 0 2rem max(6vw, calc((100vw - 104rem) / 2));
+  padding: 4rem 1rem 1rem 0;
 }
-.about-portrait-hero h1 { font-size: clamp(4.5rem, 7.7vw, 9rem); line-height: .98; letter-spacing: -.065em; white-space: nowrap; }
-.about-portrait-hero .portfolio-page-heading > p:last-child { max-width: 26rem; padding-right: 1rem; line-height: 1.8; color: var(--gravity-muted); }
+
+.about-portrait-hero h1 {
+  font-size: clamp(2.5rem, 5.4vw, 5.5rem);
+  line-height: .98;
+  letter-spacing: -.065em;
+}
+
+.about-portrait-hero .portfolio-page-heading > p:last-child {
+  max-width: 24rem;
+  margin-top: 1.25rem;
+  line-height: 1.7;
+  color: var(--gravity-muted);
+}
+
 .about-portrait {
   position: relative;
-  align-self: stretch;
+  align-self: end;
   margin: 0;
   min-width: 0;
-  width: 100%;
 }
-.about-portrait-stage { position: absolute; inset: 0; overflow: hidden; background: var(--portrait-paper); }
-/* Side blending affects the shared studio backdrop, never cuts out the person
-   and never fades the body at the bottom. The original photo stays underneath. */
-.about-portrait-stage::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  mask-image: linear-gradient(to bottom, black 25%, transparent 45%);
-  background: linear-gradient(to right, var(--portrait-paper), transparent 18%, transparent 72%, var(--portrait-paper) 94%);
+
+.about-portrait-stage { position: relative; }
+
+.about-portrait-stage:has(canvas:focus-visible) {
+  outline: 2px solid var(--gravity-accent);
+  outline-offset: -3px;
 }
-/* The square canvas keeps its existing UV and pointer coordinate system.
-   Bottom alignment cuts the torso exactly at the full-height hero boundary. */
-.about-portrait-image { position: absolute; width: clamp(var(--portrait-hero-height), 128%, calc(var(--portrait-hero-height) * 1.04)); aspect-ratio: 1; left: -22%; bottom: 0; }
+
+/* Keep the entire square in the layout. Feather only the source backdrop
+   along its sides and top, leaving the shirt grounded at the section rule. */
+.about-portrait-image {
+  position: relative;
+  aspect-ratio: 1;
+  mask-image: linear-gradient(to right, transparent, black 9%, black 91%, transparent),
+    linear-gradient(to bottom, transparent, black 12%);
+  mask-composite: intersect;
+}
+
 .about-portrait-still { object-fit: contain; }
 .about-portrait-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: grab; touch-action: none; user-select: none; }
 .about-portrait-canvas[data-ready='false'] { pointer-events: none; touch-action: auto; }
 .about-portrait-canvas[data-ready='true'] { opacity: 1; }
 .about-portrait-canvas[data-dragging='true'] { cursor: grabbing; }
-.about-portrait-controls { position: absolute; z-index: 3; right: clamp(1.5rem, 4vw, 5rem); bottom: 2rem; display: flex; align-items: center; gap: .75rem; color: var(--gravity-accent); pointer-events: none; }
+
+.about-portrait-controls {
+  position: absolute;
+  right: clamp(.75rem, 2vw, 2rem);
+  bottom: clamp(.75rem, 2vw, 2rem);
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: var(--gravity-accent);
+  pointer-events: none;
+}
 .about-portrait-hint { padding: .85rem 1rem; border: 1px solid color-mix(in srgb, var(--gravity-white) 40%, transparent); border-radius: 2rem; background: var(--portrait-glass); backdrop-filter: blur(12px); font: .65rem var(--font-mono); transition: opacity .5s; }
 .about-portrait-hint[data-played='true'] { opacity: 0; }
 .about-portrait-controls button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 1px solid color-mix(in srgb, var(--gravity-white) 40%, transparent); background: var(--portrait-glass); backdrop-filter: blur(12px); border-radius: 50%; cursor: pointer; pointer-events: auto; }
 .about-portrait-controls svg { width: 1rem; height: 1rem; }
-main.about-page > .portfolio-about { max-width: 90rem; margin-inline: auto; padding: clamp(4rem, 7vw, 7rem) clamp(1.5rem, 6vw, 6rem); }
-@media (max-width: 767px) {
-  .about-portrait-hero { --portrait-paper: #beb7b7; background: var(--portrait-paper); height: auto; grid-template-columns: 1fr; }
-  .about-portrait-hero .portfolio-page-heading { padding: 10rem 1.5rem 2rem; }
-  .about-portrait-hero h1 { font-size: clamp(3rem, 12vw, 5rem); }
-  .about-portrait-hero .portfolio-page-heading > p:last-child { max-width: 28rem; padding-right: 0; }
-  .about-portrait { aspect-ratio: 1; }
-  .about-portrait-image { width: 128%; left: -14%; top: -8%; bottom: auto; }
-  .about-portrait-stage::after { background: linear-gradient(to right, var(--portrait-paper), transparent 12%, transparent 88%, var(--portrait-paper)); }
-  .about-portrait-controls { right: 1.5rem; bottom: 1.25rem; }
+
+main.about-page > .portfolio-about {
+  max-width: 96rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 4vw, 4rem) var(--about-gutter) clamp(4rem, 7vw, 7rem);
+  border-top: 0;
 }
+
+@media (768px <= width < 900px) {
+  .about-portrait-hero .portfolio-page-heading { padding-right: .5rem; }
+  .about-portrait-hero .gravity-section-label { font-size: .625rem; letter-spacing: .15em; }
+}
+
+@media (max-width: 767px) {
+  main.portfolio-page.about-page { --about-gutter: 1.5rem; }
+  .about-portrait-hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
+  }
+  .about-portrait-hero .portfolio-page-heading {
+    padding: 7.75rem var(--about-gutter) 0;
+  }
+  .about-portrait-hero h1 { font-size: clamp(2.75rem, 11vw, 4rem); }
+  .about-portrait { width: min(calc(100% - 4rem), 26rem); justify-self: center; }
+  .about-portrait-controls { flex-direction: column; align-items: end; gap: .5rem; }
+}
+
 @media (prefers-reduced-motion: reduce) { .about-portrait-hint { transition: none; } }
