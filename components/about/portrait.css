@@ -1,6 +1,7 @@
 main.portfolio-page.about-page {
   --portrait-paper: #b8b3b2;
   --portrait-glass: color-mix(in srgb, var(--gravity-white) 48%, transparent);
+  --about-content-width: 96rem;
   --about-gutter: clamp(2rem, 8.5vw, 8rem);
   max-width: none;
   padding: 0;
@@ -12,7 +13,7 @@ main.portfolio-page.about-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--portrait-size);
   align-items: center;
-  padding: clamp(0rem, 7rem - 8vw, 3rem) max(11vw, calc((100% - 82rem) / 2)) 0 var(--about-gutter);
+  padding: clamp(0rem, 7rem - 8vw, 3rem) max(11vw, calc((100% - 82rem) / 2)) 0 calc(var(--about-gutter) + max(0px, (100% - var(--about-content-width)) / 2));
   isolation: isolate;
   background: var(--portrait-paper);
   border-bottom: 1px solid color-mix(in srgb, var(--gravity-ink) 12%, var(--portrait-paper));
@@ -82,10 +83,14 @@ main.portfolio-page.about-page {
 .about-portrait-controls svg { width: 1rem; height: 1rem; }
 
 main.about-page > .portfolio-about {
-  max-width: 96rem;
+  max-width: var(--about-content-width);
   margin: 0 auto;
   padding: clamp(2rem, 4vw, 4rem) var(--about-gutter) clamp(4rem, 7vw, 7rem);
   border-top: 0;
+}
+
+@media (width >= 1024px) {
+  main.portfolio-page.about-page { --about-gutter: clamp(2rem, 11vw, 10rem); }
 }
 
 @media (768px <= width < 900px) {
@@ -108,3 +113,39 @@ main.about-page > .portfolio-about {
 }
 
 @media (prefers-reduced-motion: reduce) { .about-portrait-hint { transition: none; } }
+
+.about-portrait-pinch {
+  display: none;
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 40;
+  width: 42px;
+  height: 42px;
+  overflow: visible;
+  pointer-events: none;
+  transform: translate(calc(var(--pointer-x) - 12px), calc(var(--pointer-y) - 12px));
+  fill: var(--gravity-white);
+  stroke: var(--gravity-ink);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.about-pinch-index { --pinch-open: 18deg; transform-origin: 24px 19px; }
+.about-pinch-thumb { --pinch-open: -20deg; transform-origin: 25px 23px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .about-portrait-canvas[data-ready='true'][data-pinch-cursor] { cursor: none; }
+  .about-portrait-pinch[data-state] { display: block; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .about-portrait-pinch[data-state='ready'] :is(.about-pinch-index, .about-pinch-thumb) {
+      animation: about-pinch 1.15s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes about-pinch {
+  0%, 100% { transform: none; }
+  50% { transform: rotate(var(--pinch-open)); }
+}

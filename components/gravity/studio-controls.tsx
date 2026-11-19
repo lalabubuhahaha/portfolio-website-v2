@@ -117,6 +117,7 @@ export function StudioControls() {
         onClick={() => setOpen(true)}
       >
         <SlidersIcon />
+        <span className="gravity-menu-studio-label">Studio Controls</span>
       </button>
       <dialog
         ref={dialogRef}

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import './portrait.css';
+import { PortraitCursor } from './portrait-cursor';
 export function InteractivePortrait() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const controls = useRef<{ dispose(): void; reset(): void } | null>(null);
@@ -24,6 +25,7 @@ export function InteractivePortrait() {
       <canvas ref={canvas} className="about-portrait-canvas" data-ready={ready} tabIndex={ready ? 0 : -1} role="img" aria-label="Lala’s elastic portrait. Hold an arrow key to pull; release to spring back. Escape resets." />
       </div>
     </div>
+    {ready && <PortraitCursor canvas={canvas} />}
     <figcaption className="about-portrait-controls">
       <span className="about-portrait-hint" data-played={played}>{ready ? 'Drag to play.' : 'A little more about me.'}</span>
       {ready && <button type="button" aria-label="Reset portrait" title="Reset portrait" onClick={() => controls.current?.reset()}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1.4 6.5M4 4v6h6" /></svg></button>}
