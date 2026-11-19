@@ -1,13 +1,13 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
 
-export function PortraitCursor({ face }: { face: RefObject<HTMLDivElement | null> }) {
+export function PortraitCursor({ canvas }: { canvas: RefObject<HTMLCanvasElement | null> }) {
   const overlay = useRef<HTMLDivElement>(null);
   const animated = useRef<HTMLImageElement>(null);
   const closed = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    const surface = face.current;
+    const surface = canvas.current;
     const cursor = overlay.current;
     const animatedImage = animated.current;
     const closedImage = closed.current;
@@ -55,14 +55,14 @@ export function PortraitCursor({ face }: { face: RefObject<HTMLDivElement | null
     window.addEventListener("blur", hide, options);
     mouse.addEventListener("change", hide, options);
     return () => { listeners.abort(); hide(); };
-  }, [face]);
+  }, [canvas]);
 
   return createPortal(
-    <div ref={overlay} className="about-portrait-pinch" aria-hidden="true">
+    <div ref={overlay} className="about-portrait-pinch" aria-hidden="true" draggable={false}>
       {/* Load both local SVGs before suppressing the native cursor. */}
       {/* eslint-disable @next/next/no-img-element */}
-      <img ref={animated} src="/images/about/cursor/pinch-animated.svg" className="about-pinch-animated" alt="" />
-      <img ref={closed} src="/images/about/cursor/pinch-closed.svg" className="about-pinch-closed" alt="" />
+      <img ref={animated} src="/images/about/cursor/pinch-animated.svg" className="about-pinch-animated" alt="" draggable={false} />
+      <img ref={closed} src="/images/about/cursor/pinch-closed.svg" className="about-pinch-closed" alt="" draggable={false} />
       {/* eslint-enable @next/next/no-img-element */}
     </div>,
     document.body,

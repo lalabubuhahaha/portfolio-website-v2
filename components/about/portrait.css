@@ -42,6 +42,8 @@ main.portfolio-page.about-page {
   align-self: end;
   margin: 0;
   min-width: 0;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .about-portrait-stage { position: relative; aspect-ratio: 1; overflow: clip; }
@@ -52,14 +54,15 @@ main.portfolio-page.about-page {
 }
 
 /* The square image, canvas and face hit area share one enlarged UV frame.
-   Only the stage crops it; the bottom crop stays below the warp falloff. */
+   Pull the frame up to reveal more of the source at the section rule. */
 .about-portrait-image {
   --portrait-zoom: 1.22;
+  --portrait-top: -5%;
   --portrait-bleed: calc((1 - var(--portrait-zoom)) * 50%);
   --portrait-mask-edge: calc(50% - 50% / var(--portrait-zoom));
   --portrait-mask-inner: calc(50% - 41% / var(--portrait-zoom));
   position: absolute;
-  inset: 6% var(--portrait-bleed) auto;
+  inset: var(--portrait-top) var(--portrait-bleed) auto;
   aspect-ratio: 1;
   mask-image: linear-gradient(
       to right,
@@ -68,29 +71,32 @@ main.portfolio-page.about-page {
       black calc(100% - var(--portrait-mask-inner)),
       transparent calc(100% - var(--portrait-mask-edge))
     ),
-    linear-gradient(to bottom, transparent, black 12%);
+    linear-gradient(to bottom, transparent calc(-1 * var(--portrait-top) / var(--portrait-zoom)), black 12%);
   mask-composite: intersect;
 }
 
-.about-portrait-still { object-fit: contain; }
-.about-portrait-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; user-select: none; }
-.about-portrait-canvas[data-ready='true'] { opacity: 1; }
-/* Input follows the common face outline in the uncropped source UV frame. */
-.about-portrait-face {
+.about-portrait-still {
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.about-portrait-canvas {
   position: absolute;
   inset: 0;
-  clip-path: polygon(
-    45% 28%, 52% 25.5%, 59% 24%, 63% 27%, 65% 34%,
-    65% 42%, 63% 49%, 60% 53.5%, 56% 54%, 51% 51%,
-    46% 46%, 43% 40%, 42% 34%
-  );
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   pointer-events: none;
-  touch-action: none;
   cursor: grab;
-  user-select: none;
+  -webkit-user-drag: none;
 }
-.about-portrait-face[data-ready='true'] { pointer-events: auto; }
-.about-portrait-face[data-dragging='true'] { cursor: grabbing; }
+.about-portrait-canvas[data-ready='true'] {
+  opacity: 1;
+  pointer-events: auto;
+  touch-action: none;
+}
+.about-portrait-canvas[data-dragging='true'] { cursor: grabbing; }
 
 .about-portrait-controls {
   position: absolute;
@@ -165,10 +171,12 @@ main.about-page > .portfolio-about {
   width: 100%;
   height: 100%;
   visibility: hidden;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .about-portrait-face[data-ready='true'][data-pinch-cursor] { cursor: none; }
+  .about-portrait-canvas[data-ready='true'][data-pinch-cursor] { cursor: none; }
   .about-portrait-pinch[data-state] { display: block; }
   .about-portrait-pinch[data-state='held'] .about-pinch-closed { visibility: visible; }
 

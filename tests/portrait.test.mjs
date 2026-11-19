@@ -16,14 +16,19 @@ test('edge pinning, finite inverse UV and positive Jacobian across extreme drags
   for(const p of [{x:1,y:.5},{x:.5,y:1}]) assert.deepEqual(inverseWarp(p,grab,drag),p);
  }
 });
-test('all drag directions pin the collar, shoulders and chest, while the face can stretch', () => {
- const grab = { x: .55, y: .59 };
- const body = [{x:.37,y:.54},{x:.43,y:.49},{x:.48,y:.48},{x:.55,y:.40},{x:.58,y:.47},{x:.60,y:.48},{x:.62,y:.41},{x:.68,y:.48},{x:.53,y:.25}];
+test('free warp moves the shoulder and pins the visible crop for every pull direction', () => {
+ const bounds = [.09, .14, .91, .96];
+ const grab = { x: .44, y: .33 };
+ const cropEdges = [{x:.09,y:.5},{x:.91,y:.50},{x:.5,y:.14},{x:.5,y:.96}];
  for (const target of [{x:4,y:0},{x:-4,y:0},{x:0,y:4},{x:0,y:-4}]) {
   const drag = resistance(target);
-  for (const point of body) assert.deepEqual(inverseWarp(point,grab,drag),point);
-  const pulled = inverseWarp(grab,grab,drag);
+  for (const point of cropEdges) assert.deepEqual(inverseWarp(point,grab,drag,bounds),point);
+  const pulled = inverseWarp(grab,grab,drag,bounds);
   assert.ok(Math.hypot(pulled.x-grab.x,pulled.y-grab.y)>.07);
+  for (let x = .10; x < .91; x += .026) for (let y = .15; y < .96; y += .027) {
+   const q = inverseWarp({x,y},grab,drag,bounds);
+   assert.ok(q.x >= .09 && q.x <= .91 && q.y >= .14 && q.y <= .96);
+  }
  }
 });
 test('rubber band is continuous, monotonic and bounded',()=>{let last=0;for(let x=0;x<10;x+=.001){const p=resistance({x,y:0});assert.ok(p.x>=last-1e-12&&p.x<.561);last=p.x;}assert.ok(Math.abs(resistance({x:.40001,y:0}).x-.40001)<1e-6);});
