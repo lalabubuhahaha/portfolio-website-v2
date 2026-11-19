@@ -51,13 +51,23 @@ main.portfolio-page.about-page {
   outline-offset: -3px;
 }
 
-/* Keep the stage in the grid and the source at its original scale.
-   Crop at the section rule, below the editable face and its falloff. */
+/* The square image, canvas and face hit area share one enlarged UV frame.
+   Only the stage crops it; the bottom crop stays below the warp falloff. */
 .about-portrait-image {
+  --portrait-zoom: 1.22;
+  --portrait-bleed: calc((1 - var(--portrait-zoom)) * 50%);
+  --portrait-mask-edge: calc(50% - 50% / var(--portrait-zoom));
+  --portrait-mask-inner: calc(50% - 41% / var(--portrait-zoom));
   position: absolute;
-  inset: 24% 0 auto;
+  inset: 6% var(--portrait-bleed) auto;
   aspect-ratio: 1;
-  mask-image: linear-gradient(to right, transparent, black 9%, black 91%, transparent),
+  mask-image: linear-gradient(
+      to right,
+      transparent var(--portrait-mask-edge),
+      black var(--portrait-mask-inner),
+      black calc(100% - var(--portrait-mask-inner)),
+      transparent calc(100% - var(--portrait-mask-edge))
+    ),
     linear-gradient(to bottom, transparent, black 12%);
   mask-composite: intersect;
 }
@@ -106,6 +116,7 @@ main.about-page > .portfolio-about {
 
 @media (width >= 1024px) {
   main.portfolio-page.about-page { --about-gutter: clamp(2rem, 11vw, 10rem); }
+  .about-portrait-hero h1 { white-space: nowrap; }
 }
 
 @media (768px <= width < 900px) {
@@ -124,7 +135,10 @@ main.about-page > .portfolio-about {
   }
   .about-portrait-hero h1 { font-size: clamp(2.75rem, 11vw, 4rem); }
   .about-portrait { width: min(calc(100% - 4rem), 26rem); justify-self: center; }
-  .about-portrait-controls { flex-direction: column; align-items: end; gap: .5rem; }
+  .about-portrait-controls {
+    left: clamp(.75rem, 2vw, 2rem);
+    justify-content: space-between;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) { .about-portrait-hint { transition: none; } }

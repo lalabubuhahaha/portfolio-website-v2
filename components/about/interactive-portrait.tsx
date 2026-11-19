@@ -23,7 +23,7 @@ export function InteractivePortrait() {
   return <figure className="about-portrait" aria-label="Interactive portrait of Lala">
     <div className="about-portrait-stage">
       <div className="about-portrait-image">
-      <Image src="/images/about/faces/face00.webp" alt="Lala in a black shirt, looking towards the camera with a natural expression" fill sizes="(max-width: 479px) calc(100vw - 64px), (max-width: 767px) 416px, (max-width: 800px) 400px, (max-width: 1432px) 52.5vw, 752px" priority className="about-portrait-still" />
+      <Image src="/images/about/faces/face00.webp" alt="Lala in a black shirt, looking towards the camera with a natural expression" fill sizes="(max-width: 479px) calc(122vw - 78px), (max-width: 767px) 508px, (max-width: 800px) 488px, (max-width: 1432px) 64.05vw, 918px" priority className="about-portrait-still" />
       <canvas ref={canvas} className="about-portrait-canvas" data-ready={ready} tabIndex={ready ? 0 : -1} role="img" aria-label="Lala’s elastic portrait. Hold an arrow key to pull; release to spring back. Escape resets." />
         <div ref={face} className="about-portrait-face" data-ready={ready} aria-hidden="true" />
       </div>
