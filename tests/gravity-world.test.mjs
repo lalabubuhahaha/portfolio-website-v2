@@ -24,7 +24,10 @@ test("Gravity Hero uses physical spheres, converges, and responds to the pointer
     assert.equal(world.balls[0].sphere.geometry.parameters.widthSegments, 48);
     for (const ball of world.balls) {
       assert.equal(ball.mass, ball.radius ** 3);
-      assert.ok(ball.radius >= 0.27 && ball.radius <= 0.87);
+      assert.ok(
+        (ball.radius >= 0.48 && ball.radius <= 0.63) ||
+        (ball.radius >= 0.66 && ball.radius <= 0.87),
+      );
       if (ball.isGlass) {
         assert.equal(ball.material.transmission, 0.95);
         assert.equal(ball.material.ior, 1.485);
@@ -75,6 +78,53 @@ test("Gravity Hero uses physical spheres, converges, and responds to the pointer
   } finally {
     mobile.dispose();
     delete global.window;
+  }
+});
+
+test("Hero keeps a full wide desktop cloud and fits the mobile composition", () => {
+  const originalRandom = Math.random;
+  const originalWindow = global.window;
+  const sizes = [[1280, 800], [1440, 900], [1920, 1080], [2560, 1440], [768, 1024], [390, 844]];
+  try {
+    for (const [width, height] of sizes) {
+      let seed = 560;
+      Math.random = () => {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+      global.window = { innerWidth: width, devicePixelRatio: 1 };
+      const world = createGravityWorld({ clientWidth: width, clientHeight: height }, {
+        setPixelRatio() {}, setSize() {}, shadowMap: {}, render() {},
+      });
+      try {
+        world.start();
+        for (let frame = 0; frame < 600; frame++) world.simulate(frame / 60, false);
+        world.render();
+        const { projectedSpheres: spheres, total, estimatedVisible } = world.inspect();
+        const left = Math.min(...spheres.map(b => b.x - b.radius));
+        const right = Math.max(...spheres.map(b => b.x + b.radius));
+        const top = Math.min(...spheres.map(b => b.y - b.radius));
+        const bottom = Math.max(...spheres.map(b => b.y + b.radius));
+        const ratio = (right - left) / (bottom - top);
+        assert.equal(spheres.length, total);
+        assert.equal(estimatedVisible, total);
+        assert.ok(left > 0 && right < width && top > 0 && bottom < height, `${width}: crop`);
+        assert.ok((top + bottom) / 2 < height / 2, `${width}: vertical center`);
+        if (width >= 1280) {
+          assert.ok(ratio >= 1.7 && ratio <= 2.15, `${width}: axis ratio ${ratio}`);
+          assert.ok((right - left) / width >= 0.68, `${width}: cloud width`);
+          assert.ok((bottom - top) / height >= 0.61, `${width}: cloud height`);
+        } else {
+          assert.ok((right - left) / width < 0.9, `${width}: viewport margins`);
+        }
+      } finally {
+        world.dispose();
+      }
+    }
+  } finally {
+    Math.random = originalRandom;
+    if (originalWindow === undefined) delete global.window;
+    else global.window = originalWindow;
   }
 });
 

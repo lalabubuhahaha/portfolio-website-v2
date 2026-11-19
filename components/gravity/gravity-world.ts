@@ -192,11 +192,9 @@ export function createGravityWorld(
   const sphereGeometry = new THREE.SphereGeometry(1, 48, 48);
   const balls: Ball[] = [];
   for (let i = 0; i < ballCount; i++) {
-    let radius = 0.33;
-    const rand = Math.random();
-    if (rand < 0.3) radius = 0.27 + Math.random() * 0.12;
-    else if (rand < 0.8) radius = 0.42 + Math.random() * 0.18;
-    else radius = 0.66 + Math.random() * 0.21;
+    const radius = Math.random() < 0.7
+      ? 0.48 + Math.random() * 0.15
+      : 0.66 + Math.random() * 0.21;
 
     const mass = Math.pow(radius, 3);
 
@@ -346,28 +344,26 @@ export function createGravityWorld(
   const updatePresentation = () => {
     const heroF = 1 - THREE.MathUtils.smoothstep(control.progress, 0.3, 0.8);
     const mobileWeight = 1 - THREE.MathUtils.smoothstep(renderWidth, 640, 1024);
-    const top = THREE.MathUtils.lerp(76, 80, mobileWeight);
+    const desktopWeight = THREE.MathUtils.smoothstep(renderWidth, 768, 1280);
+    const top = THREE.MathUtils.lerp(76 + 16 * desktopWeight, 80, mobileWeight);
     const bottom = renderHeight * THREE.MathUtils.lerp(0.25, 0.43, mobileWeight);
     const baseHeroScale = Math.max(1, renderHeight - top - bottom) / renderHeight;
-    // A continuous desktop-only composition ramp; sphere radii and solver stay intact.
-    const desktopWeight = THREE.MathUtils.smoothstep(renderWidth, 1024, 1440);
-    const heroScale = baseHeroScale * (1 + 0.12 * desktopWeight);
+    const aspect = renderWidth / renderHeight;
+    const widescreenWeight = THREE.MathUtils.smoothstep(aspect, 1.6, 16 / 9);
+    const desktopMagnification = THREE.MathUtils.lerp(0.28, 0.245, widescreenWeight);
+    const heroScale = baseHeroScale * (1 + desktopMagnification * desktopWeight);
     const scale = THREE.MathUtils.lerp(1, heroScale, heroF);
     presentation.scale.setScalar(scale);
     presentation.position.y =
       ((bottom - top) / (2 * renderHeight)) * viewportHeight * heroF;
-    // Spread centers, not sphere geometry; the existing inverse pointer map uses this factor.
-    const aspect = renderWidth / renderHeight;
-    // Calibrated at 16:9; compensate for aspect and the reserved Hero text band.
-    const desktopSpread = Math.max(
-      1,
-      1.34 * (aspect / (16 / 9)) * (0.68 / baseHeroScale) *
-        (1 + 0.05 * THREE.MathUtils.smoothstep(aspect, 1.78, 1.95)),
+    // Adjust centers only. Radius remains uniform in screen space, and pointer
+    // input is projected back through this same spread before physics runs.
+    const wideWeight = THREE.MathUtils.smoothstep(aspect, 0.46, 1.45);
+    const widescreenSpread = THREE.MathUtils.lerp(
+      1.15, 1.24, widescreenWeight,
     );
     const heroSpread = THREE.MathUtils.lerp(
-      THREE.MathUtils.lerp(1, desktopSpread, desktopWeight),
-      1 / scale,
-      mobileWeight,
+      0.79, THREE.MathUtils.lerp(1, widescreenSpread, desktopWeight), wideWeight,
     );
     horizontalSpread = THREE.MathUtils.lerp(1, heroSpread, heroF);
     for (const ball of balls) {
@@ -484,6 +480,10 @@ export function createGravityWorld(
 
     const camZ = camera.position.z;
     const clusterActive = Math.max(heroF, entranceT < 1 ? 1 : 0);
+    const desktopCluster = smoothstep(768, 1280, renderWidth) * heroF;
+    const attractionX = lerp(0.38, 0.49, desktopCluster);
+    const attractionY = lerp(1.85, 1.43, desktopCluster);
+    const attractionZ = lerp(1.8, 1.10, desktopCluster);
 
     const samples: PhysicsStepSample[] | undefined = stepObserver ? balls.map(b => ({
       id: b.id, position: [], velocity: [], forceDelta: b.velocity.toArray(),
@@ -513,9 +513,9 @@ export function createGravityWorld(
       const clusterStrength =
         params.centerAttractForce * attractionBoost * clusterActive;
       if (clusterStrength > 0.00001) {
-        b.velocity.x += (0 - b.position.x) * clusterStrength * 0.38;
-        b.velocity.y += (0 - b.position.y) * clusterStrength * 1.85;
-        b.velocity.z += (0 - b.position.z) * clusterStrength * 1.8;
+        b.velocity.x -= b.position.x * clusterStrength * attractionX;
+        b.velocity.y -= b.position.y * clusterStrength * attractionY;
+        b.velocity.z -= b.position.z * clusterStrength * attractionZ;
       }
 
       if (dropF > 0.001) {
