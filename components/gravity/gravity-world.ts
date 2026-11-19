@@ -115,7 +115,7 @@ export function createGravityWorld(
   updateFrustumBounds();
 
   const isMobile = window.innerWidth < 768;
-  const ballCount = isMobile ? 54 : 96;
+  const ballCount = isMobile ? 38 : 66;
   const getDynamicColors = (baseColor: string) => {
     const hex = baseColor.toLowerCase();
     if (hex === "#e1fc03") {
@@ -192,9 +192,14 @@ export function createGravityWorld(
   const sphereGeometry = new THREE.SphereGeometry(1, 48, 48);
   const balls: Ball[] = [];
   for (let i = 0; i < ballCount; i++) {
-    const radius = Math.random() < 0.7
-      ? 0.48 + Math.random() * 0.15
-      : 0.66 + Math.random() * 0.21;
+    // Stratified sampling keeps a few large anchors in every cloud while
+    // allowing irregular sizes, positions, colors, and materials within it.
+    const sizeBand = (i + Math.random()) / ballCount;
+    const size = Math.random();
+    const radius = sizeBand < 0.10 ? 0.40 + size * 0.09
+      : sizeBand < 0.45 ? 0.52 + size * 0.16
+      : sizeBand < 0.85 ? 0.73 + size * 0.19
+      : 1.02 + size * 0.14;
 
     const mass = Math.pow(radius, 3);
 
@@ -287,6 +292,8 @@ export function createGravityWorld(
     const a = x * x + y * y - 1;
     return a * a * a - x * x * y * y * y <= 0;
   };
+  // Keep the point and both lobes populated when sampling with fewer spheres.
+  const heartOutline = [[0, -0.97], [-0.61, 1.13], [0.61, 1.13], [-0.98, 0.60], [0.98, 0.60]];
   const assignHeartTargets = () => {
     const S = Math.min(viewportWidth * 0.3, viewportHeight * 0.27);
     const baseCY = -viewportHeight * 0.03;
@@ -300,6 +307,17 @@ export function createGravityWorld(
         y = Math.random() * 2.55 - 1.4; // bbox y ∈ [-1.4, 1.15]
         tries++;
       } while (!inHeart(x, y) && tries < 60);
+      const outlinePoint = heartOutline[i];
+      if (outlinePoint) {
+        [x, y] = outlinePoint;
+      } else {
+        // Keep the largest balls inside the silhouette, away from the notch and tip.
+        const interior = THREE.MathUtils.smoothstep(balls[i].radius, 0.73, 1.16);
+        x *= 1 - 0.17 * interior;
+        y *= 1 - 0.20 * interior;
+        const notch = THREE.MathUtils.smoothstep(Math.abs(x), 0.14, 0.44);
+        y = Math.min(y, THREE.MathUtils.lerp(0.60, 1.15, notch));
+      }
       balls[i].shapeTarget.set(
         x * S,
         (y + 0.12) * S + baseCY,
@@ -350,12 +368,14 @@ export function createGravityWorld(
     const baseHeroScale = Math.max(1, renderHeight - top - bottom) / renderHeight;
     const aspect = renderWidth / renderHeight;
     const widescreenWeight = THREE.MathUtils.smoothstep(aspect, 1.6, 16 / 9);
-    const desktopMagnification = THREE.MathUtils.lerp(0.28, 0.245, widescreenWeight);
-    const heroScale = baseHeroScale * (1 + desktopMagnification * desktopWeight);
+    const desktopMagnification = THREE.MathUtils.lerp(0.17, 0.15, widescreenWeight);
+    const heroScale = baseHeroScale * (1 + desktopMagnification * desktopWeight - 0.065 * mobileWeight);
     const scale = THREE.MathUtils.lerp(1, heroScale, heroF);
     presentation.scale.setScalar(scale);
+    // Taller foreground spheres need a little more clearance below the desktop nav.
+    const headerClearance = 14 * desktopWeight * (1 - widescreenWeight);
     presentation.position.y =
-      ((bottom - top) / (2 * renderHeight)) * viewportHeight * heroF;
+      (((bottom - top) / 2 - headerClearance) / renderHeight) * viewportHeight * heroF;
     // Adjust centers only. Radius remains uniform in screen space, and pointer
     // input is projected back through this same spread before physics runs.
     const wideWeight = THREE.MathUtils.smoothstep(aspect, 0.46, 1.45);

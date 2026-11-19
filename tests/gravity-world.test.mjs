@@ -18,21 +18,30 @@ test("Gravity Hero uses physical spheres, converges, and responds to the pointer
     renderer,
   );
   try {
-    assert.equal(world.balls.length, 96);
+    assert.equal(world.balls.length, 66);
     assert.equal(world.camera.isOrthographicCamera, true);
     assert.equal(world.camera.position.z, 11);
     assert.equal(world.balls[0].sphere.geometry.parameters.widthSegments, 48);
     for (const ball of world.balls) {
       assert.equal(ball.mass, ball.radius ** 3);
       assert.ok(
-        (ball.radius >= 0.48 && ball.radius <= 0.63) ||
-        (ball.radius >= 0.66 && ball.radius <= 0.87),
+        (ball.radius >= 0.40 && ball.radius <= 0.49) ||
+        (ball.radius >= 0.52 && ball.radius <= 0.68) ||
+        (ball.radius >= 0.73 && ball.radius <= 0.92) ||
+        (ball.radius >= 1.02 && ball.radius <= 1.16),
       );
       if (ball.isGlass) {
         assert.equal(ball.material.transmission, 0.95);
         assert.equal(ball.material.ior, 1.485);
       } else assert.equal(ball.material.roughness, 0.44);
     }
+    const groups = [
+      world.balls.filter(ball => ball.radius < 0.52).length,
+      world.balls.filter(ball => ball.radius >= 0.52 && ball.radius < 0.73).length,
+      world.balls.filter(ball => ball.radius >= 0.73 && ball.radius < 1.02).length,
+      world.balls.filter(ball => ball.radius >= 1.02).length,
+    ];
+    groups.forEach((count, i) => assert.ok(Math.abs(count - [0.10, 0.35, 0.40, 0.15][i] * 66) < 2));
     const meanDistance = () =>
       world.balls.reduce((sum, ball) => sum + ball.position.length(), 0) /
       world.balls.length;
@@ -74,7 +83,7 @@ test("Gravity Hero uses physical spheres, converges, and responds to the pointer
     renderer,
   );
   try {
-    assert.equal(mobile.balls.length, 54);
+    assert.equal(mobile.balls.length, 38);
   } finally {
     mobile.dispose();
     delete global.window;
