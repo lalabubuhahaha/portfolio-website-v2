@@ -1,13 +1,13 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
 
-export function PortraitCursor({ canvas }: { canvas: RefObject<HTMLCanvasElement | null> }) {
+export function PortraitCursor({ face }: { face: RefObject<HTMLDivElement | null> }) {
   const overlay = useRef<HTMLDivElement>(null);
   const animated = useRef<HTMLImageElement>(null);
   const closed = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    const surface = canvas.current;
+    const surface = face.current;
     const cursor = overlay.current;
     const animatedImage = animated.current;
     const closedImage = closed.current;
@@ -55,7 +55,7 @@ export function PortraitCursor({ canvas }: { canvas: RefObject<HTMLCanvasElement
     window.addEventListener("blur", hide, options);
     mouse.addEventListener("change", hide, options);
     return () => { listeners.abort(); hide(); };
-  }, [canvas]);
+  }, [face]);
 
   return createPortal(
     <div ref={overlay} className="about-portrait-pinch" aria-hidden="true">

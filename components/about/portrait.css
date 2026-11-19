@@ -44,17 +44,18 @@ main.portfolio-page.about-page {
   min-width: 0;
 }
 
-.about-portrait-stage { position: relative; }
+.about-portrait-stage { position: relative; aspect-ratio: 1; overflow: clip; }
 
 .about-portrait-stage:has(canvas:focus-visible) {
   outline: 2px solid var(--gravity-accent);
   outline-offset: -3px;
 }
 
-/* Keep the entire square in the layout. Feather only the source backdrop
-   along its sides and top, leaving the shirt grounded at the section rule. */
+/* Keep the stage in the grid and the source at its original scale.
+   Crop at the section rule, below the editable face and its falloff. */
 .about-portrait-image {
-  position: relative;
+  position: absolute;
+  inset: 24% 0 auto;
   aspect-ratio: 1;
   mask-image: linear-gradient(to right, transparent, black 9%, black 91%, transparent),
     linear-gradient(to bottom, transparent, black 12%);
@@ -62,10 +63,24 @@ main.portfolio-page.about-page {
 }
 
 .about-portrait-still { object-fit: contain; }
-.about-portrait-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: grab; touch-action: none; user-select: none; }
-.about-portrait-canvas[data-ready='false'] { pointer-events: none; touch-action: auto; }
+.about-portrait-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; user-select: none; }
 .about-portrait-canvas[data-ready='true'] { opacity: 1; }
-.about-portrait-canvas[data-dragging='true'] { cursor: grabbing; }
+/* Input follows the common face outline in the uncropped source UV frame. */
+.about-portrait-face {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    45% 28%, 52% 25.5%, 59% 24%, 63% 27%, 65% 34%,
+    65% 42%, 63% 49%, 60% 53.5%, 56% 54%, 51% 51%,
+    46% 46%, 43% 40%, 42% 34%
+  );
+  pointer-events: none;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.about-portrait-face[data-ready='true'] { pointer-events: auto; }
+.about-portrait-face[data-dragging='true'] { cursor: grabbing; }
 
 .about-portrait-controls {
   position: absolute;
@@ -139,7 +154,7 @@ main.about-page > .portfolio-about {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .about-portrait-canvas[data-ready='true'][data-pinch-cursor] { cursor: none; }
+  .about-portrait-face[data-ready='true'][data-pinch-cursor] { cursor: none; }
   .about-portrait-pinch[data-state] { display: block; }
   .about-portrait-pinch[data-state='held'] .about-pinch-closed { visibility: visible; }
 

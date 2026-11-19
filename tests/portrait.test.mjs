@@ -16,6 +16,16 @@ test('edge pinning, finite inverse UV and positive Jacobian across extreme drags
   for(const p of [{x:1,y:.5},{x:.5,y:1}]) assert.deepEqual(inverseWarp(p,grab,drag),p);
  }
 });
+test('all drag directions pin the collar, shoulders and chest, while the face can stretch', () => {
+ const grab = { x: .55, y: .59 };
+ const body = [{x:.37,y:.54},{x:.43,y:.49},{x:.48,y:.48},{x:.55,y:.40},{x:.58,y:.47},{x:.60,y:.48},{x:.62,y:.41},{x:.68,y:.48},{x:.53,y:.25}];
+ for (const target of [{x:4,y:0},{x:-4,y:0},{x:0,y:4},{x:0,y:-4}]) {
+  const drag = resistance(target);
+  for (const point of body) assert.deepEqual(inverseWarp(point,grab,drag),point);
+  const pulled = inverseWarp(grab,grab,drag);
+  assert.ok(Math.hypot(pulled.x-grab.x,pulled.y-grab.y)>.07);
+ }
+});
 test('rubber band is continuous, monotonic and bounded',()=>{let last=0;for(let x=0;x<10;x+=.001){const p=resistance({x,y:0});assert.ok(p.x>=last-1e-12&&p.x<.561);last=p.x;}assert.ok(Math.abs(resistance({x:.40001,y:0}).x-.40001)<1e-6);});
 test('grab records actual point, lags pointer, ignores second pointer and small taps keep mood',()=>{const p=new PortraitPhysics();p.down({x:.3,y:.7});assert.equal(p.down({x:0,y:0}),false);p.move({x:.32,y:.7});p.step(1/60);assert.ok(p.displacement.x>0&&p.displacement.x<.02);assert.equal(p.blend,0);p.up();advance(p,1);assert.equal(p.mood,0);assert.equal(p.phase,'IDLE');});
 test('grimace covers hidden mood switch and three releases yield distinct moods',()=>{const p=new PortraitPhysics();const seen=new Set();for(let n=0;n<3;n++){pull(p);assert.ok(p.blend>.95);p.up();let old=p.mood;let switched=false;for(let i=0;i<240;i++){p.step(1/240);if(p.mood!==old){assert.equal(p.blend,1);switched=true;old=p.mood;}}assert.ok(switched);assert.equal(p.phase,'IDLE');assert.equal(p.blend,0);seen.add(p.mood);}assert.equal(seen.size,3);p.reset();assert.equal(p.mood,0);pull(p);p.up();advance(p,1);assert.equal(p.mood,10);});

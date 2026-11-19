@@ -1,3 +1,5 @@
+import { WARP_BOUNDARY } from './portrait-physics';
+
 export const vertexShader = `varying vec2 vUv;
 void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;
 export const fragmentShader = `
@@ -7,13 +9,19 @@ uniform sampler2D baseTexture, moodTexture, grimaceTexture;
 uniform vec2 grab, displacement, velocity;
 uniform float blend, radius, blur;
 uniform bool fullFrameMood;
+float headWeight(vec2 p){
+ float floorY=${WARP_BOUNDARY.chinY}+${WARP_BOUNDARY.shoulderRise}*
+   smoothstep(0.,${WARP_BOUNDARY.shoulderRun},abs(p.x-${WARP_BOUNDARY.chinX}))+
+   ${WARP_BOUNDARY.collarRise}*smoothstep(0.,${WARP_BOUNDARY.collarRun},p.x-${WARP_BOUNDARY.collarStart});
+ return smoothstep(floorY,floorY+${WARP_BOUNDARY.feather},p.y)*smoothstep(.26,.39,p.x)*(1.-smoothstep(.71,.85,p.x));
+}
 // A smooth stationary velocity field. Its time-one flow defines the forward
 // smudge; integrating the negative field gives each pixel's inverse map.
 vec2 field(vec2 p){
  vec2 q=(p-grab)/radius;
  float local=exp(-dot(q,q)*1.5);
  vec2 edge=smoothstep(vec2(0.),vec2(.16),p)*smoothstep(vec2(0.),vec2(.16),1.-p);
- return displacement*local*edge.x*edge.y;
+ return displacement*local*edge.x*edge.y*headWeight(p);
 }
 vec2 inverseWarp(vec2 p){
  const float h=1./12.;
@@ -34,7 +42,10 @@ void main(){
  vec2 p=inverseWarp(vUv);
  vec2 streak=velocity*blur;
  vec3 color=portrait(p);
- if(blur>0.) color=color*.5+portrait(clamp(p+streak,.001,.999))*.25+portrait(clamp(p-streak,.001,.999))*.25;
+ if(blur>0.) {
+  vec3 blurred=color*.5+portrait(clamp(p+streak,.001,.999))*.25+portrait(clamp(p-streak,.001,.999))*.25;
+  color=mix(color,blurred,headWeight(vUv));
+ }
  gl_FragColor=vec4(color,1.);
  #include <tonemapping_fragment>
  #include <colorspace_fragment>

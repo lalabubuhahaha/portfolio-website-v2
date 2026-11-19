@@ -85,12 +85,27 @@ export class PortraitPhysics {
   }
   private grabDirection() { const n = Math.hypot(this.target.x, this.target.y) || 1; return { x: this.target.x / n, y: this.target.y / n }; }
 }
+// Shared UV boundary for the shader and its CPU reference. It follows the
+// underside of the jaw and rises toward the shoulders, pinning the clothing.
+export const WARP_BOUNDARY = { chinX: .58, chinY: .415, shoulderRise: .17, shoulderRun: .15, collarStart: .525, collarRun: .075, collarRise: .075, feather: .14 };
+function smoothRamp(value: number) {
+  const t = Math.max(0, Math.min(1, value));
+  return t * t * (3 - 2 * t);
+}
+
+function headWeight({ x, y }: Point) {
+  const { chinX, chinY, shoulderRise, shoulderRun, collarStart, collarRun, collarRise, feather } = WARP_BOUNDARY;
+  const floor = chinY + shoulderRise * smoothRamp(Math.abs(x - chinX) / shoulderRun)
+    + collarRise * smoothRamp((x - collarStart) / collarRun);
+  return smoothRamp((y - floor) / feather) * smoothRamp((x - .26) / .13) * smoothRamp((.85 - x) / .14);
+}
+
 // CPU reference of the shader field for numerical regression tests.
 export function inverseWarp(point: Point, grab: Point, drag: Point): Point {
-  const smooth = (v: number) => { const t = Math.max(0, Math.min(1, v / .16)); return t * t * (3 - 2 * t); };
+  const smooth = (v: number) => smoothRamp(v / .16);
   const field = (p: Point) => {
     const local = Math.exp(-1.5 * (((p.x - grab.x) / PORTRAIT.warpRadius) ** 2 + ((p.y - grab.y) / PORTRAIT.warpRadius) ** 2));
-    const weight = local * smooth(p.x) * smooth(p.y) * smooth(1 - p.x) * smooth(1 - p.y);
+    const weight = local * headWeight(p) * smooth(p.x) * smooth(p.y) * smooth(1 - p.x) * smooth(1 - p.y);
     return { x: drag.x * weight, y: drag.y * weight };
   };
   const p = { ...point }; const h = 1 / 12;
