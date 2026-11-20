@@ -4,7 +4,6 @@ import { z } from "zod";
 import { DataUnavailable, PageHeader } from "@/components/admin/page-layout";
 import {
   displayDateTime,
-  getCoverOptions,
   getProjectEditor,
 } from "@/lib/content/cms";
 import { ProjectForm } from "../project-form";
@@ -23,7 +22,6 @@ async function EditProject({ params, searchParams }: Props) {
   });
   if (project === undefined) return <DataUnavailable />;
   if (!project) notFound();
-  const covers = await getCoverOptions(project.fields.cover_asset_id);
   const { saved } = await searchParams;
   const status = project.archived
     ? "Archived"
@@ -56,7 +54,6 @@ async function EditProject({ params, searchParams }: Props) {
         id={project.id}
         updatedAt={project.updatedAt}
         initial={project.fields}
-        covers={covers}
         archived={project.archived}
         justCreated={saved === "1"}
       />

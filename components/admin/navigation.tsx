@@ -13,7 +13,7 @@ const destinations = [
   { label: "Works", icon: FolderOpen, href: "/admin/works" },
   { label: "Home", icon: House },
   { label: "About", icon: UserRound },
-  { label: "Media Library", icon: Images },
+  { label: "Media Library", icon: Images, href: "/admin/media" },
   { label: "Settings", icon: Settings },
 ];
 

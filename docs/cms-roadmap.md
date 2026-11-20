@@ -4,7 +4,7 @@
 | --- | --- |
 | 7.1 | Supabase foundation, database schema, administrator authentication, and admin design system |
 | 7.2 | [Works management](cms-stage-7-2.md), drafts, archive, ordering, and homepage Featured settings |
-| 7.3 | Media library, image and video upload, and draft/public asset lifecycle |
+| 7.3 | [Private media library](cms-stage-7-3.md), image and video upload, cover picker, and reference-safe deletion |
 | 7.4 | Basic content block editor |
 | 7.5 | Visual settings, drag ordering, duplication, undo/redo, and autosave |
 | 7.6 | Advanced layout and interaction blocks |

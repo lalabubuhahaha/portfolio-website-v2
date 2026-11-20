@@ -7,9 +7,10 @@ export async function proxy(request: NextRequest) {
   const config = getSupabaseConfig();
   let response = NextResponse.next({ request });
   const isLogin = request.nextUrl.pathname === "/admin/login";
+  const isMediaApi = /^\/admin\/media\/api(?:\/|$)/.test(request.nextUrl.pathname);
 
   function finish(signedIn: boolean) {
-    if (!signedIn && !isLogin && (request.method === "GET" || request.method === "HEAD")) {
+    if (!signedIn && !isLogin && !isMediaApi && (request.method === "GET" || request.method === "HEAD")) {
       const redirect = NextResponse.redirect(new URL("/admin/login", request.url));
       for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
       response = redirect;

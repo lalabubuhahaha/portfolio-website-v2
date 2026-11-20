@@ -31,7 +31,9 @@ The reachable Git history was scanned for common secret formats, including Supab
 
 ## Current application boundary
 
-The only Server Actions are password sign-in and sign-out. Sign-in is reachable anonymously, validates input, and checks membership before granting admin access. Sign-out acts on the caller's own cookie-backed session. Protected page data verifies the user and membership again before querying. Proxy refreshes cookies and provides an early redirect. The application defines no separate route-handler API. CMS queries use Supabase's structured filters, and admin data is rendered as React text.
+Password sign-in and sign-out use Server Actions. Works mutations check verified server identity and membership, validate inputs, and use restricted database RPCs. Media upload, metadata edits and deletion use same-origin route handlers that check verified identity and membership before opening a server-only writer. Media reads and preview signing use the administrator's session. Direct Storage mutations in the CMS bucket are denied to client roles. Proxy refreshes cookies and gives protected pages an early redirect. CMS queries use structured filters and React renders asset names and captions as text.
+
+For Stage 7.3 releases, exercise raw-byte validation, upload rate and size bounds, Storage write compensation, deletion of a referenced asset, and expiration of a signed preview. Confirm that hosted secrets stay server-only and that credential and bucket limits match the deployment.
 
 If Stage 7.1 was deployed before cookie hardening, revoke earlier admin sessions and clear the old site cookies before reopening access. Cookie flags apply when the cookie is written. Keep production auth and hosting settings within the hosted acceptance checks.
 

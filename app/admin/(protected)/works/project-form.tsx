@@ -11,6 +11,8 @@ import {
   slugFromTitle,
   type DraftFields,
 } from "@/lib/cms/project-fields";
+import { MediaPicker } from "@/components/admin/media/media-picker";
+import { AssetPreview } from "@/components/admin/media/asset-visual";
 import { saveDraft, type DraftResult } from "./actions";
 
 const works = "/admin/works";
@@ -56,14 +58,12 @@ export function ProjectForm({
   initial,
   id,
   updatedAt,
-  covers,
   archived,
   justCreated,
 }: {
   initial: DraftFields;
   id?: string;
   updatedAt?: string;
-  covers: { id: string; file_name: string }[] | null;
   archived?: boolean;
   justCreated?: boolean;
 }) {
@@ -213,51 +213,38 @@ export function ProjectForm({
         </section>
         <section className="rounded-xl border border-cms-border bg-white p-5 sm:p-6">
           <h2 className="mb-4 font-semibold">Cover image</h2>
-          <div className="flex items-center gap-4">
-            <span className="grid size-14 shrink-0 place-items-center rounded-lg border border-cms-border bg-cms-background text-cms-muted">
+          {fields.cover_asset_id ? (
+            <div className="mb-3 max-w-sm">
+              <AssetPreview id={fields.cover_asset_id} compact />
+            </div>
+          ) : (
+            <span className="mb-3 grid size-14 place-items-center rounded-lg border border-cms-border bg-cms-background text-cms-muted">
               <ImageIcon aria-hidden className="size-5" />
             </span>
-            <div className="min-w-0 flex-1">
-              <label
-                htmlFor="cover_asset_id"
-                className="mb-2 block text-sm font-medium"
-              >
-                Existing media
-              </label>
-              <Select
-                id="cover_asset_id"
-                name="cover_asset_id"
-                className="w-full"
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {!archived && (
+              <MediaPicker
                 value={fields.cover_asset_id}
-                onChange={(event) =>
-                  change("cover_asset_id", event.target.value)
-                }
-                disabled={!covers}
+                imagesOnly
+                onSelect={(id) => change("cover_asset_id", id)}
+              />
+            )}
+            {!!fields.cover_asset_id && !archived && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => change("cover_asset_id", "")}
               >
-                <option value="">
-                  {covers?.length ? "No cover" : "No media available"}
-                </option>
-                {covers === null && fields.cover_asset_id && (
-                  <option value={fields.cover_asset_id}>Current cover</option>
-                )}
-                {covers?.map((asset) => (
-                  <option key={asset.id} value={asset.id}>
-                    {asset.file_name}
-                  </option>
-                ))}
-              </Select>
-              {result.fields?.cover_asset_id && (
-                <p className="mt-2 text-xs text-red-700">
-                  {result.fields.cover_asset_id[0]}
-                </p>
-              )}
-              {covers === null && (
-                <p className="mt-2 text-xs text-cms-secondary">
-                  Media could not be loaded.
-                </p>
-              )}
-            </div>
+                Clear Cover
+              </Button>
+            )}
           </div>
+          {result.fields?.cover_asset_id && (
+            <p role="alert" className="mt-2 text-xs text-red-700">
+              {result.fields.cover_asset_id[0]}
+            </p>
+          )}
         </section>
         <section className="rounded-xl border border-cms-border bg-white p-5 sm:p-6">
           <h2 className="mb-5 font-semibold">Search appearance</h2>

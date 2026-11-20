@@ -1,8 +1,10 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const getAdminSession = cache(async () => {
+  await connection();
   const supabase = await createSupabaseServerClient();
   if (!supabase) return { state: "unconfigured" } as const;
 

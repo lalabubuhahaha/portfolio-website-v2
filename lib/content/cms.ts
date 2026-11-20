@@ -1,4 +1,6 @@
 import { cache } from "react";
+import { MEDIA_BUCKET, mediaFormat } from "@/lib/cms/media-formats";
+import { MEDIA_URL_TTL } from "./media";
 import type { DraftFields } from "@/lib/cms/project-fields";
 import { requireAdmin } from "@/lib/cms/session";
 
@@ -166,32 +168,6 @@ export async function getProjectEditor(id: string) {
   };
 }
 
-export async function getCoverOptions(selected: string) {
-  const { supabase } = await requireAdmin();
-  const assets: { id: string; file_name: string }[] = [];
-  for (let offset = 0; ; offset += 100) {
-    const { data, error } = await supabase
-      .from("media_assets")
-      .select("id, file_name")
-      .eq("storage_bucket", "cms-private")
-      .like("mime_type", "image/%")
-      .order("file_name")
-      .order("id")
-      .range(offset, offset + 99);
-    if (error) return null;
-    assets.push(...data);
-    if (data.length < 100) break;
-  }
-  if (selected && !assets.some((asset) => asset.id === selected)) {
-    assets.unshift({
-      id: selected,
-      file_name:
-        "Current cover (unavailable). Choose another image or clear it.",
-    });
-  }
-  return assets;
-}
-
 export async function getCoverPreviews(projects: Project[]) {
   const paths = [
     ...new Set(
@@ -204,12 +180,28 @@ export async function getCoverPreviews(projects: Project[]) {
   if (!paths.length) return previews;
   const { supabase } = await requireAdmin();
   for (let offset = 0; offset < paths.length; offset += 100) {
+    const { data: assets } = await supabase
+      .from("media_assets")
+      .select("storage_path,thumbnail_path,mime_type,file_size")
+      .eq("storage_bucket", MEDIA_BUCKET)
+      .eq("state", "ready")
+      .in("storage_path", paths.slice(offset, offset + 100));
+    const targets = new Map<string, string>();
+    for (const asset of assets ?? []) {
+      if (mediaFormat(asset.mime_type)?.kind !== "image") continue;
+      const preview =
+        asset.thumbnail_path ??
+        (asset.file_size <= 128 * 1024 ? asset.storage_path : null);
+      if (preview) targets.set(preview, asset.storage_path);
+    }
+    if (!targets.size) continue;
     const { data } = await supabase.storage
-      .from("cms-private")
-      .createSignedUrls(paths.slice(offset, offset + 100), 600);
+      .from(MEDIA_BUCKET)
+      .createSignedUrls([...targets.keys()], MEDIA_URL_TTL);
     for (const asset of data ?? []) {
-      if (asset.path && asset.signedUrl && !asset.error)
-        previews[asset.path] = asset.signedUrl;
+      const original = asset.path && targets.get(asset.path);
+      if (original && asset.signedUrl && !asset.error)
+        previews[original] = asset.signedUrl;
     }
   }
   return previews;
