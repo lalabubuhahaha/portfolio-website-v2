@@ -141,7 +141,6 @@ export function ProjectForm({
         setStamp(next.updatedAt);
         setSuccess(true);
         if (!id) router.replace(works + "/" + next.id + "?saved=1");
-        else router.refresh();
       } catch {
         setResult({
           error:

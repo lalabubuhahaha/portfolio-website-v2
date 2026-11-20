@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import { Archive, Ellipsis, Pencil, RotateCcw } from "lucide-react";
@@ -20,7 +19,6 @@ export function FeaturedToggle({
   featured: boolean;
   archived: boolean;
 }) {
-  const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState("");
 
@@ -30,7 +28,6 @@ export function FeaturedToggle({
       try {
         const result = await changeProject(id, "featured", !featured);
         if (result.error) setError(result.error);
-        else router.refresh();
       } catch {
         setError("Could not update Featured. Try again.");
       }
@@ -70,7 +67,6 @@ export function ProjectActions({
   title: string;
   archived: boolean;
 }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
@@ -83,7 +79,6 @@ export function ProjectActions({
         if (result.error) setError(result.error);
         else {
           setOpen(false);
-          router.refresh();
         }
       } catch {
         setError("Could not update the project. Try again.");

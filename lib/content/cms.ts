@@ -22,15 +22,44 @@ export type Project = {
   coverPath: string | null;
 };
 
+const gravitySettings = `settings:project_site_settings!project_site_settings_project_id_fkey(
+  published_revision_id, is_featured, display_order, featured_order, site:sites!inner()
+)`;
+
+type ProjectListRow = {
+  id: string;
+  slug: string;
+  category: string;
+  updated_at: string;
+  archived_at: string | null;
+  revisions: {
+    id: string;
+    title: string;
+    year?: number | null;
+    summary?: string;
+    cover?: {
+      storage_bucket: string;
+      storage_path: string;
+      thumbnail_path: string | null;
+      mime_type: string;
+      state: string;
+      file_size: number;
+    } | null;
+  }[];
+  settings: {
+    published_revision_id: string | null;
+    is_featured: boolean;
+    display_order: number;
+    featured_order: number;
+  }[];
+};
+
 export const getGravityProjects = cache(
   async (includeArchived = false): Promise<Project[] | null> => {
     const { supabase } = await requireAdmin();
-    const { data: site, error: siteError } = await supabase
-      .from("sites")
-      .select("id")
-      .eq("key", "gravity")
-      .single();
-    if (siteError || !site) return null;
+    const revisionFields = includeArchived
+      ? "id,title,year,summary,cover:media_assets(storage_bucket,storage_path,thumbnail_path,mime_type,state,file_size)"
+      : "id,title";
 
     const projects: Project[] = [];
     const batchSize = 100;
@@ -39,13 +68,10 @@ export const getGravityProjects = cache(
       const query = supabase
         .from("projects")
         .select(
-          `
-      id, slug, category, updated_at, archived_at,
-      revisions:project_revisions!project_revisions_project_id_fkey(id, title, year, summary, cover:media_assets(storage_bucket,storage_path,mime_type)),
-      settings:project_site_settings!project_site_settings_project_id_fkey(published_revision_id, is_featured, display_order, featured_order)
-    `,
+          `id,slug,category,updated_at,archived_at,
+          revisions:project_revisions!project_revisions_project_id_fkey(${revisionFields}), ${gravitySettings}`,
         )
-        .eq("settings.site_id", site.id)
+        .eq("settings.site.key", "gravity")
         .order("revision_number", {
           referencedTable: "revisions",
           ascending: false,
@@ -54,17 +80,15 @@ export const getGravityProjects = cache(
         .order("updated_at", { ascending: false })
         .order("id")
         .range(offset, offset + batchSize - 1);
-      const { data, error } = await (includeArchived
-        ? query
-        : query.is("archived_at", null));
+      const { data, error } = await (
+        includeArchived ? query : query.is("archived_at", null)
+      ).overrideTypes<ProjectListRow[], { merge: false }>();
       if (error) return null;
 
       for (const row of data) {
         const settings = row.settings[0];
         const revision = row.revisions[0];
-        const cover = Array.isArray(revision?.cover)
-          ? revision.cover[0]
-          : revision?.cover;
+        const cover = revision?.cover;
         projects.push({
           id: row.id,
           title: revision?.title ?? row.slug,
@@ -89,9 +113,11 @@ export const getGravityProjects = cache(
           displayOrder: settings?.display_order ?? 0,
           featuredOrder: settings?.featured_order ?? 0,
           coverPath:
-            cover?.storage_bucket === "cms-private" &&
-            cover.mime_type.startsWith("image/")
-              ? cover.storage_path
+            cover?.storage_bucket === MEDIA_BUCKET &&
+            cover.state === "ready" &&
+            mediaFormat(cover.mime_type)?.kind === "image"
+              ? (cover.thumbnail_path ??
+                (cover.file_size <= 128 * 1024 ? cover.storage_path : null))
               : null,
         });
       }
@@ -107,38 +133,28 @@ export const displayDate = new Intl.DateTimeFormat("en", {
 
 export async function getProjectEditor(id: string) {
   const { supabase } = await requireAdmin();
-  const [{ data: site, error: siteError }, { data: row, error }] =
-    await Promise.all([
-      supabase.from("sites").select("id").eq("key", "gravity").single(),
-      supabase
-        .from("projects")
-        .select(
-          `
+  const { data: row, error } = await supabase
+    .from("projects")
+    .select(
+      `
       id, slug, category, updated_at, archived_at,
       revisions:project_revisions!project_revisions_project_id_fkey(
         id, title, summary, year, role, tools, category_tags, external_url, cover_asset_id, seo_title, seo_description
-      )
+      ),
+      settings:project_site_settings!project_site_settings_project_id_fkey(published_revision_id, site:sites!inner())
     `,
-        )
-        .eq("id", id)
-        .order("revision_number", {
-          referencedTable: "revisions",
-          ascending: false,
-        })
-        .limit(1, { referencedTable: "revisions" })
-        .maybeSingle(),
-    ]);
-  if (error || siteError || !site)
-    throw new Error("Project data is temporarily unavailable.");
-  if (!row) return null;
-  const { data: settings, error: settingsError } = await supabase
-    .from("project_site_settings")
-    .select("published_revision_id")
-    .eq("project_id", id)
-    .eq("site_id", site.id)
+    )
+    .eq("id", id)
+    .eq("settings.site.key", "gravity")
+    .order("revision_number", {
+      referencedTable: "revisions",
+      ascending: false,
+    })
+    .limit(1, { referencedTable: "revisions" })
     .maybeSingle();
-  if (settingsError)
-    throw new Error("Project settings are temporarily unavailable.");
+  if (error) throw new Error("Project data is temporarily unavailable.");
+  if (!row) return null;
+  const settings = row.settings[0];
   const revision = row.revisions[0];
   const fields: DraftFields = {
     title: revision?.title ?? "",
@@ -168,43 +184,32 @@ export async function getProjectEditor(id: string) {
   };
 }
 
-export async function getCoverPreviews(projects: Project[]) {
-  const paths = [
-    ...new Set(
-      projects.flatMap((project) =>
-        project.coverPath ? [project.coverPath] : [],
-      ),
-    ),
-  ];
-  const previews: Record<string, string> = Object.create(null);
-  if (!paths.length) return previews;
+export type CoverPreviews = Record<
+  string,
+  { url: string | null; expiresAt: number }
+>;
+
+export async function getCoverPreviews(
+  paths: string[],
+): Promise<CoverPreviews> {
+  if (!paths.length) return {};
   const { supabase } = await requireAdmin();
-  for (let offset = 0; offset < paths.length; offset += 100) {
-    const { data: assets } = await supabase
-      .from("media_assets")
-      .select("storage_path,thumbnail_path,mime_type,file_size")
-      .eq("storage_bucket", MEDIA_BUCKET)
-      .eq("state", "ready")
-      .in("storage_path", paths.slice(offset, offset + 100));
-    const targets = new Map<string, string>();
-    for (const asset of assets ?? []) {
-      if (mediaFormat(asset.mime_type)?.kind !== "image") continue;
-      const preview =
-        asset.thumbnail_path ??
-        (asset.file_size <= 128 * 1024 ? asset.storage_path : null);
-      if (preview) targets.set(preview, asset.storage_path);
-    }
-    if (!targets.size) continue;
-    const { data } = await supabase.storage
-      .from(MEDIA_BUCKET)
-      .createSignedUrls([...targets.keys()], MEDIA_URL_TTL);
-    for (const asset of data ?? []) {
-      const original = asset.path && targets.get(asset.path);
-      if (original && asset.signedUrl && !asset.error)
-        previews[original] = asset.signedUrl;
-    }
-  }
-  return previews;
+  const now = Date.now();
+  const { data } = await supabase.storage
+    .from(MEDIA_BUCKET)
+    .createSignedUrls(paths, MEDIA_URL_TTL);
+  const urls = new Map(
+    (data ?? []).map((item) => [item.path, item.error ? null : item.signedUrl]),
+  );
+  return Object.fromEntries(
+    paths.map((path) => {
+      const url = urls.get(path) ?? null;
+      return [
+        path,
+        { url, expiresAt: now + (url ? MEDIA_URL_TTL - 5 : 15) * 1000 },
+      ];
+    }),
+  );
 }
 
 export const displayDateTime = new Intl.DateTimeFormat("en", {

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/cms/session";
+import { getCoverPreviews, type CoverPreviews } from "@/lib/content/cms";
+import { WORKS_PAGE_SIZE } from "@/lib/cms/works-filters";
 import {
   emptyDraft,
   projectFieldsSchema,
@@ -138,4 +140,25 @@ export async function saveOrder(
   if (error) return { error: message(error.code) };
   revalidatePath("/admin/works");
   return {};
+}
+
+export async function signWorksCovers(paths: string[]): Promise<CoverPreviews> {
+  await requireAdmin();
+  const result = z
+    .array(
+      z
+        .string()
+        .min(1)
+        .max(1024)
+        .refine(
+          (path) =>
+            !/[\\\p{Cc}]/u.test(path) &&
+            !path
+              .split("/")
+              .some((part) => !part || part === ".." || part === "."),
+        ),
+    )
+    .max(WORKS_PAGE_SIZE)
+    .safeParse(paths);
+  return result.success ? getCoverPreviews([...new Set(result.data)]) : {};
 }
