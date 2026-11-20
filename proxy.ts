@@ -9,8 +9,8 @@ export async function proxy(request: NextRequest) {
   const isLogin = request.nextUrl.pathname === "/admin/login";
   const isMediaApi = /^\/admin\/media\/api(?:\/|$)/.test(request.nextUrl.pathname);
 
-  function finish(signedIn: boolean) {
-    if (!signedIn && !isLogin && !isMediaApi && (request.method === "GET" || request.method === "HEAD")) {
+  function finish(hasSession: boolean) {
+    if (!hasSession && !isLogin && !isMediaApi && (request.method === "GET" || request.method === "HEAD")) {
       const redirect = NextResponse.redirect(new URL("/admin/login", request.url));
       for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
       response = redirect;
@@ -36,8 +36,10 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const { data } = await supabase.auth.getClaims();
-  return finish(Boolean(data?.claims.sub));
+  // Refresh cookies here and use session presence only for the login redirect.
+  // Protected pages, actions, and APIs verify the user and admin membership.
+  const { data } = await supabase.auth.getSession();
+  return finish(Boolean(data?.session));
 }
 
 export const config = { matcher: ["/admin/:path*"] };
