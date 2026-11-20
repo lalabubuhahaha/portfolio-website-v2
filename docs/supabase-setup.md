@@ -6,8 +6,9 @@ Confirm the intended Supabase project name and project ref in Dashboard. In that
 
 1. [20261120000100_cms_foundation.sql](../supabase/migrations/20261120000100_cms_foundation.sql) creates the six CMS tables, the Gravity site, and the private Storage bucket and object policies.
 2. [20261120000200_cms_security_baseline.sql](../supabase/migrations/20261120000200_cms_security_baseline.sql) hardens bucket configuration and removes owner privileges from the membership helper.
+3. [20261120000300_cms_works_management.sql](../supabase/migrations/20261120000300_cms_works_management.sql) enables [Stage 7.2 Works management](cms-stage-7-2.md).
 
-On an existing Stage 7.1 database, confirm the foundation migration is applied and run only the pending baseline migration. Each file is a single transaction. A failed baseline migration reports if the required bucket is public or Storage RLS is disabled. Resolve that state in the confirmed project before retrying.
+On an existing database, verify the applied versions and run only the pending migrations in order. Each file is a single transaction. A failed baseline migration reports if the required bucket is public or Storage RLS is disabled. Resolve that state in the confirmed project before retrying.
 
 For local development, initialize an isolated Supabase CLI project, copy the migration directory into it, disable auth sign-ups in its config, and run `supabase start`. Use local values from `supabase status`. Running a local reset rebuilds that local database and reapplies migrations. Confirm the target before any remote write or migration.
 

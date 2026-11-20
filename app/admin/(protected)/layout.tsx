@@ -1,8 +1,10 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { AdminNavigation } from "@/components/admin/navigation";
 import { requireAdmin } from "@/lib/cms/session";
 
 async function ProtectedLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  await connection();
   const { user } = await requireAdmin();
 
   return (

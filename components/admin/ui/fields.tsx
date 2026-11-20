@@ -7,3 +7,12 @@ export const fieldClass = "h-10 rounded-lg border border-cms-border bg-white px-
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input data-slot="input" className={cn(fieldClass, className)} {...props} />;
 }
+
+
+export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
+  return <textarea data-slot="textarea" className={cn(fieldClass, "h-auto min-h-24 py-2.5", className)} {...props} />;
+}
+
+export function Select({ className, ...props }: ComponentProps<"select">) {
+  return <select data-slot="select" className={cn(fieldClass, className)} {...props} />;
+}

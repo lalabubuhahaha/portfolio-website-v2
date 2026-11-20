@@ -4,15 +4,16 @@ import type { ReactNode } from "react";
 import type { Project } from "@/lib/content/cms";
 import { Button } from "./ui/button";
 
-export function PageHeader({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
+export function PageHeader({ title, description, action, parent }: { title: string; description: string; action?: ReactNode; parent?: { title: string; href: string } }) {
   return (
     <div className="mb-7">
       <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-2 text-xs font-medium text-cms-secondary">
         <Link href="/admin" className="hover:text-cms-primary">Admin</Link><ChevronRight className="size-3.5" />
+        {parent && <><Link href={parent.href} className="hover:text-cms-primary">{parent.title}</Link><ChevronRight className="size-3.5" /></>}
         <span aria-current="page" className="text-cms-foreground">{title}</span>
       </nav>
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div><h1 className="text-3xl font-semibold tracking-tight">{title}</h1><p className="mt-2 text-sm text-cms-secondary">{description}</p></div>
+        <div className="min-w-0"><h1 className="[overflow-wrap:anywhere] text-3xl font-semibold tracking-tight">{title}</h1><p className="mt-2 text-sm text-cms-secondary">{description}</p></div>
         {action}
       </div>
     </div>

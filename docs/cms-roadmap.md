@@ -3,7 +3,7 @@
 | Stage | Scope |
 | --- | --- |
 | 7.1 | Supabase foundation, database schema, administrator authentication, and admin design system |
-| 7.2 | Project CRUD, metadata, category, ordering, and homepage featured settings |
+| 7.2 | [Works management](cms-stage-7-2.md), drafts, archive, ordering, and homepage Featured settings |
 | 7.3 | Media library, image and video upload, and draft/public asset lifecycle |
 | 7.4 | Basic content block editor |
 | 7.5 | Visual settings, drag ordering, duplication, undo/redo, and autosave |
