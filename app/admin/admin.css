@@ -1,0 +1,15 @@
+@import "tailwindcss" source(none);
+@source ".";
+@source "../../components/admin";
+
+@theme {
+  --color-cms-primary: #2548eb;
+  --color-cms-primary-hover: #1d3aca;
+  --color-cms-background: #f8f9fc;
+  --color-cms-foreground: #17191e;
+  --color-cms-muted: #777e8a;
+  --color-cms-secondary: #555e70;
+  --color-cms-border: #e3e5eb;
+  --color-cms-selected: #edf1ff;
+  --font-cms: "Inter Variable", sans-serif;
+}
