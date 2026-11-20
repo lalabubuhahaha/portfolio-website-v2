@@ -64,8 +64,6 @@ export function createGravityWorld(
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const hemiLight = new THREE.HemisphereLight(
     0xffffff,
@@ -76,17 +74,6 @@ export function createGravityWorld(
 
   const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
   keyLight.position.set(-6, 10, 8);
-  keyLight.castShadow = true;
-  keyLight.shadow.mapSize.width = 2048;
-  keyLight.shadow.mapSize.height = 2048;
-  keyLight.shadow.camera.near = 0.5;
-  keyLight.shadow.camera.far = 30;
-  keyLight.shadow.camera.left = -8;
-  keyLight.shadow.camera.right = 8;
-  keyLight.shadow.camera.top = 8;
-  keyLight.shadow.camera.bottom = -8;
-  keyLight.shadow.bias = -0.0003;
-  keyLight.shadow.radius = 12.0;
   scene.add(keyLight);
 
   const rimLight = new THREE.DirectionalLight(0xffffff, 1.25);
@@ -217,17 +204,24 @@ export function createGravityWorld(
         metalness: 0.0,
         clearcoat: 1.0,
         clearcoatRoughness: 0.03,
-        transmission: 0.95,
         ior: 1.485,
-        thickness: 2.2,
         specularColor: new THREE.Color("#ffffff"),
         specularIntensity: 1.0,
-        attenuationColor: palette.pastel,
-        attenuationDistance: 1.0,
         emissive: palette.glass,
         emissiveIntensity: 0.12,
         transparent: true,
+        depthWrite: false,
       });
+      // Use the same back-to-front pass as the other spheres. A stronger rim
+      // keeps the glass readable when several tinted layers overlap.
+      sphereMat.onBeforeCompile = (shader) => {
+        shader.fragmentShader = shader.fragmentShader.replace(
+          "#include <opaque_fragment>",
+          `float rim = 1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);
+          diffuseColor.a *= mix(0.52, 0.88, rim * rim);
+          #include <opaque_fragment>`,
+        );
+      };
 
       role = "glass";
     } else {
@@ -254,15 +248,16 @@ export function createGravityWorld(
         clearcoatRoughness: 0.35,
         emissive: isBlack ? new THREE.Color("#000000") : chosenColor,
         emissiveIntensity: isBlack ? 0.0 : 0.08,
+        // Composite complete front faces in camera-depth order. Intersecting
+        // shells must not carve fragments out of each other's silhouettes.
         transparent: true,
+        depthWrite: false,
       });
     }
 
     const group = new THREE.Group();
     const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMat);
     sphereMesh.scale.setScalar(radius);
-    sphereMesh.castShadow = true;
-    sphereMesh.receiveShadow = true;
     group.add(sphereMesh);
     const displayAnchor = new THREE.Group();
     displayAnchor.add(group);
@@ -910,7 +905,6 @@ export function createGravityWorld(
   const dispose = () => {
     sphereGeometry.dispose();
     for (const ball of balls) ball.material.dispose();
-    keyLight.shadow.map?.dispose();
     scene.clear();
   };
   return {

@@ -30,8 +30,11 @@ test("Gravity Hero uses physical spheres, converges, and responds to the pointer
         (ball.radius >= 0.73 && ball.radius <= 0.92) ||
         (ball.radius >= 1.02 && ball.radius <= 1.16),
       );
+      assert.equal(ball.material.transparent, true);
+      assert.equal(ball.material.depthWrite, false);
+      assert.equal(ball.sphere.receiveShadow, false);
       if (ball.isGlass) {
-        assert.equal(ball.material.transmission, 0.95);
+        assert.equal(ball.material.transmission, 0);
         assert.equal(ball.material.ior, 1.485);
       } else assert.equal(ball.material.roughness, 0.44);
     }
@@ -433,9 +436,8 @@ test("palette updates retain meshes, materials, motion, targets, opacity and Sta
               assert.equal(b.material.roughness, 0.08);
               assert.equal(b.material.clearcoat, 1);
               assert.equal(b.material.clearcoatRoughness, 0.03);
-              assert.equal(b.material.transmission, 0.95);
+              assert.equal(b.material.transmission, 0);
               assert.equal(b.material.ior, 1.485);
-              assert.equal(b.material.thickness, 2.2);
               assert.equal(b.material.emissiveIntensity, 0.12);
             } else {
               assert.equal(b.material.roughness, 0.44);
