@@ -2,7 +2,12 @@
 
 ## Apply the migration
 
-Confirm the intended Supabase project name and project ref in Dashboard. Open that project’s SQL Editor. Copy and run the **entire** SQL migration [20261120000100_cms_foundation.sql](../supabase/migrations/20261120000100_cms_foundation.sql). The file is a single transaction and contains all required schema, seed, and policy statements for Stage 7.1. It is the first CMS migration and is intended to run once on a database without this CMS schema. Track it through your migration workflow and avoid applying it twice through separate workflows.
+Confirm the intended Supabase project name and project ref in Dashboard. In that project’s SQL Editor, apply the complete files in order. Use your migration workflow to record each applied version.
+
+1. [20261120000100_cms_foundation.sql](../supabase/migrations/20261120000100_cms_foundation.sql) creates the six CMS tables, the Gravity site, and the private Storage bucket and object policies.
+2. [20261120000200_cms_security_baseline.sql](../supabase/migrations/20261120000200_cms_security_baseline.sql) hardens bucket configuration and removes owner privileges from the membership helper.
+
+On an existing Stage 7.1 database, confirm the foundation migration is applied and run only the pending baseline migration. Each file is a single transaction. A failed baseline migration reports if the required bucket is public or Storage RLS is disabled. Resolve that state in the confirmed project before retrying.
 
 For local development, initialize an isolated Supabase CLI project, copy the migration directory into it, disable auth sign-ups in its config, and run `supabase start`. Use local values from `supabase status`. Running a local reset rebuilds that local database and reapplies migrations. Confirm the target before any remote write or migration.
 

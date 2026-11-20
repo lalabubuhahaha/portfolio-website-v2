@@ -15,6 +15,8 @@
 
 Gravity Edition is the first site. Standalone Home and Settings administration is deferred.
 
+Every CMS Stage, including Stage 8, must complete the [CMS security acceptance checklist](cms-security-checklist.md) before release. Record the role checks, tested environment, and outstanding verification in the Stage report.
+
 ## Block editor
 
 The basic block catalog is Heading, Rich Text, Image, Image Gallery, Columns, Image + Text, Video / GIF, Quote, Metrics, Figma Prototype, Link / Button, Divider, Spacer, Color Palette, Typography, and Before / After.
