@@ -79,11 +79,16 @@ export default function GravityScene({
       if (observer === undefined || typeof observer === "function")
         world.observeSteps(observer);
     };
+    const depthTrace = (event: Event) => {
+      const observer = (event as CustomEvent<Parameters<typeof world.observeDepth>[0]>).detail;
+      if (observer == null || typeof observer === "function") world.observeDepth(observer ?? undefined);
+    };
     const diagnosticsEnabled =
       new URLSearchParams(window.location.search).get("gravity-debug") === "1";
     if (diagnosticsEnabled) {
       canvas.addEventListener("gravity:inspect", diagnostic);
       canvas.addEventListener("gravity:trace", trace);
+      canvas.addEventListener("gravity:depth", depthTrace);
     }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false;
@@ -346,6 +351,7 @@ export default function GravityScene({
       cancelAnimationFrame(progressFrame);
       canvas.removeEventListener("gravity:inspect", diagnostic);
       canvas.removeEventListener("gravity:trace", trace);
+      canvas.removeEventListener("gravity:depth", depthTrace);
       world.observeSteps();
       world.dispose();
       renderer.dispose();

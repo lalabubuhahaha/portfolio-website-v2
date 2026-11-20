@@ -25,6 +25,27 @@ export interface PhysicsStepSample {
   boundary: boolean;
   progress: number;
 }
+export interface DepthFrame {
+  progress: number;
+  drawOrder: number[];
+  balls: {
+    id: number;
+    position: number[];
+    world: number[];
+    depth: number;
+    velocity: number[];
+    correction: number[];
+    overlap: number;
+    targetDistance: number;
+    glass: boolean;
+    transparent: boolean;
+    opacity: number;
+    depthWrite: boolean;
+    depthTest: boolean;
+    renderOrder: number;
+    radius: number;
+  }[];
+}
 export interface GravityControl {
   progress: number;
   started: boolean;
@@ -421,6 +442,8 @@ export function createGravityWorld(
     return t * t * (3 - 2 * t);
   };
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  const heartWeight = (progress: number) =>
+    smoothstep(1.4, 2.05, progress) * (1 - smoothstep(2.55, 3, progress));
   const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
   let localStarted = false;
   let entranceStart = 0;
@@ -437,6 +460,18 @@ export function createGravityWorld(
   const prevMouseWorld = new THREE.Vector3();
   let mouseSpeed = 0;
 
+  let depthObserver: ((frame: DepthFrame) => void) | undefined;
+  let recentSteps: PhysicsStepSample[] | undefined;
+  const drawOrder: number[] = [];
+  const observeDepth = (observer?: typeof depthObserver) => {
+    depthObserver = observer;
+    recentSteps = undefined;
+    for (const ball of balls) {
+      ball.sphere.onBeforeRender = observer
+        ? () => { drawOrder.push(ball.id); }
+        : THREE.Object3D.prototype.onBeforeRender;
+    }
+  };
   // Opt-in per-step telemetry: no sample arrays are allocated in normal rendering.
   let stepObserver: ((samples: PhysicsStepSample[]) => void) | undefined;
   const observeSteps = (observer?: typeof stepObserver) => {
@@ -459,8 +494,7 @@ export function createGravityWorld(
     const heroF = 1 - smoothstep(0.3, 0.8, progress);
     const dropRaw = smoothstep(0.4, 0.95, progress);
     const flyF = smoothstep(2.7, 3.45, progress);
-    const shapeF =
-      smoothstep(1.4, 2.05, progress) * (1 - smoothstep(2.55, 3.0, progress));
+    const shapeF = heartWeight(progress);
     const dropF = dropRaw * (1 - smoothstep(1.25, 1.75, progress));
 
     // --- scroll-driven palette morph: hero → volt-lime → rose-pink ---
@@ -500,7 +534,7 @@ export function createGravityWorld(
     const attractionY = lerp(1.85, 1.43, desktopCluster);
     const attractionZ = lerp(1.8, 1.10, desktopCluster);
 
-    const samples: PhysicsStepSample[] | undefined = stepObserver ? balls.map(b => ({
+    const samples: PhysicsStepSample[] | undefined = (stepObserver || depthObserver) ? balls.map(b => ({
       id: b.id, position: [], velocity: [], forceDelta: b.velocity.toArray(),
       collisions: 0, correction: [0, 0, 0], boundary: false, progress,
     })) : undefined;
@@ -737,6 +771,7 @@ export function createGravityWorld(
       }
       b.meshGroup.position.copy(b.position);
     }
+    if (depthObserver) recentSteps = samples;
     if (samples) stepObserver?.(samples);
   };
 
@@ -787,11 +822,74 @@ export function createGravityWorld(
     for (const role of ROLES) palHero[role].copy(next[role]);
     refreshPalette();
   };
+  const depthOrder = [...balls];
+  let heartOrderActive = false;
+  const updateDepthOrder = () => {
+    // The sort is based on centers, like Three's default for these meshes.
+    // At Heart contacts, sub-0.04 world-depth motion can reorder full silhouettes.
+    const deadband = 0.045 * heartWeight(control.progress);
+    if (deadband === 0) {
+      if (heartOrderActive) {
+        for (const ball of balls) ball.sphere.renderOrder = 0;
+        heartOrderActive = false;
+      }
+      return;
+    }
+
+    if (!heartOrderActive) {
+      depthOrder.sort((a, b) => a.position.z - b.position.z || a.sphere.id - b.sphere.id);
+      heartOrderActive = true;
+    } else {
+      // Maintaining a ranked list avoids a non-transitive sort comparator.
+      // Each relative order change requires a real crossing of that pair.
+      const scale = presentation.scale.z;
+      for (let i = 1; i < depthOrder.length; i++) {
+        const ball = depthOrder[i];
+        let j = i;
+        while (j > 0 && (depthOrder[j - 1].position.z - ball.position.z) * scale > deadband) {
+          depthOrder[j] = depthOrder[j - 1];
+          j--;
+        }
+        depthOrder[j] = ball;
+      }
+    }
+
+    for (let i = 0; i < depthOrder.length; i++) {
+      depthOrder[i].sphere.renderOrder = i + 1;
+    }
+  };
   const render = () => {
     refreshPalette();
     updatePresentation();
+    updateDepthOrder();
     renderCount++;
+    drawOrder.length = 0;
     renderer.render(scene, camera);
+    if (depthObserver) {
+      const world = new THREE.Vector3();
+      depthObserver({
+        progress: control.progress,
+        drawOrder: [...drawOrder],
+        balls: balls.map(ball => {
+          ball.sphere.getWorldPosition(world);
+          const worldPosition = world.toArray();
+          const depth = -world.applyMatrix4(camera.matrixWorldInverse).z;
+          let overlap = 0;
+          for (const other of balls) {
+            if (other !== ball) overlap = Math.max(overlap,
+              ball.visualScale + other.visualScale - ball.position.distanceTo(other.position));
+          }
+          return {
+            id: ball.id, position: ball.position.toArray(), world: worldPosition, depth,
+            velocity: ball.velocity.toArray(), correction: recentSteps?.[ball.id].correction ?? [0, 0, 0],
+            overlap, targetDistance: ball.position.distanceTo(ball.shapeTarget), glass: ball.isGlass,
+            transparent: ball.material.transparent, opacity: ball.material.opacity,
+            depthWrite: ball.material.depthWrite, depthTest: ball.material.depthTest,
+            renderOrder: ball.sphere.renderOrder, radius: ball.visualScale * ball.displayAnchor.scale.x * presentation.scale.x,
+          };
+        }),
+      });
+    }
   };
   // Read-only, requested only by the opt-in browser diagnostic event.
   const inspect = () => {
@@ -910,6 +1008,7 @@ export function createGravityWorld(
   return {
     balls,
     observeSteps,
+    observeDepth,
     inspect,
     setHeroColor,
     mousePos,
