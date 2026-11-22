@@ -30,6 +30,14 @@ export const MEDIA_FORMATS = {
   },
 } as const;
 
+export type MediaScope = "image" | "motion";
+export function matchesMediaScope(mime: string, scope?: MediaScope) {
+  const format = mediaFormat(mime);
+  return !!format && (scope === "image"
+    ? format.kind === "image"
+    : scope === "motion" ? format.kind === "video" || mime === "image/gif" : true);
+}
+
 export function mediaFormat(mime: string) {
   return Object.hasOwn(MEDIA_FORMATS, mime)
     ? MEDIA_FORMATS[mime as keyof typeof MEDIA_FORMATS]

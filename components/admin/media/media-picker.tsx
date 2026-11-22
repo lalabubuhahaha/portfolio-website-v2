@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { ImagePlus } from "lucide-react";
+import type { MediaScope } from "@/lib/cms/media-formats";
 import type { MediaAsset } from "@/lib/content/media";
 import { Button } from "../ui/button";
 import { AssetPreview, AssetThumbnail } from "./asset-visual";
@@ -15,11 +16,13 @@ export function MediaPicker({
   value,
   onSelect,
   imagesOnly = false,
+  scope = imagesOnly ? "image" : undefined,
   disabled = false,
 }: {
   value: string;
   onSelect: (id: string) => void;
   imagesOnly?: boolean;
+  scope?: MediaScope;
   disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -32,7 +35,8 @@ export function MediaPicker({
   const [reply, setReply] = useState<{ key: string; data?: Results }>();
   const query = new URLSearchParams({
     picker: "1",
-    images: imagesOnly ? "1" : "0",
+    images: scope === "image" ? "1" : "0",
+    motion: scope === "motion" ? "1" : "0",
     q: filter.q,
     type: filter.type,
     page: String(filter.page),
@@ -102,7 +106,7 @@ export function MediaPicker({
       }
       title="Select media"
       description={
-        imagesOnly
+        scope === "image"
           ? "Choose an image from the private library."
           : "Choose an asset from the private library."
       }
@@ -111,7 +115,7 @@ export function MediaPicker({
       <div className="mb-4">
         <SingleMediaUpload
           label="Upload New"
-          imagesOnly={imagesOnly}
+          scope={scope}
           onUploaded={uploaded}
           onUploading={setUploading}
         />
@@ -121,7 +125,8 @@ export function MediaPicker({
         <MediaFilterFields
           q={filter.q}
           type={filter.type}
-          imagesOnly={imagesOnly}
+          imagesOnly={scope === "image"}
+          motionOnly={scope === "motion"}
         />
         <Button type="submit" variant="outline">
           Search

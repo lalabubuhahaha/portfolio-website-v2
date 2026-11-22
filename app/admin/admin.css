@@ -13,3 +13,10 @@
   --color-cms-selected: #edf1ff;
   --font-cms: "Inter Variable", sans-serif;
 }
+
+.cms-rich-copy p { margin-block: 0.65em; line-height: 1.65; }
+.cms-rich-copy ul { list-style: disc; padding-inline-start: 1.4em; }
+.cms-rich-copy ol { list-style: decimal; padding-inline-start: 1.4em; }
+.cms-rich-copy blockquote { border-inline-start: 2px solid currentColor; padding-inline-start: 1em; }
+.cms-rich-copy code { font-family: ui-monospace, monospace; }
+.cms-rich-copy a { text-decoration: underline; }

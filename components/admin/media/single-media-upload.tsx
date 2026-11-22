@@ -5,6 +5,8 @@ import { Upload } from "lucide-react";
 import {
   cleanFileName,
   MEDIA_FORMATS,
+  matchesMediaScope,
+  type MediaScope,
   validateMediaInput,
 } from "@/lib/cms/media-formats";
 import { Button } from "../ui/button";
@@ -13,11 +15,13 @@ import { uploadMedia } from "./upload-media";
 export function SingleMediaUpload({
   label,
   imagesOnly,
+  scope = imagesOnly ? "image" : undefined,
   onUploaded,
   onUploading,
 }: {
   label: string;
   imagesOnly?: boolean;
+  scope?: MediaScope;
   onUploaded: (id: string) => void;
   onUploading?: (busy: boolean) => void;
 }) {
@@ -27,7 +31,7 @@ export function SingleMediaUpload({
   const [progress, setProgress] = useState<number>();
   const [message, setMessage] = useState<{ text: string; error?: boolean }>();
   const accept = Object.entries(MEDIA_FORMATS)
-    .filter(([, format]) => !imagesOnly || format.kind === "image")
+    .filter(([mime]) => matchesMediaScope(mime, scope))
     .map(([mime]) => mime)
     .join(",");
 
@@ -42,8 +46,8 @@ export function SingleMediaUpload({
     event.currentTarget.value = "";
     if (!file || active.current) return;
 
-    const error = imagesOnly && !file.type.startsWith("image/")
-      ? "Choose a supported image file."
+    const error = scope && !matchesMediaScope(file.type, scope)
+      ? "Choose a supported file for this field."
       : validateMediaInput(cleanFileName(file.name), file.type, file.size);
     setRetry(undefined);
     if (error) {

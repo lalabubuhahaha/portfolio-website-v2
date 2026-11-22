@@ -41,7 +41,7 @@ end $$;
 reset role;
 insert into public.sites(key,name) values ('stage-72-test-site','Stage 7.2 test site');
 update public.project_revisions
-set content_blocks = '{"version":1,"blocks":[{"id":"test"}]}', theme = '{"version":1,"settings":{"color":"blue"}}'
+set content_blocks = '{"version":1,"blocks":[{"id":"07200000-0000-4000-8000-000000000099","type":"heading","content":{"text":"Published case study"}}]}', theme = '{"version":1,"settings":{"color":"blue"}}'
 where project_id=current_setting('cms_test.project')::uuid;
 update public.project_site_settings s
 set published_revision_id=r.id, published_at=now()
@@ -68,7 +68,7 @@ begin
   perform public.cms_save_draft(project,version,
     '{"slug":"stage-72-sql-new-slug","category":"client","title":"New draft"}');
   select * into strict revision from public.project_revisions r where r.project_id=project and r.revision_number=2;
-  if revision.sealed_at is not null or revision.content_blocks <> '{"version":1,"blocks":[{"id":"test"}]}'
+  if revision.sealed_at is not null or revision.content_blocks <> '{"version":1,"blocks":[{"id":"07200000-0000-4000-8000-000000000099","type":"heading","content":{"text":"Published case study"}}]}'
      or revision.theme <> '{"version":1,"settings":{"color":"blue"}}' then raise exception 'Draft clone lost content'; end if;
   if (select count(*) from public.project_revisions r where r.project_id=project) <> before_count+1 then
     raise exception 'Sealed revision was changed';

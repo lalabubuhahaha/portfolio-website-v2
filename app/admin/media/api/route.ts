@@ -22,6 +22,7 @@ export async function GET(request: Request) {
     parseMediaFilter(params),
     params.get("picker") === "1",
     params.get("images") === "1",
+    params.get("motion") === "1",
   );
   return result
     ? mediaJson(result)

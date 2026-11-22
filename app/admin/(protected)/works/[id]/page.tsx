@@ -32,7 +32,7 @@ async function EditProject({ params, searchParams }: Props) {
       : "Draft";
 
   return (
-    <div className="max-w-4xl">
+    <div className="min-w-0">
       <PageHeader
         title={project.fields.title || project.fields.slug}
         description="Edit the project details and save a draft."
@@ -54,6 +54,8 @@ async function EditProject({ params, searchParams }: Props) {
         id={project.id}
         updatedAt={project.updatedAt}
         initial={project.fields}
+        initialContent={project.content}
+        status={status}
         archived={project.archived}
         justCreated={saved === "1"}
       />

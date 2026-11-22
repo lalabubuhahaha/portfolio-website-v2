@@ -38,3 +38,10 @@ For Stage 7.3 releases, exercise raw-byte validation, upload rate and size bound
 If Stage 7.1 was deployed before cookie hardening, revoke earlier admin sessions and clear the old site cookies before reopening access. Cookie flags apply when the cookie is written. Keep production auth and hosting settings within the hosted acceptance checks.
 
 See [Supabase setup](supabase-setup.md) for migration order and account setup.
+
+## Stage 7.4 case study acceptance
+
+- [ ] Confirm migration 005 follows 001–004. Check execution privileges and same-origin, verified administrator access to the case-study action and existing private media endpoints.
+- [ ] Reject unknown types, duplicate IDs, over-depth or oversized input, unsafe links/embeds and incompatible asset references in a disposable draft. Verify that rejected saves leave metadata, cover, contents and version intact.
+- [ ] Check historical and nested asset references, including gallery items, comparison images and video posters. Exercise both deletion orderings against draft saves. Verify that an asset marked deleting cannot be added and that referenced files cannot be reserved for deletion.
+- [ ] Confirm stale saves preserve local edits, an explicit conflict choice uses a fresh token, and saves after publication create an editable draft. Verify unauthenticated and ordinary authenticated users cannot read or write case-study drafts or retrieve private asset previews.

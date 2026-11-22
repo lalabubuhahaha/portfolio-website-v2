@@ -10,7 +10,7 @@ insert into public.media_assets(id,storage_path,file_name,mime_type,file_size) v
 insert into public.projects(slug,category) values ('media-sql-test','independent');
 insert into public.project_revisions(project_id,revision_number,title,cover_asset_id,content_blocks)
 select id,1,'Media references','07300000-0000-4000-8000-000000000011',
-  '{"version":1,"blocks":[{"content":{"future":{"image":"07300000-0000-4000-8000-000000000012"}}}]}'
+  '{"version":1,"blocks":[{"id":"07300000-0000-4000-8000-000000000099","type":"image","content":{"assetId":"07300000-0000-4000-8000-000000000012","caption":"","alt":"","fit":"contain","aspect":"native","alignment":"center"}}]}'
 from public.projects where slug='media-sql-test';
 
 insert into public.project_site_settings(project_id,site_id,published_revision_id,published_at)

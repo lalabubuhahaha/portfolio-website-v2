@@ -1,14 +1,16 @@
-import { MEDIA_FORMATS } from "@/lib/cms/media-formats";
+import { matchesMediaScope, MEDIA_FORMATS } from "@/lib/cms/media-formats";
 import { Input, Select } from "../ui/fields";
 
 export function MediaFilterFields({
   q = "",
   type = "",
   imagesOnly = false,
+  motionOnly = false,
 }: {
   q?: string;
   type?: string;
   imagesOnly?: boolean;
+  motionOnly?: boolean;
 }) {
   return (
     <>
@@ -27,14 +29,14 @@ export function MediaFilterFields({
         className="max-w-full"
       >
         <option value="">All formats</option>
-        {!imagesOnly && (
+        {!imagesOnly && !motionOnly && (
           <>
             <option value="image">All images</option>
             <option value="video">All videos</option>
           </>
         )}
         {Object.entries(MEDIA_FORMATS)
-          .filter(([, format]) => !imagesOnly || format.kind === "image")
+          .filter(([mime]) => matchesMediaScope(mime, imagesOnly ? "image" : motionOnly ? "motion" : undefined))
           .map(([mime, format]) => (
             <option key={mime} value={mime}>
               {format.label}

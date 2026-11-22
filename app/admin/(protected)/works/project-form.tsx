@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,7 +10,7 @@ import {
   useTransition,
   type FormEvent,
 } from "react";
-import { ImageIcon, Save } from "lucide-react";
+import { ArrowLeft, Eye, ImageIcon, Save } from "lucide-react";
 import { Button } from "@/components/admin/ui/button";
 import { Input, Select, Textarea } from "@/components/admin/ui/fields";
 import {
@@ -21,7 +22,12 @@ import {
 import { MediaPicker } from "@/components/admin/media/media-picker";
 import { SingleMediaUpload } from "@/components/admin/media/single-media-upload";
 import { AssetPreview } from "@/components/admin/media/asset-visual";
+import { contentBlocksSchema, type ContentBlocks } from "@/lib/cms/blocks";
 import { reviewLatestDraft, saveDraft, type DraftResult } from "./actions";
+
+const ContentEditor = dynamic(() => import("@/components/admin/blocks/content-editor"), {
+  loading: () => <p role="status" className="p-4 text-sm">Loading content editor…</p>,
+});
 
 const works = "/admin/works";
 const unsaved = "Discard your unsaved changes?";
@@ -70,12 +76,16 @@ type Field = {
 
 export function ProjectForm({
   initial,
+  initialContent = null,
+  status,
   id,
   updatedAt,
   archived,
   justCreated,
 }: {
   initial: DraftFields;
+  initialContent?: ContentBlocks | null;
+  status?: string;
   id?: string;
   updatedAt?: string;
   archived?: boolean;
@@ -84,6 +94,12 @@ export function ProjectForm({
   const router = useRouter();
   const [fields, setFields] = useState(initial);
   const [saved, setSaved] = useState(initial);
+  const [content, setContent] = useState(initialContent);
+  const [savedContent, setSavedContent] = useState(initialContent);
+  const [showPreview, setShowPreview] = useState(false);
+  const [contentChoice, setContentChoice] = useState<"local" | "latest">();
+  const [detailsOpen, setDetailsOpen] = useState(!id);
+  const [editingMedia, setEditingMedia] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [stamp, setStamp] = useState(updatedAt);
   const [customSlug, setCustomSlug] = useState(Boolean(id));
@@ -94,7 +110,12 @@ export function ProjectForm({
   const inFlight = useRef(false);
   const [success, setSuccess] = useState(Boolean(justCreated));
   const [pending, startTransition] = useTransition();
-  const dirty = (Object.keys(fields) as (keyof DraftFields)[]).some(
+  const contentDirty = content !== savedContent && JSON.stringify(content) !== JSON.stringify(savedContent);
+  const contentsOverlap = !!latest && contentDirty
+    && JSON.stringify(latest.content) !== JSON.stringify(savedContent)
+    && JSON.stringify(latest.content) !== JSON.stringify(content);
+  const uploadingMedia = uploading || editingMedia;
+  const dirty = contentDirty || (Object.keys(fields) as (keyof DraftFields)[]).some(
     (key) => fields[key] !== saved[key],
   );
   const comparison = latest
@@ -102,7 +123,7 @@ export function ProjectForm({
     : null;
 
   useEffect(() => {
-    if (!dirty && !pending && !uploading) return;
+    if (!dirty && !pending && !uploadingMedia) return;
     function unload(event: BeforeUnloadEvent) {
       event.preventDefault();
       event.returnValue = "";
@@ -129,7 +150,7 @@ export function ProjectForm({
       window.removeEventListener("beforeunload", unload);
       document.removeEventListener("click", follow, true);
     };
-  }, [dirty, pending, uploading]);
+  }, [dirty, pending, uploadingMedia]);
 
   function change(key: keyof DraftFields, value: string) {
     setSuccess(false);
@@ -143,16 +164,26 @@ export function ProjectForm({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending || uploading || inFlight.current || archived || result.conflict) return;
+    if (pending || uploadingMedia || inFlight.current || archived || result.conflict) return;
     const check = projectFieldsSchema.safeParse(fields);
     if (!check.success) {
       const errors = check.error.flatten().fieldErrors;
       setResult({ error: "Check the highlighted fields.", fields: errors });
       const first = Object.keys(errors)[0];
-      document.getElementById(first ?? "")?.focus();
+      setDetailsOpen(true);
+      requestAnimationFrame(() => document.getElementById(first ?? "")?.focus());
       return;
     }
     const form = new FormData();
+    if (contentDirty) {
+      const check = contentBlocksSchema.safeParse(content);
+      if (!check.success) {
+        const issue = check.error.issues[0];
+        setResult({ error: `Case study ${issue.path.join(".")}: ${issue.message}` });
+        return;
+      }
+      form.set("content_blocks", JSON.stringify(check.data));
+    }
     for (const [key, value] of Object.entries(fields)) form.set(key, value);
     inFlight.current = true;
     setResult({});
@@ -163,6 +194,7 @@ export function ProjectForm({
         setResult(next);
         if (!next.id) return;
         setSaved(fields);
+        setSavedContent(content);
         setStamp(next.updatedAt);
         setSuccess(true);
         if (!id) router.replace(works + "/" + next.id + "?saved=1");
@@ -192,9 +224,12 @@ export function ProjectForm({
   }
 
   function applyLatest() {
-    if (!latest || !comparison) return;
+    if (!latest || !comparison || (contentsOverlap && !contentChoice)) return;
     setFields(comparison.merged);
     setSaved(latest.fields);
+    setContent(contentDirty && contentChoice !== "latest" ? content : latest.content);
+    setSavedContent(latest.content);
+    setContentChoice(undefined);
     setStamp(latest.updatedAt);
     setLatest(undefined);
     setResult({});
@@ -253,9 +288,15 @@ export function ProjectForm({
     );
   }
 
-  return (
-    <form onSubmit={submit} noValidate className="space-y-5">
-      <fieldset disabled={pending || archived} className="space-y-5">
+  const saveButton = (
+    <Button type="submit" disabled={pending || uploadingMedia || archived || result.conflict}>
+      <Save aria-hidden />
+      {pending ? "Saving…" : "Save Draft"}
+    </Button>
+  );
+
+  const metadata = (
+      <fieldset disabled={pending || archived || editingMedia} className="space-y-5">
         <section className="rounded-xl border border-cms-border bg-white p-5 sm:p-6">
           <h2 className="mb-5 font-semibold">Project details</h2>
           <div className="grid gap-5 sm:grid-cols-2">{basics.map(field)}</div>
@@ -310,7 +351,25 @@ export function ProjectForm({
           <div className="grid gap-5 sm:grid-cols-2">{seo.map(field)}</div>
         </section>
       </fieldset>
-      {result.error && (
+  );
+
+  return (
+    <form onSubmit={submit} noValidate className="space-y-5">
+      {id && (
+        <div className="sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-xl border border-cms-border bg-white p-3">
+          <Button asChild variant="ghost">
+            <Link href={works}><ArrowLeft aria-hidden /> Back to Works</Link>
+          </Button>
+          <div className="mr-auto min-w-0">
+            <p className="max-w-56 truncate text-sm font-semibold">{fields.title || "Untitled draft"}</p>
+            <p className="text-xs text-cms-secondary">{status}{dirty ? " · Unsaved changes" : ""}</p>
+          </div>
+          <Button type="button" variant="outline" disabled={pending || uploadingMedia}
+            onClick={() => setShowPreview(!showPreview)}><Eye aria-hidden />{showPreview ? "Back to editor" : "Preview"}</Button>
+          {!showPreview && saveButton}
+        </div>
+      )}
+      {!showPreview && result.error && (
         <p
           role="alert"
           className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"
@@ -318,7 +377,7 @@ export function ProjectForm({
           {result.error}
         </p>
       )}
-      {result.conflict && (
+      {!showPreview && result.conflict && (
         <section
           aria-label="Draft conflict"
           className="space-y-3 rounded-lg border border-cms-border bg-white p-4 text-sm"
@@ -360,7 +419,21 @@ export function ProjectForm({
                   </dl>
                 </div>
               )}
-              <Button type="button" variant="outline" onClick={applyLatest}>
+              {contentsOverlap && (
+                <fieldset className="space-y-2">
+                  <legend className="font-semibold">Both versions changed the case study</legend>
+                  <p>Open Preview to review your changes before choosing which version to retain.</p>
+                  <label className="flex items-center gap-2">
+                    <input type="radio" name="content-conflict" checked={contentChoice === "local"} onChange={() => setContentChoice("local")} />
+                    Keep my case study ({content?.blocks.length ?? 0} top-level blocks)
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input type="radio" name="content-conflict" checked={contentChoice === "latest"} onChange={() => setContentChoice("latest")} />
+                    Use latest case study ({latest.content?.blocks.length ?? 0} top-level blocks)
+                  </label>
+                </fieldset>
+              )}
+              <Button type="button" variant="outline" disabled={contentsOverlap && !contentChoice} onClick={applyLatest}>
                 Apply changes to latest draft
               </Button>
             </>
@@ -377,27 +450,36 @@ export function ProjectForm({
           {reviewError && <p role="alert">{reviewError}</p>}
         </section>
       )}
-      {success && (
+      {!showPreview && success && (
         <p role="status" className="text-sm font-medium text-emerald-700">
           Draft saved.
         </p>
       )}
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending || uploading || archived || result.conflict}>
-          <Save />
-          {pending ? "Saving…" : "Save Draft"}
-        </Button>
-        <Button asChild variant="outline">
-          <Link href={works}>{id ? "Back to Works" : "Cancel"}</Link>
-        </Button>
-        <span className="text-sm text-cms-secondary">
-          {archived
-            ? "Restore this project to edit it."
-            : dirty
-              ? "Unsaved changes · Publishing is unavailable"
-              : "Publishing is unavailable"}
-        </span>
-      </div>
+      {id ? (
+        <>
+          {!showPreview && <details open={detailsOpen}
+            onToggle={(event) => setDetailsOpen(event.currentTarget.open)}
+            className="rounded-xl border border-cms-border bg-white p-4">
+            <summary className="cursor-pointer font-semibold">Project details, cover and SEO</summary>
+            <div className="mt-4">{metadata}</div>
+          </details>}
+          <section aria-label={showPreview ? "Draft preview" : "Content Editor"} className="space-y-3">
+            <h2 className="text-lg font-semibold">{showPreview ? "Draft preview" : "Content Editor"}</h2>
+            <ContentEditor doc={content} title={fields.title} readOnly={!!archived} preview={showPreview}
+              busy={pending || uploadingMedia} onUploading={setEditingMedia}
+              onChange={(document) => { setSuccess(false); setContent(document); }} />
+          </section>
+        </>
+      ) : (
+        <>
+          {metadata}
+          <div className="flex flex-wrap items-center gap-3">
+            {saveButton}
+            <Button asChild variant="outline"><Link href={works}>Cancel</Link></Button>
+            {dirty && <span className="text-sm text-cms-secondary">Unsaved changes</span>}
+          </div>
+        </>
+      )}
     </form>
   );
 }

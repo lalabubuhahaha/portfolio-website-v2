@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { contentBlocksSchema, MAX_BLOCK_BYTES } from "@/lib/cms/blocks";
 import { requireAdmin } from "@/lib/cms/session";
 import {
   getCoverPreviews,
@@ -60,11 +61,25 @@ async function save(
       fields: z.flattenError(result.error).fieldErrors,
     };
 
-  const { data, error } = await supabase.rpc("cms_save_draft", {
-    project: id,
-    expected: updatedAt,
-    fields: result.data,
-  });
+  const raw = form.get("content_blocks");
+  let blocks;
+  if (raw !== null) {
+    if (typeof raw !== "string" || new TextEncoder().encode(raw).length > MAX_BLOCK_BYTES)
+      return { error: "The case study document is too large." };
+    let input: unknown;
+    try { input = JSON.parse(raw); }
+    catch { return { error: "The case study document is invalid." }; }
+    const check = contentBlocksSchema.safeParse(input);
+    if (!check.success) {
+      const issue = check.error.issues[0];
+      return { error: `Case study ${issue.path.join(".")}: ${issue.message}` };
+    }
+    blocks = check.data;
+  }
+  const args = { project: id, expected: updatedAt, fields: result.data };
+  const { data, error } = blocks
+    ? await supabase.rpc("cms_save_case_study", { ...args, document: blocks })
+    : await supabase.rpc("cms_save_draft", args);
   if (error) {
     if (
       error.code === "PT422" ||
@@ -81,6 +96,10 @@ async function save(
         conflict: true,
       };
     }
+    if (blocks && error.code === "PGRST202")
+      return { error: "The Stage 7.4 database migration is required to save case studies." };
+    if (blocks && ["22023", "23503"].includes(error.code))
+      return { error: "Check the selected media and case study fields. A referenced file may no longer be available." };
     return { error: message(error.code) };
   }
   const saved = z.object({ id: projectId, updatedAt: version }).safeParse(data);
@@ -103,7 +122,7 @@ export async function reviewLatestDraft(id: string) {
   if (!projectId.safeParse(id).success) return null;
   const project = await getProjectEditor(id);
   if (!project || project.archived) return null;
-  return { fields: project.fields, updatedAt: project.updatedAt };
+  return { fields: project.fields, updatedAt: project.updatedAt, content: project.content };
 }
 
 export async function changeProject(

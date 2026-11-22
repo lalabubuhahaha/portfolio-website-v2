@@ -71,12 +71,14 @@ export async function loadMedia(
   filter: ReturnType<typeof parseMediaFilter>,
   picker: boolean,
   imagesOnly: boolean,
+  motionOnly = false,
 ) {
   let query = supabase
     .from("media_assets")
     .select(assetColumns, { count: "exact" })
     .eq("storage_bucket", MEDIA_BUCKET);
   if (picker) query = query.eq("state", "ready");
+  if (motionOnly) query = query.in("mime_type", ["image/gif", "video/mp4", "video/webm"]);
   if (imagesOnly)
     query = query.in("mime_type", [
       "image/jpeg",

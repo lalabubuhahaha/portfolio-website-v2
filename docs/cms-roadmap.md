@@ -5,8 +5,8 @@
 | 7.1 | Supabase foundation, database schema, administrator authentication, and admin design system |
 | 7.2 | [Works management](cms-stage-7-2.md), drafts, archive, ordering, and homepage Featured settings |
 | 7.3 | [Private media library](cms-stage-7-3.md), image and video upload, cover picker, and reference-safe deletion |
-| 7.4 | Basic content block editor |
-| 7.5 | Visual settings, drag ordering, duplication, undo/redo, and autosave |
+| 7.4 | [Visual case study block editor](cms-stage-7-4.md), 16 basic blocks, nested composition, reference-safe drafts and private preview |
+| 7.5 | Visual settings, drag ordering, undo/redo, and autosave |
 | 7.6 | Advanced layout and interaction blocks |
 | 7.7 | Gravity project detail pages and project themes |
 | 7.8 | Live preview, draft and publication workflows, and Gravity Home and Work data integration |
