@@ -97,3 +97,20 @@ export const emptyDraft: DraftFields = {
   seo_title: "",
   seo_description: "",
 };
+
+export function compareDraftEdits(
+  original: DraftFields,
+  local: DraftFields,
+  latest: DraftFields,
+) {
+  const merged = { ...latest };
+  const overlapping: (keyof DraftFields)[] = [];
+  for (const key of Object.keys(emptyDraft) as (keyof DraftFields)[]) {
+    if (local[key] === original[key]) continue;
+    if (latest[key] !== original[key] && latest[key] !== local[key]) {
+      overlapping.push(key);
+    }
+    Object.assign(merged, { [key]: local[key] });
+  }
+  return { merged, overlapping };
+}

@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/cms/session";
-import { getCoverPreviews, type CoverPreviews } from "@/lib/content/cms";
+import {
+  getCoverPreviews,
+  getProjectEditor,
+  type CoverPreviews,
+} from "@/lib/content/cms";
 import { WORKS_PAGE_SIZE } from "@/lib/cms/works-filters";
 import {
   emptyDraft,
@@ -13,6 +17,7 @@ import {
 
 export type DraftResult = {
   error?: string;
+  conflict?: boolean;
   fields?: Partial<Record<keyof DraftFields, string[]>>;
   id?: string;
   updatedAt?: string;
@@ -70,6 +75,12 @@ async function save(
         fields: { slug: ["Choose a different slug."] },
       };
     }
+    if (error.code === "PT409") {
+      return {
+        error: "This data changed since you opened the page.",
+        conflict: true,
+      };
+    }
     return { error: message(error.code) };
   }
   const saved = z.object({ id: projectId, updatedAt: version }).safeParse(data);
@@ -86,6 +97,13 @@ export async function saveDraft(
   form: FormData,
 ) {
   return save(id, updatedAt, form);
+}
+
+export async function reviewLatestDraft(id: string) {
+  if (!projectId.safeParse(id).success) return null;
+  const project = await getProjectEditor(id);
+  if (!project || project.archived) return null;
+  return { fields: project.fields, updatedAt: project.updatedAt };
 }
 
 export async function changeProject(

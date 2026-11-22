@@ -2,7 +2,7 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, Eye, Pencil, Trash2 } from "lucide-react";
+import { Copy, Eye, Pencil, Play, Trash2 } from "lucide-react";
 import { formatMediaSize, mediaFormat } from "@/lib/cms/media-formats";
 import type { MediaAsset } from "@/lib/content/media";
 import { Button } from "../ui/button";
@@ -17,6 +17,9 @@ const dateFormat = new Intl.DateTimeFormat("en", {
 const dateText = (date: string) => dateFormat.format(new Date(date));
 const dimensions = (asset: MediaAsset) =>
   asset.width && asset.height ? `${asset.width} × ${asset.height}` : "—";
+
+const canPlayGif = (asset: MediaAsset) =>
+  asset.mime === "image/gif" && asset.state === "ready";
 
 function Details({
   asset,
@@ -184,15 +187,15 @@ export function MediaLibrary({
 }) {
   const router = useRouter();
   const opener = useRef<HTMLElement | null>(null);
-  const [selection, setSelection] = useState<{ id: string; remove: boolean }>();
+  const [selection, setSelection] = useState<{ id: string; mode: "details" | "remove" | "gif" }>();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const selected = assets.find((asset) => asset.id === selection?.id);
 
-  function choose(id: string, remove: boolean, element?: HTMLElement) {
+  function choose(id: string, mode: "details" | "remove" | "gif", element?: HTMLElement) {
     if (element) opener.current = element;
     setMessage("");
-    setSelection({ id, remove });
+    setSelection({ id, mode });
   }
   function close() {
     if (busy) return;
@@ -243,11 +246,16 @@ export function MediaLibrary({
           >
             <button
               type="button"
-              onClick={(event) => choose(asset.id, false, event.currentTarget)}
+              onClick={(event) => choose(asset.id, canPlayGif(asset) ? "gif" : "details", event.currentTarget)}
               aria-label={`Preview ${asset.displayName}`}
-              className={`block w-full overflow-hidden bg-cms-background focus-visible:outline-cms-primary ${list ? "h-16 max-w-24 rounded-md sm:max-w-none" : "aspect-[4/3] border-b border-cms-border"}`}
+              className={`relative block w-full overflow-hidden bg-cms-background focus-visible:outline-cms-primary ${list ? "h-16 max-w-24 rounded-md sm:max-w-none" : "aspect-[4/3] border-b border-cms-border"}`}
             >
               <AssetThumbnail asset={asset} />
+              {canPlayGif(asset) && (
+                <span className="absolute left-2 top-2 rounded bg-white px-1.5 py-0.5 text-xs font-semibold text-cms-primary">
+                  GIF
+                </span>
+              )}
             </button>
             <div className={`min-w-0 ${list ? "" : "p-4 pb-2"}`}>
               <h2
@@ -282,14 +290,20 @@ export function MediaLibrary({
               <Button
                 type="button"
                 variant="ghost"
-                className="size-8 px-0"
-                title="Preview"
-                aria-label={`View ${asset.displayName}`}
+                className={canPlayGif(asset) ? "h-8 px-2" : "size-8 px-0"}
+                title={canPlayGif(asset) ? "Play GIF" : "Preview"}
+                aria-label={`${canPlayGif(asset) ? "Play GIF" : "View"} ${asset.displayName}`}
                 onClick={(event) =>
-                  choose(asset.id, false, event.currentTarget)
+                  choose(asset.id, canPlayGif(asset) ? "gif" : "details", event.currentTarget)
                 }
               >
-                <Eye />
+                {canPlayGif(asset) ? (
+                  <>
+                    <Play /> Play GIF
+                  </>
+                ) : (
+                  <Eye />
+                )}
               </Button>
               <Button
                 type="button"
@@ -298,7 +312,7 @@ export function MediaLibrary({
                 title="Edit details"
                 aria-label={`Edit ${asset.displayName}`}
                 onClick={(event) =>
-                  choose(asset.id, false, event.currentTarget)
+                  choose(asset.id, "details", event.currentTarget)
                 }
               >
                 <Pencil />
@@ -309,7 +323,7 @@ export function MediaLibrary({
                 className="size-8 px-0"
                 title="Delete asset"
                 aria-label={`Delete ${asset.displayName}`}
-                onClick={(event) => choose(asset.id, true, event.currentTarget)}
+                onClick={(event) => choose(asset.id, "remove", event.currentTarget)}
               >
                 <Trash2 />
               </Button>
@@ -322,15 +336,21 @@ export function MediaLibrary({
         onOpenChange={(open) => {
           if (!open) close();
         }}
-        title={selection?.remove ? "Delete asset?" : "Media details"}
+        title={
+          selection?.mode === "remove"
+            ? "Delete asset?"
+            : selection?.mode === "gif"
+              ? "GIF preview"
+              : "Media details"
+        }
         description={
-          selection?.remove
+          selection?.mode === "remove"
             ? "This permanently removes the private file. Referenced assets are protected."
             : (selected?.displayName ?? "")
         }
       >
         {selected &&
-          (selection?.remove ? (
+          (selection?.mode === "remove" ? (
             <div className="space-y-4">
               <p className="break-words text-sm font-medium">
                 {selected.displayName}
@@ -359,11 +379,13 @@ export function MediaLibrary({
                 </Button>
               </div>
             </div>
+          ) : selection?.mode === "gif" ? (
+            <AssetPreview key={selected.id} id={selected.id} />
           ) : (
             <Details
               key={selected.id}
               asset={selected}
-              onDelete={() => choose(selected.id, true)}
+              onDelete={() => choose(selected.id, "remove")}
             />
           ))}
       </MediaDialog>

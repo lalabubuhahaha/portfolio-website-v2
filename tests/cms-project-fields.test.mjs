@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  compareDraftEdits,
   emptyDraft,
   projectFieldsSchema,
   slugFromTitle,
@@ -39,4 +40,25 @@ test("invalid project fields do not reach the mutation", () => {
       false,
     );
   }
+});
+
+test("rebasing a cover edit preserves metadata saved in another tab", () => {
+  const original = { ...emptyDraft, title: "Existing draft", cover_asset_id: "original" };
+  const latest = { ...original, summary: "Saved in another tab" };
+  const local = { ...original, cover_asset_id: "" };
+  assert.deepEqual(compareDraftEdits(original, local, latest), {
+    merged: { ...latest, cover_asset_id: "" },
+    overlapping: [],
+  });
+  assert.deepEqual(compareDraftEdits(original, { ...original, summary: "My edit" }, {
+    ...latest,
+    cover_asset_id: "latest",
+  }), {
+    merged: { ...latest, summary: "My edit", cover_asset_id: "latest" },
+    overlapping: ["summary"],
+  });
+  assert.deepEqual(compareDraftEdits(original, local, {
+    ...latest,
+    cover_asset_id: "latest",
+  }).overlapping, ["cover_asset_id"]);
 });

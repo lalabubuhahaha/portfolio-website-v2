@@ -2,18 +2,25 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import { ImageIcon, Save } from "lucide-react";
 import { Button } from "@/components/admin/ui/button";
 import { Input, Select, Textarea } from "@/components/admin/ui/fields";
 import {
+  compareDraftEdits,
   projectFieldsSchema,
   slugFromTitle,
   type DraftFields,
 } from "@/lib/cms/project-fields";
 import { MediaPicker } from "@/components/admin/media/media-picker";
 import { AssetPreview } from "@/components/admin/media/asset-visual";
-import { saveDraft, type DraftResult } from "./actions";
+import { reviewLatestDraft, saveDraft, type DraftResult } from "./actions";
 
 const works = "/admin/works";
 const unsaved = "Discard your unsaved changes?";
@@ -45,6 +52,12 @@ const seo = [
     max: 320,
   },
 ] as const;
+const labels: readonly { key: keyof DraftFields; label: string }[] = [
+  ...basics,
+  ...seo,
+  { key: "cover_asset_id", label: "Cover image" },
+];
+
 type Field = {
   key: keyof DraftFields;
   label: string;
@@ -73,9 +86,18 @@ export function ProjectForm({
   const [stamp, setStamp] = useState(updatedAt);
   const [customSlug, setCustomSlug] = useState(Boolean(id));
   const [result, setResult] = useState<DraftResult>({});
+  const [latest, setLatest] =
+    useState<Awaited<ReturnType<typeof reviewLatestDraft>>>();
+  const [reviewError, setReviewError] = useState("");
+  const inFlight = useRef(false);
   const [success, setSuccess] = useState(Boolean(justCreated));
   const [pending, startTransition] = useTransition();
-  const dirty = JSON.stringify(fields) !== JSON.stringify(saved);
+  const dirty = (Object.keys(fields) as (keyof DraftFields)[]).some(
+    (key) => fields[key] !== saved[key],
+  );
+  const comparison = latest
+    ? compareDraftEdits(saved, fields, latest.fields)
+    : null;
 
   useEffect(() => {
     if (!dirty && !pending) return;
@@ -119,7 +141,7 @@ export function ProjectForm({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending || archived) return;
+    if (pending || inFlight.current || archived || result.conflict) return;
     const check = projectFieldsSchema.safeParse(fields);
     if (!check.success) {
       const errors = check.error.flatten().fieldErrors;
@@ -130,6 +152,7 @@ export function ProjectForm({
     }
     const form = new FormData();
     for (const [key, value] of Object.entries(fields)) form.set(key, value);
+    inFlight.current = true;
     setResult({});
     setSuccess(false);
     startTransition(async () => {
@@ -146,8 +169,33 @@ export function ProjectForm({
           error:
             "Could not save the draft. Check your connection and try again.",
         });
+      } finally {
+        inFlight.current = false;
       }
     });
+  }
+
+  function review() {
+    if (!id || pending) return;
+    setReviewError("");
+    startTransition(async () => {
+      try {
+        const current = await reviewLatestDraft(id);
+        setLatest(current);
+        if (!current) setReviewError("The latest draft is unavailable.");
+      } catch {
+        setReviewError("Could not load the latest draft. Try again.");
+      }
+    });
+  }
+
+  function applyLatest() {
+    if (!latest || !comparison) return;
+    setFields(comparison.merged);
+    setSaved(latest.fields);
+    setStamp(latest.updatedAt);
+    setLatest(undefined);
+    setResult({});
   }
 
   function field({ key, label, required, max, multiline, hint }: Field) {
@@ -258,13 +306,72 @@ export function ProjectForm({
           {result.error}
         </p>
       )}
+      {result.conflict && (
+        <section
+          aria-label="Draft conflict"
+          className="space-y-3 rounded-lg border border-cms-border bg-white p-4 text-sm"
+        >
+          <p>
+            Your edits are still here. Review the latest draft before saving again.
+          </p>
+          {comparison && latest ? (
+            <>
+              {comparison.overlapping.length > 0 && (
+                <div className="space-y-3">
+                  <p>
+                    Both versions changed these fields. Choose the latest values
+                    you want to keep before applying your edits.
+                  </p>
+                  <dl className="space-y-2">
+                    {comparison.overlapping.map((key) => (
+                      <div key={key} className="break-words">
+                        <dt className="font-medium">
+                          {labels.find((field) => field.key === key)?.label}
+                        </dt>
+                        <dd className="whitespace-pre-wrap">
+                          Latest draft · {latest.fields[key] || "Empty"}
+                        </dd>
+                        <dd className="whitespace-pre-wrap">
+                          Your edit · {fields[key] || "Empty"}
+                        </dd>
+                        <dd>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => change(key, latest.fields[key])}
+                          >
+                            Use latest value
+                          </Button>
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              )}
+              <Button type="button" variant="outline" onClick={applyLatest}>
+                Apply changes to latest draft
+              </Button>
+            </>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={review}
+            >
+              {pending ? "Loading latest draft…" : "Review latest draft"}
+            </Button>
+          )}
+          {reviewError && <p role="alert">{reviewError}</p>}
+        </section>
+      )}
       {success && (
         <p role="status" className="text-sm font-medium text-emerald-700">
           Draft saved.
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending || archived}>
+        <Button type="submit" disabled={pending || archived || result.conflict}>
           <Save />
           {pending ? "Saving…" : "Save Draft"}
         </Button>
