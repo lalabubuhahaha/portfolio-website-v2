@@ -147,7 +147,7 @@ function ProjectTable({
               </td>
               <td role="cell" className="col-start-2 xl:p-3">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-cms-secondary">
-                  <span className="xl:sr-only">Featured</span>
+                  <span className="xl:sr-only">Homepage featured</span>
                   <FeaturedToggle
                     id={project.id}
                     title={project.title}

@@ -52,16 +52,16 @@ function DragRow({
       className={`relative flex items-center gap-3 rounded-lg border border-cms-border bg-white p-3 ${isDragging ? "z-10 ring-2 ring-cms-primary" : ""}`}
     >
       <Button
-        variant="ghost"
+        variant="outline"
         type="button"
         ref={setActivatorNodeRef}
-        className="size-9 touch-none cursor-grab px-0"
+        className="size-11 shrink-0 touch-none cursor-grab px-0 text-cms-primary active:cursor-grabbing"
         {...attributes}
         {...listeners}
         aria-disabled={pending}
         aria-label={`Move ${entry.title}`}
       >
-        <GripVertical />
+        <GripVertical aria-hidden className="size-5" />
       </Button>
       <span className="text-xs tabular-nums text-cms-secondary">
         {index + 1}
@@ -146,8 +146,9 @@ export function ProjectOrder({
         {kind === "display" ? "Works display order" : "Homepage featured order"}
       </h2>
       <p className="mt-2 text-sm text-cms-secondary">
-        Drag a handle or use Space and the arrow keys to move a project. The
-        order saves on drop.
+        <strong className="font-semibold">Drag to reorder.</strong>{" "}
+        Grab a handle with a mouse or touch, or press Space, use the arrow keys
+        and press Space again. The order saves on drop.
       </p>
       {entries.length === 0 && (
         <p className="mt-5 text-sm text-cms-secondary">

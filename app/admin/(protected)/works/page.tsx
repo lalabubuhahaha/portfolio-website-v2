@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { ListOrdered, Plus, Star } from "lucide-react";
 import {
   DataUnavailable,
   PageHeader,
@@ -66,24 +66,31 @@ async function Works({ searchParams }: { searchParams: Promise<Search> }) {
       <ProjectStats projects={projects ? active : null} />
       <nav aria-label="Works views" className="mt-6 flex flex-wrap gap-2">
         {[
-          ["All Projects", "/admin/works", undefined],
-          ["Display Order", "/admin/works?order=display", "display"],
-          ["Featured Order", "/admin/works?order=featured", "featured"],
-        ].map(([label, href, value]) => (
+          { label: "All Projects", href: "/admin/works" },
+          { label: "Display Order", href: "/admin/works?order=display", value: "display", Icon: ListOrdered },
+          { label: "Featured Order", href: "/admin/works?order=featured", value: "featured", Icon: Star },
+        ].map(({ label, href, value, Icon }) => (
           <Button
             key={label}
             asChild
             variant={mode === value ? "default" : "outline"}
           >
             <Link
-              href={href ?? "/admin/works"}
+              href={href}
               aria-current={mode === value ? "page" : undefined}
             >
+              {Icon && <Icon aria-hidden />}
               {label}
             </Link>
           </Button>
         ))}
       </nav>
+      {!mode && (
+        <p className="mt-2 text-sm text-cms-secondary">
+          Open Display Order to drag all active works into order. Use Featured
+          Order to arrange the works marked for the homepage.
+        </p>
+      )}
       {!projects ? (
         <div className="mt-6">
           <DataUnavailable />

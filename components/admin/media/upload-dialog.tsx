@@ -10,6 +10,7 @@ import {
 } from "@/lib/cms/media-formats";
 import { Button } from "../ui/button";
 import { MediaDialog } from "./dialog";
+import { uploadMedia } from "./upload-media";
 
 type Entry = {
   id: string;
@@ -55,8 +56,6 @@ export function UploadDialog() {
     );
     if (!entry) return;
 
-    const request = new XMLHttpRequest();
-    active.current = { id: entry.id, request };
     const update = (data: Partial<Entry>) =>
       setEntries((current) =>
         current.map((item) =>
@@ -75,36 +74,13 @@ export function UploadDialog() {
     };
 
     update({ status: "uploading", progress: 0, error: undefined });
-    request.open("POST", "/admin/media/api");
-    request.responseType = "json";
-    request.timeout = 65000;
-    request.setRequestHeader("Content-Type", entry.file.type);
-    request.setRequestHeader(
-      "X-File-Name",
-      encodeURIComponent(cleanFileName(entry.file.name)),
+    const request = uploadMedia(
+      entry.file,
+      entry.id,
+      (progress) => update({ progress }),
+      (result) => finish(result.status, result.status === "saved" ? undefined : result.error),
     );
-    request.setRequestHeader("X-Upload-Id", entry.id);
-    request.upload.onprogress = (event) => {
-      if (event.lengthComputable)
-        update({ progress: Math.round((event.loaded / event.total) * 100) });
-    };
-    request.onload = () => {
-      if (request.status >= 200 && request.status < 300) finish("saved");
-      else
-        finish(
-          "failed",
-          request.response?.error ??
-            "Upload failed. Check your connection and retry.",
-        );
-    };
-    request.onerror = request.ontimeout = () =>
-      finish("failed", "Upload interrupted. Retry when connected.");
-    request.onabort = () =>
-      finish(
-        "canceled",
-        "Canceled. A fully received file can still finish saving.",
-      );
-    request.send(entry.file);
+    active.current = { id: entry.id, request };
   }, [batchId, entries, router]);
 
   function cancel(id: string) {

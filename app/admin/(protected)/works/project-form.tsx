@@ -19,6 +19,7 @@ import {
   type DraftFields,
 } from "@/lib/cms/project-fields";
 import { MediaPicker } from "@/components/admin/media/media-picker";
+import { SingleMediaUpload } from "@/components/admin/media/single-media-upload";
 import { AssetPreview } from "@/components/admin/media/asset-visual";
 import { reviewLatestDraft, saveDraft, type DraftResult } from "./actions";
 
@@ -83,6 +84,7 @@ export function ProjectForm({
   const router = useRouter();
   const [fields, setFields] = useState(initial);
   const [saved, setSaved] = useState(initial);
+  const [uploading, setUploading] = useState(false);
   const [stamp, setStamp] = useState(updatedAt);
   const [customSlug, setCustomSlug] = useState(Boolean(id));
   const [result, setResult] = useState<DraftResult>({});
@@ -100,7 +102,7 @@ export function ProjectForm({
     : null;
 
   useEffect(() => {
-    if (!dirty && !pending) return;
+    if (!dirty && !pending && !uploading) return;
     function unload(event: BeforeUnloadEvent) {
       event.preventDefault();
       event.returnValue = "";
@@ -127,7 +129,7 @@ export function ProjectForm({
       window.removeEventListener("beforeunload", unload);
       document.removeEventListener("click", follow, true);
     };
-  }, [dirty, pending]);
+  }, [dirty, pending, uploading]);
 
   function change(key: keyof DraftFields, value: string) {
     setSuccess(false);
@@ -141,7 +143,7 @@ export function ProjectForm({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending || inFlight.current || archived || result.conflict) return;
+    if (pending || uploading || inFlight.current || archived || result.conflict) return;
     const check = projectFieldsSchema.safeParse(fields);
     if (!check.success) {
       const errors = check.error.flatten().fieldErrors;
@@ -271,19 +273,29 @@ export function ProjectForm({
           )}
           <div className="flex flex-wrap items-center gap-2">
             {!archived && (
-              <MediaPicker
-                value={fields.cover_asset_id}
-                imagesOnly
-                onSelect={(id) => change("cover_asset_id", id)}
-              />
+              <>
+                <SingleMediaUpload
+                  label="Upload Image"
+                  imagesOnly
+                  onUploaded={(id) => change("cover_asset_id", id)}
+                  onUploading={setUploading}
+                />
+                <MediaPicker
+                  value={fields.cover_asset_id}
+                  imagesOnly
+                  disabled={uploading}
+                  onSelect={(id) => change("cover_asset_id", id)}
+                />
+              </>
             )}
             {!!fields.cover_asset_id && !archived && (
               <Button
                 type="button"
                 variant="ghost"
+                disabled={uploading}
                 onClick={() => change("cover_asset_id", "")}
               >
-                Clear Cover
+                Remove Cover
               </Button>
             )}
           </div>
@@ -371,7 +383,7 @@ export function ProjectForm({
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending || archived || result.conflict}>
+        <Button type="submit" disabled={pending || uploading || archived || result.conflict}>
           <Save />
           {pending ? "Saving…" : "Save Draft"}
         </Button>

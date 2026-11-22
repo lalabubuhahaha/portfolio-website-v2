@@ -7,6 +7,7 @@ import { Button } from "../ui/button";
 import { AssetPreview, AssetThumbnail } from "./asset-visual";
 import { MediaDialog } from "./dialog";
 import { MediaFilterFields } from "./media-filters";
+import { SingleMediaUpload } from "./single-media-upload";
 
 type Results = { items: MediaAsset[]; pages: number };
 
@@ -14,12 +15,16 @@ export function MediaPicker({
   value,
   onSelect,
   imagesOnly = false,
+  disabled = false,
 }: {
   value: string;
   onSelect: (id: string) => void;
   imagesOnly?: boolean;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [filterReset, resetFilter] = useState(0);
   const [selected, setSelected] = useState(value);
   const [preview, setPreview] = useState("");
   const [filter, setFilter] = useState({ q: "", type: "", page: 1 });
@@ -59,10 +64,19 @@ export function MediaPicker({
   function changeOpen(next: boolean) {
     if (next) {
       setSelected(value);
+      setUploading(false);
       setPreview("");
       setRequest((current) => current + 1);
     }
     setOpen(next);
+  }
+
+  function uploaded(id: string) {
+    setSelected(id);
+    setPreview(id);
+    setFilter({ q: "", type: "", page: 1 });
+    resetFilter((current) => current + 1);
+    setRequest((current) => current + 1);
   }
 
   function search(event: FormEvent<HTMLFormElement>) {
@@ -81,9 +95,9 @@ export function MediaPicker({
       open={open}
       onOpenChange={changeOpen}
       trigger={
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" disabled={disabled}>
           <ImagePlus />
-          {value ? "Change Cover" : "Select Cover"}
+          Choose from Media Library
         </Button>
       }
       title="Select media"
@@ -94,7 +108,16 @@ export function MediaPicker({
       }
       wide
     >
-      <form onSubmit={search} className="flex flex-wrap gap-2">
+      <div className="mb-4">
+        <SingleMediaUpload
+          label="Upload New"
+          imagesOnly={imagesOnly}
+          onUploaded={uploaded}
+          onUploading={setUploading}
+        />
+      </div>
+      <h3 className="mb-2 text-sm font-semibold">Select Existing</h3>
+      <form key={filterReset} onSubmit={search} className="flex flex-wrap gap-2">
         <MediaFilterFields
           q={filter.q}
           type={filter.type}
@@ -202,7 +225,7 @@ export function MediaPicker({
         </Button>
         <Button
           type="button"
-          disabled={!selected}
+          disabled={!selected || uploading}
           onClick={() => {
             onSelect(selected);
             changeOpen(false);
