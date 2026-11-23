@@ -10,10 +10,9 @@ import { ProjectForm } from "../project-form";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
 };
 
-async function EditProject({ params, searchParams }: Props) {
+async function EditProject({ params }: Props) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
   const project = await getProjectEditor(id).catch((error) => {
@@ -22,7 +21,6 @@ async function EditProject({ params, searchParams }: Props) {
   });
   if (project === undefined) return <DataUnavailable />;
   if (!project) notFound();
-  const { saved } = await searchParams;
   const status = project.archived
     ? "Archived"
     : project.published
@@ -57,7 +55,6 @@ async function EditProject({ params, searchParams }: Props) {
         initialContent={project.content}
         status={status}
         archived={project.archived}
-        justCreated={saved === "1"}
       />
     </div>
   );

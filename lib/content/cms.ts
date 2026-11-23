@@ -140,7 +140,7 @@ export async function getProjectEditor(id: string) {
       `
       id, slug, category, updated_at, archived_at,
       revisions:project_revisions!project_revisions_project_id_fkey(
-        id, title, summary, year, role, tools, category_tags, external_url, cover_asset_id, seo_title, seo_description, content_blocks
+        id, revision_number, title, summary, year, role, tools, category_tags, external_url, cover_asset_id, seo_title, seo_description, content_blocks
       ),
       settings:project_site_settings!project_site_settings_project_id_fkey(published_revision_id, site:sites!inner())
     `,
@@ -174,6 +174,8 @@ export async function getProjectEditor(id: string) {
   const content = contentBlocksSchema.safeParse(revision?.content_blocks ?? { version: 1, blocks: [] });
   return {
     content: content.success ? content.data : null,
+    revisionId: revision?.id,
+    revisionNumber: revision?.revision_number,
     id: row.id as string,
     fields,
     updatedAt: row.updated_at as string,

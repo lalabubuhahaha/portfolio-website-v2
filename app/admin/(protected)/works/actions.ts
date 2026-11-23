@@ -1,5 +1,6 @@
 "use server";
 
+import { isDeepStrictEqual } from "node:util";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { contentBlocksSchema, MAX_BLOCK_BYTES } from "@/lib/cms/blocks";
@@ -20,8 +21,7 @@ export type DraftResult = {
   error?: string;
   conflict?: boolean;
   fields?: Partial<Record<keyof DraftFields, string[]>>;
-  id?: string;
-  updatedAt?: string;
+  verified?: { id: string; updatedAt: string; revisionId: string; revisionNumber: number };
 };
 const version = z.iso.datetime({ offset: true });
 const projectId = z.uuid();
@@ -61,7 +61,14 @@ async function save(
       fields: z.flattenError(result.error).fieldErrors,
     };
 
+  const mode = form.get("content_mode");
   const raw = form.get("content_blocks");
+  if (
+    (mode !== "preserve" && mode !== "replace" && mode !== "metadata-only") ||
+    (mode === "metadata-only" ? raw !== null : raw === null)
+  ) {
+    return { error: "The draft request is incomplete. Your edits have been kept." };
+  }
   let blocks;
   if (raw !== null) {
     if (typeof raw !== "string" || new TextEncoder().encode(raw).length > MAX_BLOCK_BYTES)
@@ -77,10 +84,11 @@ async function save(
     blocks = check.data;
   }
   const args = { project: id, expected: updatedAt, fields: result.data };
-  const { data, error } = blocks
+  const { data, error } = blocks && mode === "replace"
     ? await supabase.rpc("cms_save_case_study", { ...args, document: blocks })
     : await supabase.rpc("cms_save_draft", args);
   if (error) {
+    console.warn("CMS draft RPC rejected", { projectId: id, code: error.code, mode });
     if (
       error.code === "PT422" ||
       (error.code === "23505" && error.message.includes("projects_slug_key"))
@@ -103,11 +111,32 @@ async function save(
     return { error: message(error.code) };
   }
   const saved = z.object({ id: projectId, updatedAt: version }).safeParse(data);
-  if (!saved.success) return { error: message() };
+  if (!saved.success || (id !== null && saved.data.id !== id.toLowerCase())) {
+    return { error: "The save could not be confirmed. Your edits have been kept." };
+  }
+
+  // PostgREST has completed the write transaction. Use the same latest-revision
+  // read as the editor to check what another session can actually load.
+  const confirmed = await getProjectEditor(saved.data.id).catch(() => null);
+  const confirmedFields = projectFieldsSchema.safeParse(confirmed?.fields);
+  const actual = confirmedFields.success ? confirmedFields.data : null;
+  const expected = { ...result.data, cover_asset_id: result.data.cover_asset_id?.toLowerCase() ?? null };
+  if (!confirmed?.revisionId || typeof confirmed.revisionNumber !== "number" ||
+    confirmed.updatedAt !== saved.data.updatedAt || !isDeepStrictEqual(actual, expected) ||
+    (blocks && !isDeepStrictEqual(confirmed.content, blocks)) ||
+    (mode === "metadata-only" && id !== null && confirmed.content !== null)) {
+    console.warn("CMS draft read-back did not confirm the write", { projectId: saved.data.id });
+    return {
+      error: "The save could not be confirmed against the latest stored draft. Your edits have been kept.",
+      conflict: id !== null,
+    };
+  }
   revalidatePath("/admin/works");
   revalidatePath("/admin/works/" + saved.data.id);
   revalidatePath("/admin");
-  return saved.data;
+  return { verified: {
+    ...saved.data, revisionId: confirmed.revisionId, revisionNumber: confirmed.revisionNumber,
+  } };
 }
 
 export async function saveDraft(

@@ -81,7 +81,6 @@ export function ProjectForm({
   id,
   updatedAt,
   archived,
-  justCreated,
 }: {
   initial: DraftFields;
   initialContent?: ContentBlocks | null;
@@ -89,13 +88,13 @@ export function ProjectForm({
   id?: string;
   updatedAt?: string;
   archived?: boolean;
-  justCreated?: boolean;
 }) {
   const router = useRouter();
   const [fields, setFields] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [content, setContent] = useState(initialContent);
   const [savedContent, setSavedContent] = useState(initialContent);
+  const currentContent = useRef(initialContent);
   const [showPreview, setShowPreview] = useState(false);
   const [contentChoice, setContentChoice] = useState<"local" | "latest">();
   const [detailsOpen, setDetailsOpen] = useState(!id);
@@ -108,7 +107,7 @@ export function ProjectForm({
     useState<Awaited<ReturnType<typeof reviewLatestDraft>>>();
   const [reviewError, setReviewError] = useState("");
   const inFlight = useRef(false);
-  const [success, setSuccess] = useState(Boolean(justCreated));
+  const [success, setSuccess] = useState(false);
   const [pending, startTransition] = useTransition();
   const contentDirty = content !== savedContent && JSON.stringify(content) !== JSON.stringify(savedContent);
   const contentsOverlap = !!latest && contentDirty
@@ -162,9 +161,28 @@ export function ProjectForm({
     }));
   }
 
+  function changeContent(document: ContentBlocks | null) {
+    currentContent.current = document;
+    setContent(document);
+    setSuccess(false);
+  }
+
+  function downloadBackup() {
+    const url = URL.createObjectURL(new Blob([JSON.stringify({
+      projectId: id, exportedAt: new Date().toISOString(), fields,
+      content_blocks: currentContent.current,
+    }, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "draft-backup-" + (id ?? "new") + ".json";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending || uploadingMedia || inFlight.current || archived || result.conflict) return;
+    setSuccess(false);
     const check = projectFieldsSchema.safeParse(fields);
     if (!check.success) {
       const errors = check.error.flatten().fieldErrors;
@@ -175,8 +193,11 @@ export function ProjectForm({
       return;
     }
     const form = new FormData();
-    if (contentDirty) {
-      const check = contentBlocksSchema.safeParse(content);
+    const snapshot = currentContent.current;
+    const changed = JSON.stringify(snapshot) !== JSON.stringify(savedContent);
+    form.set("content_mode", snapshot === null ? "metadata-only" : changed ? "replace" : "preserve");
+    if (snapshot !== null) {
+      const check = contentBlocksSchema.safeParse(snapshot);
       if (!check.success) {
         const issue = check.error.issues[0];
         setResult({ error: `Case study ${issue.path.join(".")}: ${issue.message}` });
@@ -192,16 +213,16 @@ export function ProjectForm({
       try {
         const next = await saveDraft(id ?? null, stamp ?? null, form);
         setResult(next);
-        if (!next.id) return;
+        if (!next.verified) return;
         setSaved(fields);
-        setSavedContent(content);
-        setStamp(next.updatedAt);
+        setSavedContent(snapshot);
+        setStamp(next.verified.updatedAt);
         setSuccess(true);
-        if (!id) router.replace(works + "/" + next.id + "?saved=1");
+        if (!id) router.replace(works + "/" + next.verified.id);
       } catch {
         setResult({
           error:
-            "Could not save the draft. Check your connection and try again.",
+            "The save response could not be confirmed. Your edits have been kept.",
         });
       } finally {
         inFlight.current = false;
@@ -227,7 +248,7 @@ export function ProjectForm({
     if (!latest || !comparison || (contentsOverlap && !contentChoice)) return;
     setFields(comparison.merged);
     setSaved(latest.fields);
-    setContent(contentDirty && contentChoice !== "latest" ? content : latest.content);
+    changeContent(contentDirty && contentChoice !== "latest" ? currentContent.current : latest.content);
     setSavedContent(latest.content);
     setContentChoice(undefined);
     setStamp(latest.updatedAt);
@@ -366,7 +387,12 @@ export function ProjectForm({
           </div>
           <Button type="button" variant="outline" disabled={pending || uploadingMedia}
             onClick={() => setShowPreview(!showPreview)}><Eye aria-hidden />{showPreview ? "Back to editor" : "Preview"}</Button>
-          {!showPreview && saveButton}
+          {!showPreview && (
+            <>
+              {content !== null && <Button type="button" variant="ghost" onClick={downloadBackup}>Download draft backup</Button>}
+              {saveButton}
+            </>
+          )}
         </div>
       )}
       {!showPreview && result.error && (
@@ -467,7 +493,7 @@ export function ProjectForm({
             <h2 className="text-lg font-semibold">{showPreview ? "Draft preview" : "Content Editor"}</h2>
             <ContentEditor doc={content} title={fields.title} readOnly={!!archived} preview={showPreview}
               busy={pending || uploadingMedia} onUploading={setEditingMedia}
-              onChange={(document) => { setSuccess(false); setContent(document); }} />
+              onChange={changeContent} />
           </section>
         </>
       ) : (

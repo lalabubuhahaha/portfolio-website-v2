@@ -10,6 +10,7 @@ export async function createSupabaseServerClient() {
 
   return createServerClient(config.url, config.key, {
     cookieOptions: adminCookieOptions,
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
     cookies: {
       getAll: () => store.getAll(),
       setAll: (updates) => {
