@@ -132,7 +132,7 @@ try {
 
   await visit(pageA, "?saved=1");
   await visit(pageB);
-  assert.equal(await pageA.getByText("Draft saved.", { exact: true }).count(), 0);
+  assert.equal(await pageA.getByText("Saved successfully", { exact: true }).count(), 0);
   const beforeSingle = await readFresh();
   await quoteButton(pageA).first().click();
   await properties(pageA).getByLabel("Quotation", { exact: true }).fill("Single edit before the batch");
@@ -143,7 +143,7 @@ try {
     pageA.waitForRequest(blocksPosts),
     button(pageA, "Save Draft").evaluate((control) => { control.click(); control.click(); }),
   ]);
-  await pageA.getByText("Draft saved.", { exact: true }).filter({ visible: true }).waitFor();
+  await pageA.getByText("Saved successfully", { exact: true }).filter({ visible: true }).waitFor();
   const before = await readFresh();
   pageA.off("request", countPost);
   assert.equal(submissions, 1);
@@ -169,12 +169,24 @@ try {
   await pageA.locator("#summary").fill("Summary beside content");
   await pageA.locator("#seo_title").fill("SEO beside content");
   const saveStarted = performance.now();
+  const delaySave = async (route) => {
+    if (blocksPosts(route.request())) await new Promise((resolve) => setTimeout(resolve, 450));
+    await route.continue();
+  };
+  const saveUrl = "**/admin/works/" + project + "*";
+  await pageA.route(saveUrl, delaySave);
   const [request] = await Promise.all([
     pageA.waitForRequest(blocksPosts), button(pageA, "Save Draft").click(),
   ]);
+  await pageA.getByRole("status").filter({ hasText: "Saving…" }).waitFor();
+  assert.equal(await pageA.getByText("Saved successfully", { exact: true }).count(), 0);
   const submitted = await payload(request);
-  await pageA.getByText("Draft saved.", { exact: true }).filter({ visible: true }).waitFor();
-  const confirmedSaveMs = Math.round(performance.now() - saveStarted);
+  await pageA.getByText("Saved successfully", { exact: true }).filter({ visible: true }).waitFor();
+  await pageA.unroute(saveUrl, delaySave);
+  if (process.env.CMS_TEST_ARTIFACT_DIR)
+    await pageA.getByRole("status").filter({ hasText: "Saved successfully" }).locator("..")
+      .screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "save-confirmed.png") });
+  const delayedSaveSampleMs = Math.round(performance.now() - saveStarted);
   const committed = await readFresh();
   assert.deepEqual(committed.revision.content_blocks, submitted);
   assert.notEqual(committed.version, before.version);
@@ -199,6 +211,73 @@ try {
   await newTab.reload();
   await canvas(newTab).getByText("Nested copy rapid additions 123", { exact: true }).waitFor();
 
+  // Start cold in another context and reproduce the observed order exactly:
+  // load the existing editor online, switch Chromium offline, click the text.
+  const offlineContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true });
+  const offlinePage = await login(offlineContext);
+  await visit(offlinePage);
+  const offlineText = canvas(offlinePage).getByText("Nested copy rapid additions 123", { exact: true });
+  await offlineText.scrollIntoViewIfNeeded();
+  await offlinePage.waitForLoadState("networkidle");
+  assert.equal(await offlinePage.locator(".tiptap").count(), 0);
+  const offlineRequests = [];
+  const offlineNavigations = [];
+  const clientErrors = [];
+  const traceRequest = (request) => offlineRequests.push([request.method(), request.resourceType()]);
+  const traceNavigation = (frame) => { if (frame === offlinePage.mainFrame()) offlineNavigations.push(frame.url()); };
+  offlinePage.on("request", traceRequest);
+  offlinePage.on("framenavigated", traceNavigation);
+  offlinePage.on("pageerror", (error) => clientErrors.push(error.message));
+  await offlineContext.setOffline(true);
+  await offlinePage.getByText("Offline. You can keep editing", { exact: false }).waitFor();
+  await offlineText.click();
+  const offlineRich = canvas(offlinePage).locator(".tiptap");
+  await offlineRich.waitFor();
+  await offlinePage.waitForFunction(() => document.activeElement?.classList.contains("tiptap"));
+  await offlinePage.keyboard.type(" typed offline");
+  await button(offlinePage, "Save Draft").click();
+  await offlinePage.getByRole("alert").filter({ hasText: "Save failed. You’re offline" }).waitFor();
+  assert.equal(await offlinePage.getByText("Saved successfully", { exact: true }).count(), 0);
+  assert.equal(await offlinePage.locator("time").getAttribute("datetime"), committed.version);
+  await offlinePage.getByRole("link", { name: "Back to Works", exact: true }).click();
+  assert.equal(new URL(offlinePage.url()).pathname, edit);
+  assert.deepEqual(offlineRequests, []);
+  assert.deepEqual(offlineNavigations, []);
+  assert.deepEqual(clientErrors, []);
+  assert.deepEqual(await readFresh(), committed);
+  await button(offlinePage, "Draft recovery").click();
+  const recoveryPanel = offlinePage.getByRole("region", { name: "Draft recovery", exact: true });
+  assert(await recoveryPanel.evaluate((element) => document.activeElement === element));
+  await button(recoveryPanel, "Enable local recovery").click();
+  await recoveryPanel.getByRole("status").filter({ hasText: "Snapshot saved on this device" }).waitFor();
+  assert(await button(recoveryPanel, "Import draft backup").isDisabled());
+  const [offlineDownload] = await Promise.all([
+    offlinePage.waitForEvent("download"), button(offlinePage, "Download draft backup").click(),
+  ]);
+  const offlineBackup = JSON.parse(await readFile(await offlineDownload.path(), "utf8"));
+  assert.match(JSON.stringify(offlineBackup.content_blocks), /typed offline/);
+  if (process.env.CMS_TEST_ARTIFACT_DIR) {
+    await offlinePage.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "offline-editor.png") });
+    await recoveryPanel.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "snapshot-saved.png") });
+  }
+  await offlineContext.setOffline(false);
+  offlinePage.off("request", traceRequest);
+  offlinePage.off("framenavigated", traceNavigation);
+  offlinePage.once("dialog", (dialog) => dialog.accept());
+  await offlinePage.reload();
+  await button(offlinePage, "Review snapshot").click();
+  const offlineCompare = offlinePage.getByRole("region", { name: "Backup comparison" });
+  await offlineCompare.waitFor();
+  await offlineCompare.getByText("Backup blocks", { exact: true }).click();
+  await offlineCompare.getByText(/typed offline/).waitFor();
+  if (process.env.CMS_TEST_ARTIFACT_DIR)
+    await offlineCompare.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "recovery-comparison.png") });
+  await button(offlineCompare, "Apply backup to editor").click();
+  await canvas(offlinePage).getByText("Nested copy rapid additions 123 typed offline", { exact: true }).waitFor();
+  assert.deepEqual(await readFresh(), committed);
+  await offlineContext.close();
+  console.log("Cold, already-loaded Rich Text clicked under real Chromium Offline: zero requests, errors or navigations; typing, Save failed, snapshot, export and recovery passed.");
+
   // The earlier tab in the other session still has the old version.
   await quoteButton(pageB).first().click();
   await properties(pageB).getByLabel("Quotation", { exact: true }).fill("Keep stale local edits");
@@ -218,8 +297,8 @@ try {
   };
   const assertUnsaved = async (page, text) => {
     await page.getByRole("alert").filter({ hasText: /edits|data changed/i }).waitFor();
-    assert.equal(await page.getByText(/Unsaved changes/).count(), 1);
-    assert.equal(await page.getByText("Draft saved.", { exact: true }).count(), 0);
+    assert.equal(await page.getByText(/Unsaved Changes/).count(), 1);
+    assert.equal(await page.getByText("Saved successfully", { exact: true }).count(), 0);
     assert.equal(await properties(page).getByLabel("Quotation", { exact: true }).inputValue(), text);
     assert.equal(new URL(page.url()).pathname, edit);
   };
@@ -230,7 +309,6 @@ try {
   await button(pageA, "Save Draft").click();
   await assertUnsaved(pageA, retained);
   await a.setOffline(false);
-  await reviewUncertain(pageA);
   for (const failure of [401, 403, 409, 500, "reset"]) {
     const handler = (route) => !blocksPosts(route.request()) ? route.continue()
       : failure === "reset" ? route.abort("connectionreset")
@@ -290,7 +368,7 @@ try {
     await pageA.locator("#summary").fill("p0-test-readback-error");
     await button(pageA, "Save Draft").click();
     await pageA.getByRole("alert").filter({ hasText: "latest stored draft" }).waitFor();
-    assert.equal(await pageA.getByText("Draft saved.", { exact: true }).count(), 0);
+    assert.equal(await pageA.getByText("Saved successfully", { exact: true }).count(), 0);
     committedWithoutResponse = await readFresh();
     assert.equal(committedWithoutResponse.revision.summary, "p0-test-readback-error");
     assert.equal(committedWithoutResponse.revision.content_blocks.blocks[0].content.quote, retained);
@@ -317,7 +395,7 @@ try {
       if (key.startsWith("lala-cms-recovery:v1:draft:")) window.recordSnapshotWrite(performance.now() - start);
     };
   });
-  await button(pageA, "Enable browser recovery").click();
+  await button(pageA, "Enable local recovery").click();
   await quoteButton(pageA).first().click();
   const localField = properties(pageA).getByLabel("Quotation", { exact: true });
   await localField.fill("");
@@ -344,7 +422,7 @@ try {
   assert.deepEqual(await readFresh(), committedWithoutResponse);
   await button(compare, "Apply backup to editor").click();
   await button(reopened, "Save Draft").click();
-  await reopened.getByText("Draft saved.", { exact: true }).waitFor();
+  await reopened.getByText("Saved successfully", { exact: true }).waitFor();
   const recoveredRow = await readFresh();
   assert.equal(recoveredRow.revision.content_blocks.blocks[0].content.quote, recovered);
   await reopened.getByRole("link", { name: "Back to Works", exact: true }).click();
@@ -376,7 +454,7 @@ try {
   await button(compare, "Apply backup to editor").click();
   assert.deepEqual(await readFresh(), recoveredRow);
   await button(reopened, "Save Draft").click();
-  await reopened.getByText("Draft saved.", { exact: true }).waitFor();
+  await reopened.getByText("Saved successfully", { exact: true }).waitFor();
   const imported = await readFresh();
   assert.equal(imported.revision.summary, "Imported legacy backup");
   assert.equal(imported.revision.cover_asset_id, images[1]?.id ?? null);
@@ -399,7 +477,7 @@ try {
   await visit(newTab);
   await editFirst(newTab, "Verified save from the second browser");
   await button(newTab, "Save Draft").click();
-  await newTab.getByText("Draft saved.", { exact: true }).waitFor();
+  await newTab.getByText("Saved successfully", { exact: true }).waitFor();
   assert.equal((await readFresh()).revision.content_blocks.blocks[0].content.quote,
     "Verified save from the second browser");
 
@@ -424,7 +502,7 @@ try {
     persistent = await chromium.launchPersistentContext(profile, persistentOptions);
     const first = await login(persistent);
     await visit(first);
-    await button(first, "Enable browser recovery").click();
+    await button(first, "Enable local recovery").click();
     await editFirst(first, "Retained after browser process closes");
     await first.waitForFunction(prefix => Object.keys(localStorage).some(key => key.startsWith(prefix)), storagePrefix);
     await persistent.close();
@@ -439,7 +517,7 @@ try {
     await persistent?.close();
     await rm(profile, { recursive: true, force: true });
   }
-  console.log(JSON.stringify({ confirmedSaveMs, inputBurstWrites, totalObservedSnapshotWrites: observedWrites.length,
+  console.log(JSON.stringify({ delayedSaveSampleMs, inputBurstWrites, totalObservedSnapshotWrites: observedWrites.length,
     localStorageWriteMs: observedWrites[0] }));
   console.log("Persistence, offline/reset/HTTP failures, committed response loss, session removal, recovery, legacy import, conflict and logout passed.");
 } finally {

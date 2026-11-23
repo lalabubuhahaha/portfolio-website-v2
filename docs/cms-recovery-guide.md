@@ -6,7 +6,7 @@ On an existing editable case study, click **Download draft backup**. The JSON co
 
 ## Enable snapshots on a private device
 
-Open **Draft recovery** and choose **Enable browser recovery**. Unsaved edits are written after 750 ms of inactivity, with a best-effort flush when the page becomes hidden or is left. Snapshots are scoped by authenticated account, project and editor tab. The browser stores a maximum of twelve snapshots of up to 250,000 UTF-8 bytes each. The expiry is 24 hours after the last snapshot write. Expired entries are removed when the editor next checks the storage. Confirmed saves clear the current tab's snapshot. Other tab snapshots can be reviewed or explicitly discarded.
+Open **Draft recovery** and choose **Enable local recovery**. Unsaved edits are written after 750 ms of inactivity, with a best-effort flush when the page becomes hidden or is left. Snapshots are scoped by authenticated account, project and editor tab. The browser stores a maximum of twelve snapshots of up to 250,000 UTF-8 bytes each. The expiry is 24 hours after the last snapshot write. Expired entries are removed when the editor next checks the storage. Confirmed saves clear the current tab's snapshot. Other tab snapshots can be reviewed or explicitly discarded.
 
 On a fresh visit, choose **Review snapshot** to compare the backup against the current stored draft. **Apply backup to editor** changes the open form only. Review the canvas and click **Save Draft** separately. A version change since comparison can still result in a conflict.
 
@@ -20,3 +20,7 @@ Application sign-out asks for confirmation and clears recovery snapshots and opt
 4. A missing asset or incompatible format blocks import. A snapshot containing incomplete or invalid edits can still be downloaded for manual recovery. If the stored version changes, keep the backup and review the latest draft before another import.
 
 Use the downloaded backup when storage is blocked or full. An administrator session is required to validate a recovery candidate. A local backup or snapshot cannot publish a revision.
+
+### Stage 7.4.3 locations and feedback
+
+Use **Draft recovery** in the sticky toolbar to focus the recovery panel. Choose **Enable local recovery** to opt in. **Snapshot saved on this device** reflects a successful browser write for the current edits. **Download draft backup** remains in the toolbar and can run offline in an already-loaded editor. Reconnect to use **Import draft backup** or **Review snapshot**, because comparison validates the current stored version and private media. If local storage is unavailable, the panel directs you to the JSON download.

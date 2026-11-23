@@ -3,7 +3,6 @@ import { notFound, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { DataUnavailable, PageHeader } from "@/components/admin/page-layout";
 import {
-  displayDateTime,
   getProjectEditor,
 } from "@/lib/content/cms";
 import { requireAdmin } from "@/lib/cms/session";
@@ -38,17 +37,6 @@ async function EditProject({ params }: Props) {
         description="Edit the project details and save a draft."
         parent={{ title: "Works", href: "/admin/works" }}
       />
-      <div className="mb-5 flex flex-wrap items-center gap-3 text-sm text-cms-secondary">
-        <span className="rounded-md bg-cms-selected px-2.5 py-1 font-medium text-cms-primary">
-          {status}
-        </span>
-        <span>
-          Last saved{" "}
-          <time dateTime={project.updatedAt}>
-            {displayDateTime.format(new Date(project.updatedAt))}
-          </time>
-        </span>
-      </div>
       <ProjectForm
         key={project.id}
         id={project.id}

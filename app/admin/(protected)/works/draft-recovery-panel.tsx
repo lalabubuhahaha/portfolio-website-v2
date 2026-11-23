@@ -14,7 +14,7 @@ import { reviewDraftBackup } from "./actions";
 type Review = Awaited<ReturnType<typeof reviewDraftBackup>>;
 
 export function DraftRecoveryPanel({
-  project, user, version, dirty, busy, fields, content, onApply,
+  project, user, version, dirty, busy, fields, content, offline, onApply,
 }: {
   project: string;
   user: string;
@@ -23,12 +23,14 @@ export function DraftRecoveryPanel({
   busy: boolean;
   fields: DraftFields;
   content: ContentBlocks;
+  offline: boolean;
   onApply: (backup: DraftBackup) => void;
 }) {
   const id = useRef<string>(null);
   const input = useRef<HTMLInputElement>(null);
   const mounted = useRef(false);
   const [enabled, setEnabled] = useState(false);
+  const [snapshot, setSnapshot] = useState<{ at: string; fields: DraftFields; content: ContentBlocks; version: string }>();
   const [items, setItems] = useState<RecoveryItem[]>([]);
   const [storageError, setStorageError] = useState("");
   const [error, setError] = useState("");
@@ -49,6 +51,7 @@ export function DraftRecoveryPanel({
         const store = window.localStorage;
         const allowed = store.getItem(consent) === "enabled";
         setEnabled(allowed);
+        if (!id.current || !store.getItem(id.current)) setSnapshot(undefined);
         setItems(allowed ? listSnapshots(store, user, project).filter((item) => item.key !== id.current) : []);
       } catch {
         setStorageError("Browser recovery is unavailable. Use Download draft backup.");
@@ -68,10 +71,15 @@ export function DraftRecoveryPanel({
       if (!id.current) return;
       try {
         if (!dirty) { window.localStorage.removeItem(id.current); return; }
-        writeSnapshot(window.localStorage, user, id.current, JSON.stringify({
+        const now = Date.now();
+        const at = new Date(now).toISOString();
+        if (writeSnapshot(window.localStorage, user, id.current, JSON.stringify({
           version: 1, projectId: project, baseVersion: version,
-          exportedAt: new Date().toISOString(), fields, content_blocks: content,
-        } satisfies DraftBackup));
+          exportedAt: at, fields, content_blocks: content,
+        } satisfies DraftBackup), now)) {
+          setSnapshot({ at, fields, content, version });
+          setStorageError("");
+        }
       } catch {
         setStorageError("Browser recovery could not write a snapshot. Download a draft backup before leaving.");
       }
@@ -89,6 +97,13 @@ export function DraftRecoveryPanel({
     };
   }, [enabled, dirty, project, user, version, fields, content]);
 
+  useEffect(() => {
+    if (!snapshot) return;
+    const timer = window.setTimeout(() => setSnapshot(undefined),
+      Math.max(0, Date.parse(snapshot.at) + RECOVERY_TTL - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [snapshot]);
+
   function toggle() {
     try {
       const store = window.localStorage;
@@ -96,6 +111,7 @@ export function DraftRecoveryPanel({
         if (!window.confirm("Disable and remove this account’s browser snapshots on this device?")) return;
         disableUserRecovery(store, user);
         setItems([]);
+        setSnapshot(undefined);
       } else {
         store.setItem(consent, "enabled");
         setItems(listSnapshots(store, user, project).filter((item) => item.key !== id.current));
@@ -116,6 +132,10 @@ export function DraftRecoveryPanel({
   }
   async function stage(raw: string) {
     setError("");
+    if (!navigator.onLine) {
+      setError("Reconnect to compare a backup with the stored draft. Your local copy is still available.");
+      return;
+    }
     setReview(undefined);
     setAcceptVersion(false);
     setReviewing(true);
@@ -128,18 +148,19 @@ export function DraftRecoveryPanel({
     } finally { setReviewing(false); }
   }
 
+  const currentSnapshot = snapshot?.fields === fields && snapshot.content === content && snapshot.version === version;
   const candidate = review?.backup;
   const stored = review?.stored;
   const changedVersion = candidate?.baseVersion !== review?.reviewedVersion;
   return (
-    <section aria-label="Draft recovery" className="rounded-xl border border-cms-border bg-white p-4 text-sm">
+    <section id="draft-recovery" tabIndex={-1} aria-label="Draft recovery" className="scroll-mt-44 rounded-xl border border-cms-border bg-white p-4 text-sm">
       <h2 className="font-semibold">Draft recovery</h2>
       <p className="mt-1 text-cms-secondary">Browser recovery is for private devices. Snapshots are kept in this browser for up to 24 hours while this feature is enabled. Use a downloaded backup for a separate copy.</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button type="button" variant="outline" aria-pressed={enabled} onClick={toggle}>
-          {enabled ? "Disable browser recovery" : "Enable browser recovery"}
+          {enabled ? "Disable local recovery" : "Enable local recovery"}
         </Button>
-        <Button type="button" variant="outline" disabled={busy || reviewing} onClick={() => input.current?.click()}>Import draft backup</Button>
+        <Button type="button" variant="outline" disabled={offline || busy || reviewing} onClick={() => input.current?.click()}>Import draft backup</Button>
         <input ref={input} type="file" accept=".json,application/json" hidden onChange={async (event) => {
           const file = event.currentTarget.files?.[0];
           event.currentTarget.value = "";
@@ -149,13 +170,19 @@ export function DraftRecoveryPanel({
           catch { setError("Could not read the backup file."); }
         }} />
       </div>
+      {offline && <p className="mt-2 text-cms-secondary">Reconnect to import or compare. Download and local snapshot storage are available when supported by your browser.</p>}
+      {enabled && dirty && !storageError && <p role="status" className="mt-2 text-cms-secondary">
+        {currentSnapshot && snapshot ? <>Snapshot saved on this device · <time dateTime={snapshot.at}>
+          {new Date(snapshot.at).toLocaleTimeString("en", { timeZone: "Asia/Taipei" })} (Taipei)
+        </time></> : "Waiting to save the current local snapshot…"}
+      </p>}
       {storageError && <p role="alert" className="mt-2 text-red-800">{storageError}</p>}
       {error && <p role="alert" className="mt-2 text-red-800">{error}</p>}
       {reviewing && <p role="status" className="mt-2">Checking the backup and private media…</p>}
       {!!items.length && <ul className="mt-2 space-y-2">
         {items.map((item) => <li className="flex flex-wrap items-center gap-2" key={item.key}>
           <span>Unsaved browser snapshot · {new Date(item.expiresAt - RECOVERY_TTL).toLocaleString()}</span>
-          <Button type="button" variant="outline" disabled={busy || reviewing} onClick={() => {
+          <Button type="button" variant="outline" disabled={offline || busy || reviewing} onClick={() => {
             if (item.expiresAt <= Date.now()) {
               discard(item.key);
               setError("This browser snapshot has expired.");

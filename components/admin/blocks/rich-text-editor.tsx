@@ -12,6 +12,7 @@ export default function RichTextEditor({ doc, onChange, disabled }: { doc: RichN
   const localDocuments = useRef(new WeakSet<RichNode>());
   const editor = useEditor({
     immediatelyRender: false,
+    autofocus: "end",
     extensions: [
       StarterKit.configure({
         heading: false, codeBlock: false, horizontalRule: false,

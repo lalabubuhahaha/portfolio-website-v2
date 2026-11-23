@@ -7,6 +7,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   useTransition,
   type FormEvent,
 } from "react";
@@ -29,6 +30,21 @@ import { DraftRecoveryPanel } from "./draft-recovery-panel";
 
 const ContentEditor = dynamic(() => import("@/components/admin/blocks/content-editor"), {
   loading: () => <p role="status" className="p-4 text-sm">Loading content editor…</p>,
+});
+
+function subscribeConnection(listener: () => void) {
+  window.addEventListener("offline", listener);
+  window.addEventListener("online", listener);
+  return () => {
+    window.removeEventListener("offline", listener);
+    window.removeEventListener("online", listener);
+  };
+}
+
+const isOffline = () => navigator.onLine === false;
+const onlineOnServer = () => false;
+const savedTime = new Intl.DateTimeFormat("en", {
+  dateStyle: "medium", timeStyle: "medium", timeZone: "Asia/Taipei",
 });
 
 const works = "/admin/works";
@@ -112,6 +128,8 @@ export function ProjectForm({
   const [reviewError, setReviewError] = useState("");
   const inFlight = useRef(false);
   const [success, setSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const offline = useSyncExternalStore(subscribeConnection, isOffline, onlineOnServer);
   const [pending, startTransition] = useTransition();
   const contentDirty = content !== savedContent && JSON.stringify(content) !== JSON.stringify(savedContent);
   const contentsOverlap = !!latest && contentDirty
@@ -126,8 +144,9 @@ export function ProjectForm({
     : null;
 
   useEffect(() => {
-    if (!dirty && !pending && !uploadingMedia) return;
+    if (!dirty && !pending && !uploadingMedia && !offline) return;
     function unload(event: BeforeUnloadEvent) {
+      if (!dirty && !pending && !uploadingMedia) return;
       event.preventDefault();
       event.returnValue = "";
     }
@@ -142,13 +161,14 @@ export function ProjectForm({
         link.target === "_blank"
       )
         return;
-      if (!window.confirm(unsaved)) {
+      if (isOffline() || ((dirty || pending || uploadingMedia) && !window.confirm(unsaved))) {
         event.preventDefault();
         event.stopPropagation();
       }
     }
     function beforeSignOut(event: Event) {
-      if (!window.confirm("Leave the open draft? Download a backup first if you need to keep your edits."))
+      if (isOffline() || ((dirty || pending || uploadingMedia) &&
+        !window.confirm("Leave the open draft? Download a backup first if you need to keep your edits.")))
         event.preventDefault();
     }
     window.addEventListener("cms:before-sign-out", beforeSignOut);
@@ -159,7 +179,7 @@ export function ProjectForm({
       window.removeEventListener("beforeunload", unload);
       document.removeEventListener("click", follow, true);
     };
-  }, [dirty, pending, uploadingMedia]);
+  }, [dirty, pending, uploadingMedia, offline]);
 
   function change(key: keyof DraftFields, value: string) {
     setSuccess(false);
@@ -193,6 +213,10 @@ export function ProjectForm({
     event.preventDefault();
     if (pending || uploadingMedia || inFlight.current || archived || result.conflict) return;
     setSuccess(false);
+    if (isOffline()) {
+      setResult({ error: "You’re offline. Your edits are still open. Reconnect to save or download a draft backup." });
+      return;
+    }
     const check = projectFieldsSchema.safeParse(fields);
     if (!check.success) {
       const errors = check.error.flatten().fieldErrors;
@@ -216,6 +240,7 @@ export function ProjectForm({
     }
     for (const [key, value] of Object.entries(fields)) form.set(key, value);
     inFlight.current = true;
+    setSaving(true);
     setResult({});
     setSuccess(false);
     startTransition(async () => {
@@ -236,6 +261,7 @@ export function ProjectForm({
         });
       } finally {
         inFlight.current = false;
+        setSaving(false);
       }
     });
   }
@@ -243,6 +269,10 @@ export function ProjectForm({
   function review() {
     if (!id || pending) return;
     setReviewError("");
+    if (isOffline()) {
+      setReviewError("Reconnect to review the latest stored draft. Your edits are still open.");
+      return;
+    }
     startTransition(async () => {
       try {
         const current = await reviewLatestDraft(id);
@@ -322,7 +352,7 @@ export function ProjectForm({
   const saveButton = (
     <Button type="submit" disabled={pending || uploadingMedia || archived || result.conflict}>
       <Save aria-hidden />
-      {pending ? "Saving…" : "Save Draft"}
+      {saving ? "Saving…" : "Save Draft"}
     </Button>
   );
 
@@ -393,23 +423,38 @@ export function ProjectForm({
           </Button>
           <div className="mr-auto min-w-0">
             <p className="max-w-56 truncate text-sm font-semibold">{fields.title || "Untitled draft"}</p>
-            <p className="text-xs text-cms-secondary">{status}{dirty ? " · Unsaved changes" : ""}</p>
+            <p className="text-xs text-cms-secondary">{status}{dirty ? " · Unsaved Changes" : ""}</p>
+            {stamp && <p className="text-xs text-cms-secondary">Last saved <time dateTime={stamp}>
+              {savedTime.format(new Date(stamp))} (Taipei)
+            </time></p>}
           </div>
           <Button type="button" variant="outline" disabled={pending || uploadingMedia}
             onClick={() => setShowPreview(!showPreview)}><Eye aria-hidden />{showPreview ? "Back to editor" : "Preview"}</Button>
           {!showPreview && (
             <>
+              {recoveryUser && content !== null && !archived && <Button type="button" variant="ghost"
+                onClick={() => document.getElementById("draft-recovery")?.focus()}>Draft recovery</Button>}
               {content !== null && <Button type="button" variant="ghost" onClick={downloadBackup}>Download draft backup</Button>}
               {saveButton}
             </>
           )}
+          {offline && <p role="status" className="basis-full text-sm text-cms-secondary">
+            Offline. You can keep editing and download a backup. Reconnect to save or navigate.
+          </p>}
+          {saving && <p role="status" className="basis-full text-sm text-cms-secondary">Saving…</p>}
+          {success && !saving && !result.error && <p role="status" className="basis-full text-sm font-semibold text-emerald-700">
+            Saved successfully
+          </p>}
+          {result.error && <p role="alert" className="basis-full text-sm text-red-800">
+            <strong>Save failed.</strong> {result.error}
+          </p>}
         </div>
       )}
       {id && recoveryUser && stamp && content && !archived && (
         <div className={showPreview ? "hidden" : undefined}>
           <DraftRecoveryPanel key={recoveryUser + ":" + id} project={id} user={recoveryUser}
             version={stamp} dirty={dirty} busy={pending || uploadingMedia || !!result.conflict}
-            fields={fields} content={content}
+            fields={fields} content={content} offline={offline}
             onApply={(backup) => {
               setFields(backup.fields);
               changeContent(backup.content_blocks);
@@ -417,12 +462,12 @@ export function ProjectForm({
             }} />
         </div>
       )}
-      {!showPreview && result.error && (
+      {!id && result.error && (
         <p
           role="alert"
           className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"
         >
-          {result.error}
+          <strong>Save failed.</strong> {result.error}
         </p>
       )}
       {!showPreview && result.conflict && (
@@ -497,11 +542,6 @@ export function ProjectForm({
           )}
           {reviewError && <p role="alert">{reviewError}</p>}
         </section>
-      )}
-      {!showPreview && success && (
-        <p role="status" className="text-sm font-medium text-emerald-700">
-          Draft saved.
-        </p>
       )}
       {id ? (
         <>

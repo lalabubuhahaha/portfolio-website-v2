@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useId, useState, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "lucide-react";
 import { MAX_BLOCK_DEPTH, MAX_BLOCKS, type BlockType, type ContentBlock, type ContentBlocks } from "@/lib/cms/blocks";
@@ -11,10 +10,7 @@ import { MediaDialog } from "../media/dialog";
 import { BlockProperties, MediaField } from "./block-properties";
 import { blockName, columnCount, createBlock, duplicateBlock, registry } from "./registry";
 
-const RichTextEditor = dynamic(() => import("./rich-text-editor"), {
-  ssr: false,
-  loading: () => <p role="status">Loading text editor…</p>,
-});
+import RichTextEditor from "./rich-text-editor";
 
 type InsertTarget = { kind: "append" }
   | { kind: "above" | "below"; id: string }
@@ -247,6 +243,11 @@ export default function ContentEditor({
           ) : active && block.type === "rich-text" && !readOnly ? (
             <RichTextEditor doc={block.content.doc} disabled={busy}
               onChange={(doc) => replace({ ...block, content: { ...block.content, doc } })} />
+          ) : block.type === "rich-text" && !readOnly ? (
+            <div className="cursor-text rounded-md p-1 hover:bg-cms-background"
+              onClick={() => select(block.id)}>
+              <BlockRenderer block={block} interactiveRichLinks={false} />
+            </div>
           ) : (
             <BlockRenderer block={block} renderLane={block.type === "columns"
               ? (children, lane) => (

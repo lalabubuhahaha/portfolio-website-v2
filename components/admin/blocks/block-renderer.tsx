@@ -149,8 +149,8 @@ function MediaVisual({
   );
 }
 
-function RichText({ node }: { node: RichNode }) {
-  const children = node.content?.map((entry, index) => <RichText node={entry} key={index} />);
+function RichText({ node, interactiveLinks }: { node: RichNode; interactiveLinks: boolean }) {
+  const children = node.content?.map((entry, index) => <RichText node={entry} interactiveLinks={interactiveLinks} key={index} />);
   switch (node.type) {
     case "doc": return <>{children}</>;
     case "paragraph": return <p style={{ textAlign: node.attrs?.textAlign ?? undefined }}>{children}</p>;
@@ -170,7 +170,11 @@ function RichText({ node }: { node: RichNode }) {
           case "code": value = <code>{value}</code>; break;
           case "textStyle": value = <span style={{ color: mark.attrs.color ?? undefined }}>{value}</span>; break;
           case "link":
-            if (safeLink.safeParse(mark.attrs.href).success) value = <a href={mark.attrs.href} target="_blank" rel="noopener noreferrer">{value}</a>;
+            if (safeLink.safeParse(mark.attrs.href).success) {
+              value = interactiveLinks
+                ? <a href={mark.attrs.href} target="_blank" rel="noopener noreferrer">{value}</a>
+                : <span className="underline">{value}</span>;
+            }
             break;
         }
       }
@@ -283,8 +287,8 @@ function CopyColor({ hex }: { hex: string }) {
 
 type LaneRenderer = (children: ContentBlock[], lane: number) => ReactNode;
 export const BlockRenderer = memo(function BlockRenderer({
-  block, renderLane,
-}: { block: ContentBlock; renderLane?: LaneRenderer }) {
+  block, renderLane, interactiveRichLinks = true,
+}: { block: ContentBlock; renderLane?: LaneRenderer; interactiveRichLinks?: boolean }) {
   switch (block.type) {
     case "heading": {
       const c = block.content;
@@ -293,7 +297,7 @@ export const BlockRenderer = memo(function BlockRenderer({
         className={`tracking-tight text-balance ${H === "h2" ? "text-3xl md:text-5xl" : H === "h3" ? "text-2xl md:text-3xl" : "text-xl"} ${alignClass[c.alignment ?? "left"]} ${c.emphasis === "italic" ? "italic" : c.emphasis === "strong" ? "font-bold" : "font-semibold"}`}
       >{c.text}</H>;
     }
-    case "rich-text": return <div className="cms-rich-copy max-w-[70ch]"><RichText node={block.content.doc} /></div>;
+    case "rich-text": return <div className="cms-rich-copy max-w-[70ch]"><RichText node={block.content.doc} interactiveLinks={interactiveRichLinks} /></div>;
     case "image": {
       const c = block.content;
       return <figure className={`${positionClass[c.alignment]} ${c.alignment === "center" ? "w-full" : "w-full md:w-4/5"}`}>
