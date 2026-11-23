@@ -99,7 +99,8 @@ function MediaVisual({
   const current = useAsset(id, visible);
   const poster = useAsset(video?.posterId ?? null, visible);
   const { info } = current;
-  const classNames = `relative overflow-hidden ${aspectClass[aspect]} ${className ?? ""}`;
+  const fixedAspect = video && aspect === "native" ? "landscape" : aspect;
+  const classNames = `relative overflow-hidden ${aspectClass[fixedAspect]} ${video ? "rounded-lg bg-cms-foreground" : ""} ${className ?? ""}`;
   const gif = !!video && info?.asset.mime === "image/gif";
   const pausedGif = gif && !video.autoplay && playingGif !== id;
   return (
@@ -111,15 +112,15 @@ function MediaVisual({
             aria-label={alt || info.asset.displayName}
             controls={video?.controls ?? true} loop={video?.loop}
             muted={video?.muted} autoPlay={video?.autoplay && video.muted}
-            playsInline preload="metadata"
+            playsInline preload="auto"
             onError={() => setFailedUrl(info.url)}
-            className={`w-full object-contain ${aspect !== "native" ? "h-full" : ""}`}
+            className={`block w-full object-contain ${fixedAspect !== "native" ? "h-full" : ""}`}
           />
         ) : pausedGif ? (
-          <button type="button" onClick={() => setPlayingGif(id ?? "")} className={`relative block w-full ${aspect !== "native" ? "h-full" : ""}`}>
+          <button type="button" onClick={() => setPlayingGif(id ?? "")} className="relative grid h-full w-full place-items-center">
             {poster.info && <Image src={poster.info.url} width={poster.info.asset.width ?? 1200} height={poster.info.asset.height ?? 800}
-              alt="" unoptimized className="w-full object-contain" />}
-            <span className={poster.info ? "absolute inset-x-0 bottom-2 mx-auto w-fit rounded-md bg-white px-3 py-2 text-sm" : `${placeholder} w-full`}>
+              alt="" unoptimized className="h-full w-full object-contain" />}
+            <span className={poster.info ? "absolute inset-x-0 bottom-2 mx-auto w-fit rounded-md bg-white px-3 py-2 text-sm" : "rounded-md bg-white px-3 py-2 text-sm"}>
               Play GIF
             </span>
           </button>
@@ -128,15 +129,17 @@ function MediaVisual({
             src={info.url} alt={alt || info.asset.alt || info.asset.displayName}
             width={info.asset.width ?? 1200} height={info.asset.height ?? 800} unoptimized
             onError={() => setFailedUrl(info.url)}
-            className={`block w-full ${aspect === "native" && !className ? "h-auto" : "h-full"} ${fit === "cover" ? "object-cover" : "object-contain"}`}
+            className={`block w-full ${fixedAspect === "native" && !className ? "h-auto" : "h-full"} ${fit === "cover" ? "object-cover" : "object-contain"}`}
           />
         )
       ) : current.failed || (info && failedUrl === info.url) ? (
-        <button type="button" onClick={() => { setFailedUrl(""); current.retry(); }} className={`${placeholder} w-full`}>
+        <button type="button" onClick={() => { setFailedUrl(""); current.retry(); }} className={`${placeholder} w-full ${video ? "h-full" : ""}`}>
           Media unavailable · Retry
         </button>
       ) : (
-        <div className={placeholder}>{id ? "Loading media…" : "Choose media in Properties"}</div>
+        <div className={video ? "grid h-full place-items-center p-4 text-center text-sm text-white" : placeholder}>
+          {id ? (video ? "Preparing media preview…" : "Loading media…") : "Choose media"}
+        </div>
       )}
       {gif && !video.autoplay && !pausedGif && video.controls && (
         <button type="button" className="absolute right-2 bottom-2 rounded-md bg-white px-3 py-2 text-sm"
@@ -207,24 +210,59 @@ function Comparison({ content }: { content: Extract<ContentBlock, { type: "compa
   );
 }
 
-function Figma({ url, aspect, caption }: Extract<ContentBlock, { type: "figma" }>["content"]) {
-  const [opened, setOpened] = useState("");
+function Figma({
+  url, aspect, caption, frameRatio,
+}: Extract<ContentBlock, { type: "figma" }>["content"] & { frameRatio?: unknown }) {
+  const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [attempt, setAttempt] = useState(0);
+  const frame = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (state !== "loading") return;
+    const timeout = window.setTimeout(() => setState("error"), 15000);
+    return () => window.clearTimeout(timeout);
+  }, [state, attempt]);
   if (!figmaLink.safeParse(url).success) return <div className={placeholder}>Add a Figma prototype link</div>;
   const source = new URL(url);
   const embed = new URL(source.pathname + source.search, "https://embed.figma.com");
   embed.searchParams.set("embed-host", "share");
+  const ratio = frameRatio === "4:3" ? "aspect-[4/3]" : aspectClass[aspect];
+  function load() {
+    setAttempt((n) => n + 1);
+    setState("loading");
+  }
   return (
-    <figure>
-      {opened === url ? (
-        <iframe
-          title={caption || "Figma prototype"} src={embed.href}
-          className={`w-full rounded-lg ${aspectClass[aspect]}`}
-          sandbox="allow-scripts allow-same-origin" allowFullScreen loading="lazy"
-          referrerPolicy="no-referrer"
-        />
-      ) : <button type="button" className={`${placeholder} w-full ${aspectClass[aspect]}`} onClick={() => setOpened(url)}>Load Figma prototype</button>}
-      <figcaption className={`${captionClass} flex flex-wrap justify-between gap-2`}>
-        {caption}<a href={url} target="_blank" rel="noopener noreferrer" className="underline">Open in Figma</a>
+    <figure className="min-w-0">
+      <div ref={frame} className={`relative w-full overflow-hidden rounded-lg bg-cms-background ${ratio}`}>
+        {(state === "loading" || state === "ready") && (
+          <iframe
+            key={attempt}
+            title={caption || "Figma prototype"} src={embed.href}
+            className="absolute inset-0 block size-full border-0"
+            sandbox="allow-scripts allow-same-origin" allowFullScreen
+            referrerPolicy="no-referrer"
+            onLoad={() => setState("ready")} onError={() => setState("error")}
+          />
+        )}
+        {state === "loading" && <p role="status" className="pointer-events-none absolute inset-x-0 top-0 bg-white/95 p-2 text-center text-sm">Loading Figma preview…</p>}
+        {(state === "idle" || state === "error") && (
+          <div className="grid h-full place-content-center gap-2 overflow-auto p-3 text-center">
+            <p role={state === "error" ? "alert" : undefined} className="text-xs text-cms-secondary sm:text-sm">
+              {state === "error" ? "Figma did not load. Retry or open it in Figma."
+                : "Load the preview to connect to Figma. Sharing permissions still apply."}
+            </p>
+            <button type="button" className="mx-auto rounded-md bg-cms-primary px-3 py-2 text-sm text-white" onClick={load}>
+              {state === "error" ? "Retry Figma preview" : "Load Figma preview"}
+            </button>
+          </div>
+        )}
+      </div>
+      <figcaption className={`${captionClass} flex flex-wrap items-center gap-x-4 gap-y-2`}>
+        {caption && <span className="mr-auto">{caption}</span>}
+        {state === "ready" && <span role="status">Preview frame loaded</span>}
+        {state === "ready" && typeof document !== "undefined" && document.fullscreenEnabled && (
+          <button type="button" className="underline" onClick={() => void frame.current?.requestFullscreen().catch(() => undefined)}>Fullscreen</button>
+        )}
+        <a href={url} target="_blank" rel="noopener noreferrer" className="underline">Open in Figma</a>
       </figcaption>
     </figure>
   );
@@ -265,8 +303,8 @@ export const BlockRenderer = memo(function BlockRenderer({
     }
     case "gallery": {
       const c = block.content;
-      return <figure>
-        <div className={`grid ${c.mobileColumns === "2" ? "grid-cols-2" : "grid-cols-1"} ${gridClass[c.columns]} ${{ tight: "gap-2", normal: "gap-4", wide: "gap-8" }[c.gap]}`}>
+      return <figure className="@container min-w-0">
+        <div aria-label="Gallery images" className={`grid ${c.mobileColumns === "2" ? "grid-cols-2" : "grid-cols-1"} ${{ 2: "md:@min-[320px]:grid-cols-2", 3: "md:@min-[320px]:grid-cols-3", 4: "md:@min-[320px]:grid-cols-4" }[c.columns]} ${{ tight: "gap-2", normal: "gap-4", wide: "gap-8" }[c.gap]}`}>
           {c.images.map((item) => <figure key={item.id}>
             <MediaVisual id={item.assetId} alt={item.alt} />
             {item.caption && <figcaption className={captionClass}>{item.caption}</figcaption>}
@@ -326,7 +364,7 @@ export const BlockRenderer = memo(function BlockRenderer({
       </div>)}
       {!block.content.items.length && <div className={placeholder}>Add measured results in Properties</div>}
     </dl>;
-    case "figma": return <Figma {...block.content} />;
+    case "figma": return <Figma key={block.content.url} {...block.content} frameRatio={block.layout?.embedRatio} />;
     case "links": return <div className={`flex flex-wrap gap-3 ${{ left: "justify-start", center: "justify-center", right: "justify-end" }[block.content.alignment]}`}>
       {block.content.items.map((item) => safeLink.safeParse(item.url).success
         ? <a key={item.id} href={item.url} target={item.newTab ? "_blank" : undefined}

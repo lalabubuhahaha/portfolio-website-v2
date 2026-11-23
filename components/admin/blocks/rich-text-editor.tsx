@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import { Color, TextStyle } from "@tiptap/extension-text-style";
 import { safeLink, textColors, type RichNode } from "@/lib/cms/blocks";
 import { Button } from "../ui/button";
 
-export default function RichTextEditor({ doc, onChange }: { doc: RichNode; onChange: (doc: RichNode) => void }) {
+export default function RichTextEditor({ doc, onChange, disabled }: { doc: RichNode; onChange: (doc: RichNode) => void; disabled?: boolean }) {
   const localDocuments = useRef(new WeakSet<RichNode>());
   const editor = useEditor({
     immediatelyRender: false,
@@ -35,6 +35,11 @@ export default function RichTextEditor({ doc, onChange }: { doc: RichNode; onCha
       editor.commands.setContent(doc, { emitUpdate: false });
   }, [editor, doc]);
 
+  const selectedColor = useEditorState({
+    editor,
+    selector: ({ editor }) => editor?.getAttributes("textStyle").color as string | undefined,
+  });
+  useEffect(() => { editor?.setEditable(!disabled, false); }, [editor, disabled]);
   if (!editor) return null;
   const actions = [
     ["Bold", () => editor.chain().focus().toggleBold().run()],
@@ -57,21 +62,33 @@ export default function RichTextEditor({ doc, onChange }: { doc: RichNode; onCha
     }],
   ] as const;
   return (
-    <div className="rounded-lg border border-cms-border">
-      <div aria-label="Rich text formatting" className="flex flex-wrap gap-1 border-b border-cms-border p-2">
-        {actions.map(([name, run]) => <Button key={name} type="button" variant="ghost" className="h-8 px-2 text-xs" onMouseDown={(event) => event.preventDefault()} onClick={run}>{name}</Button>)}
-        <select
-          aria-label="Text color"
-          onChange={(event) => {
-            const value = event.target.value;
-            if (value) editor.chain().focus().setColor(value).run();
-            else editor.chain().focus().unsetColor().run();
-          }}
-          className="rounded border border-cms-border bg-white text-sm"
-        >
-          <option value="">Default color</option>
-          {textColors.map((color, index) => <option key={color} value={color}>{["Ink", "Slate", "Blue", "Rose", "Green"][index]}</option>)}
-        </select>
+    <div className="rounded-md ring-1 ring-cms-border">
+      <div role="group" aria-label="Rich text formatting" className="flex flex-wrap gap-1 border-b border-cms-border bg-cms-background p-2">
+        {actions.map(([name, run]) => <Button key={name} type="button" variant="ghost" className="h-8 px-2 text-xs" disabled={disabled} onMouseDown={(event) => event.preventDefault()} onClick={run}>{name}</Button>)}
+        <div role="group" aria-label="Text color" className="flex flex-wrap items-center gap-1 border-l border-cms-border pl-2">
+          <span className="text-xs font-medium">Text color</span>
+          {["", ...textColors].map((color, index) => (
+            <Button
+              key={color}
+              type="button"
+              variant="ghost"
+              className="size-9 px-0"
+              disabled={disabled}
+              aria-label={["Default text color", "Ink", "Slate", "Blue", "Rose", "Green"][index]}
+              aria-pressed={(selectedColor ?? "") === color}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                const chain = editor.chain().focus();
+                if (color) chain.setColor(color).run();
+                else chain.unsetColor().run();
+              }}
+            >
+              {color
+                ? <span aria-hidden className="size-4 rounded-full" style={{ backgroundColor: color }} />
+                : <span aria-hidden>A</span>}
+            </Button>
+          ))}
+        </div>
       </div>
       <EditorContent editor={editor} />
     </div>

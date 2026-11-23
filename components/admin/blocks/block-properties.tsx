@@ -1,8 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useId, type ReactNode } from "react";
-import type { ContentBlock, RichNode } from "@/lib/cms/blocks";
+import type { ContentBlock } from "@/lib/cms/blocks";
 import type { MediaScope } from "@/lib/cms/media-formats";
 import { MediaPicker } from "../media/media-picker";
 import { SingleMediaUpload } from "../media/single-media-upload";
@@ -10,27 +9,22 @@ import { Button } from "../ui/button";
 import { Input, Select, Textarea } from "../ui/fields";
 import { blockName, columnCount } from "./registry";
 
-const RichTextEditor = dynamic(() => import("./rich-text-editor"), {
-  ssr: false,
-  loading: () => <p role="status">Loading text editor…</p>,
-});
-
 type Values = Record<string, unknown>;
 type Field = [key: string, label: string, options?: readonly string[] | "long" | "url"];
 const align = ["left", "center", "right"];
 const aspect = ["native", "square", "landscape", "portrait"];
 const imageFields: Field[] = [["alt", "Alt text"], ["caption", "Caption", "long"]];
 const fields: Record<ContentBlock["type"], Field[]> = {
-  heading: [["text", "Text"], ["level", "Heading level", ["h2", "h3", "h4"]], ["alignment", "Alignment", align], ["emphasis", "Emphasis", ["normal", "strong", "italic"]], ["anchor", "Anchor ID"]],
+  heading: [ ["level", "Heading level", ["h2", "h3", "h4"]], ["alignment", "Alignment", align], ["emphasis", "Emphasis", ["normal", "strong", "italic"]], ["anchor", "Anchor ID"]],
   "rich-text": [],
   image: [...imageFields, ["alignment", "Alignment", align], ["fit", "Image fit", ["contain", "cover"]], ["aspect", "Aspect ratio", aspect]],
-  gallery: [["caption", "Gallery caption", "long"], ["columns", "Desktop columns", ["2", "3", "4"]], ["mobileColumns", "Mobile columns", ["1", "2"]], ["gap", "Gallery gap", ["tight", "normal", "wide"]]],
+  gallery: [["caption", "Gallery caption", "long"], ["mobileColumns", "Mobile columns", ["1", "2"]], ["gap", "Gallery gap", ["tight", "normal", "wide"]]],
   columns: [["count", "Column count", ["2", "3"]], ["ratio", "Column ratios", ["equal", "wide-left", "wide-right"]], ["stack", "Stack on mobile"]],
   "image-text": [["heading", "Heading"], ["description", "Description", "long"], ...imageFields, ["side", "Image position", ["left", "right"]], ["ratio", "Column ratios", ["50:50", "40:60", "60:40"]], ["stack", "Stack on mobile"]],
   video: [["caption", "Caption", "long"], ["aspect", "Aspect ratio", aspect], ["controls", "Player controls"], ["loop", "Loop"], ["muted", "Muted"], ["autoplay", "Autoplay when muted"]],
   quote: [["quote", "Quotation", "long"], ["author", "Author"], ["source", "Role or source"], ["alignment", "Alignment", align], ["typography", "Typography", ["editorial", "compact"]]],
   metrics: [["columns", "Columns", ["1", "2", "3", "4"]]],
-  figma: [["url", "Figma prototype URL", "url"], ["aspect", "Aspect ratio", aspect.slice(1)], ["caption", "Caption", "long"]],
+  figma: [["url", "Figma prototype URL", "url"], ["caption", "Caption", "long"]],
   links: [["alignment", "Alignment", align]],
   divider: [["line", "Line", ["solid", "dashed", "subtle"]], ["width", "Width", ["short", "medium", "full"]], ["spacing", "Spacing", ["small", "medium", "large"]]],
   spacer: [["size", "Size", ["small", "medium", "large", "custom"]], ["height", "Custom height (px)"], ["mobileHeight", "Mobile height (px)"]],
@@ -63,14 +57,14 @@ function Control({ field, value, update }: { field: Field; value: unknown; updat
   </div>;
 }
 
-function MediaField({ label, value, scope = "image", update, onUploading }: {
+export function MediaField({ label, value, scope = "image", update, onUploading }: {
   label: string; value: unknown; scope?: MediaScope;
   update: (value: string | null) => void; onUploading: (busy: boolean) => void;
 }) {
   const id = typeof value === "string" ? value : "";
   return <fieldset className="space-y-2 rounded-md border border-cms-border p-2">
     <legend className="px-1 text-xs font-semibold">{label}</legend>
-    <SingleMediaUpload label={id ? "Upload replacement" : "Upload media"} scope={scope} onUploaded={update} onUploading={onUploading} />
+    <SingleMediaUpload label={id ? "Replace file" : "Upload media"} scope={scope} onUploaded={update} onUploading={onUploading} />
     <MediaPicker value={id} scope={scope} onSelect={update} />
     {id && <Button type="button" variant="ghost" onClick={() => update(null)}>Remove media</Button>}
   </fieldset>;
@@ -133,19 +127,43 @@ export function BlockProperties({ block, onChange, onUploading }: {
       : block.children;
     onChange({ ...block, content: { ...content, [key]: value }, children } as ContentBlock);
   }
-  const structured = block.type === "rich-text";
   const collection = block.type in collections ? collections[block.type as keyof typeof collections] : null;
   return <div className="space-y-3">
     <h3 className="text-sm font-semibold">{blockName(block.type)}</h3>
-    {structured && <RichTextEditor doc={block.content.doc} onChange={(doc: RichNode) => patch("doc", doc)} />}
-    {(block.type === "image" || block.type === "image-text" || block.type === "video") && <MediaField label={block.type === "video" ? "Video or GIF" : "Image"}
+    {block.type === "heading" || block.type === "rich-text" ? (
+      <p className="text-xs text-cms-secondary">Edit the text directly on the canvas.</p>
+    ) : null}
+    {block.type === "gallery" && (
+      <div className="space-y-1 bg-white pb-2 lg:sticky lg:top-0 lg:z-10">
+        <p className="text-xs font-semibold">Gallery columns</p>
+        <div role="group" aria-label="Gallery columns" className="flex flex-wrap gap-1">
+          {["2", "3", "4"].map((value) => <Button key={value} type="button" variant={block.content.columns === value ? "default" : "outline"}
+            aria-pressed={block.content.columns === value} onClick={() => patch("columns", value)} className="px-2">
+            {value} columns
+          </Button>)}
+        </div>
+        <p className="text-xs text-cms-secondary">Compact canvases use the mobile column setting.</p>
+      </div>
+    )}
+    {block.type === "figma" && <Control field={["aspect", "Figma frame ratio", ["16:9", "4:3", "1:1", "3:4"]]}
+      value={block.layout?.embedRatio === "4:3" ? "4:3" : ({ landscape: "16:9", square: "1:1", portrait: "3:4" })[block.content.aspect]}
+      update={(value) => onChange({ ...block, layout: { ...block.layout, embedRatio: value === "4:3" ? "4:3" : "default" },
+        content: { ...block.content, aspect: value === "1:1" ? "square" : value === "3:4" ? "portrait" : "landscape" } })} /> }
+    {(block.type === "image-text" || block.type === "video") && <MediaField label={block.type === "video" ? "Video or GIF" : "Image"}
       scope={block.type === "video" ? "motion" : "image"} value={content.assetId}
       update={(id) => patch("assetId", id)} onUploading={onUploading} />}
     {block.type === "video" && <MediaField label="Poster image" value={content.posterId} update={(id) => patch("posterId", id)} onUploading={onUploading} />}
     {block.type === "comparison" && (["beforeId", "afterId"] as const).map((key) => (
       <MediaField key={key} label={key === "beforeId" ? "Before image" : "After image"} value={content[key]} update={(id) => patch(key, id)} onUploading={onUploading} />
     ))}
-    {fields[block.type].map((field) => {
+    {block.type === "gallery" ? (
+      <details className="space-y-2 text-sm">
+        <summary className="cursor-pointer font-medium">Gallery options</summary>
+        <div className="mt-2 space-y-3">{fields.gallery.map((field) => (
+          <Control key={field[0]} field={field} value={content[field[0]]} update={(value) => patch(field[0], value)} />
+        ))}</div>
+      </details>
+    ) : fields[block.type].map((field) => {
       const [key] = field;
       const value = block.type === "columns"
         ? key === "count" ? String(columnCount(block)) : key === "stack" ? block.content.stack ?? true : content[key]
