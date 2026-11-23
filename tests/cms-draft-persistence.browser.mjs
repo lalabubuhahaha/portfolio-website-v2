@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createRequire } from "node:module";
 import { createClient } from "@supabase/supabase-js";
 
@@ -53,6 +55,16 @@ const seed = {
         { layout: { column: 1 } }),
       ],
     }),
+    ...Array.from({ length: 15 }, () => makeBlock("columns", { count: "2" }, {
+      children: [
+        makeBlock("columns", { count: "2" }, {
+          layout: { column: 0 },
+          children: Array.from({ length: 4 }, (_, index) =>
+            makeBlock("heading", { text: "Nested reliability " + index }, { layout: { column: index % 2 } })),
+        }),
+        makeBlock("heading", { text: "Outer nested reliability" }, { layout: { column: 1 } }),
+      ],
+    })),
   ],
 };
 const seeded = await db.rpc("cms_save_case_study", { project: null, expected: null, fields, document: seed });
@@ -74,6 +86,11 @@ async function readFresh() {
 async function login(context) {
   const page = await context.newPage();
   await page.goto(origin + "/admin/login");
+  const signInRequired = await Promise.race([
+    page.waitForURL(origin + "/admin").then(() => false),
+    page.locator("#email").waitFor().then(() => true),
+  ]);
+  if (!signInRequired) return page;
   await page.locator("#email").fill(credentials.email);
   await page.locator("#password").fill(credentials.password);
   await button(page, "Sign in").click();
@@ -119,11 +136,17 @@ try {
   const beforeSingle = await readFresh();
   await quoteButton(pageA).first().click();
   await properties(pageA).getByLabel("Quotation", { exact: true }).fill("Single edit before the batch");
+  let submissions = 0;
+  const countPost = (request) => { if (blocksPosts(request)) submissions++; };
+  pageA.on("request", countPost);
   const [singleRequest] = await Promise.all([
-    pageA.waitForRequest(blocksPosts), button(pageA, "Save Draft").click(),
+    pageA.waitForRequest(blocksPosts),
+    button(pageA, "Save Draft").evaluate((control) => { control.click(); control.click(); }),
   ]);
   await pageA.getByText("Draft saved.", { exact: true }).filter({ visible: true }).waitFor();
   const before = await readFresh();
+  pageA.off("request", countPost);
+  assert.equal(submissions, 1);
   assert.notEqual(before.version, beforeSingle.version);
   assert.deepEqual(before.revision.content_blocks, await payload(singleRequest));
   await pageA.reload();
@@ -145,11 +168,13 @@ try {
   await pageA.getByText("Project details, cover and SEO", { exact: true }).click();
   await pageA.locator("#summary").fill("Summary beside content");
   await pageA.locator("#seo_title").fill("SEO beside content");
+  const saveStarted = performance.now();
   const [request] = await Promise.all([
     pageA.waitForRequest(blocksPosts), button(pageA, "Save Draft").click(),
   ]);
   const submitted = await payload(request);
   await pageA.getByText("Draft saved.", { exact: true }).filter({ visible: true }).waitFor();
+  const confirmedSaveMs = Math.round(performance.now() - saveStarted);
   const committed = await readFresh();
   assert.deepEqual(committed.revision.content_blocks, submitted);
   assert.notEqual(committed.version, before.version);
@@ -182,70 +207,241 @@ try {
   assert.equal(await properties(pageB).getByLabel("Quotation", { exact: true }).inputValue(), "Keep stale local edits");
   assert.deepEqual(await readFresh(), committed);
 
-  // An HTTP 500, followed by a dropped connection, cannot turn a draft clean.
-  await quoteButton(pageA).first().click();
-  await properties(pageA).getByLabel("Quotation", { exact: true }).fill("Unsaved when connection is lost");
   const actionUrl = "**/admin/works/" + project + "*";
-  for (const interrupt of [
-    (route) => route.fulfill({ status: 500, body: "Fixture failure" }),
-    (route) => route.abort("connectionreset"),
-  ]) {
-    let interrupted = false;
-    const handler = async (route) => {
-      if (!blocksPosts(route.request())) return route.continue();
-      interrupted = true;
-      return interrupt(route);
-    };
+  async function reviewUncertain(page) {
+    await button(page, "Review latest draft").click();
+    await button(page, "Apply changes to latest draft").click();
+  }
+  const editFirst = async (page, text) => {
+    await quoteButton(page).first().click();
+    await properties(page).getByLabel("Quotation", { exact: true }).fill(text);
+  };
+  const assertUnsaved = async (page, text) => {
+    await page.getByRole("alert").filter({ hasText: /edits|data changed/i }).waitFor();
+    assert.equal(await page.getByText(/Unsaved changes/).count(), 1);
+    assert.equal(await page.getByText("Draft saved.", { exact: true }).count(), 0);
+    assert.equal(await properties(page).getByLabel("Quotation", { exact: true }).inputValue(), text);
+    assert.equal(new URL(page.url()).pathname, edit);
+  };
+
+  const retained = "Unsaved when connection is lost";
+  await editFirst(pageA, retained);
+  await a.setOffline(true);
+  await button(pageA, "Save Draft").click();
+  await assertUnsaved(pageA, retained);
+  await a.setOffline(false);
+  await reviewUncertain(pageA);
+  for (const failure of [401, 403, 409, 500, "reset"]) {
+    const handler = (route) => !blocksPosts(route.request()) ? route.continue()
+      : failure === "reset" ? route.abort("connectionreset")
+      : route.fulfill({ status: failure, body: "Isolated failure" });
     await pageA.route(actionUrl, handler);
     try {
       await button(pageA, "Save Draft").click();
-      await pageA.getByRole("alert").filter({ hasText: "could not be confirmed" }).waitFor();
-      assert(interrupted);
-      assert.equal(await pageA.getByText(/Unsaved changes/).count(), 1);
-      assert.equal(await pageA.getByText("Draft saved.", { exact: true }).count(), 0);
-      assert.equal(await properties(pageA).getByLabel("Quotation", { exact: true }).inputValue(),
-        "Unsaved when connection is lost");
-    } finally {
-      await pageA.unroute(actionUrl, handler);
-    }
+      await assertUnsaved(pageA, retained);
+      assert.deepEqual(await readFresh(), committed);
+    } finally { await pageA.unroute(actionUrl, handler); }
+    await reviewUncertain(pageA);
   }
-  assert.deepEqual(await readFresh(), committed);
 
   const [download] = await Promise.all([
     pageA.waitForEvent("download"), button(pageA, "Download draft backup").click(),
   ]);
   const backup = JSON.parse(await readFile(await download.path(), "utf8"));
   assert.equal(backup.projectId, project);
-  assert.equal(backup.content_blocks.blocks[0].content.quote, "Unsaved when connection is lost");
+  assert.equal(backup.content_blocks.blocks[0].content.quote, retained);
   assert.equal(backup.fields.seo_title, "SEO beside content");
-  assert.deepEqual(await readFresh(), committed);
-  // Simulate a metadata-only write acknowledging success while the submitted
-  // document differs. The real RPC can commit metadata, but the UI must refuse
-  // to claim the draft was saved after the mismatching read-back.
-  await pageA.route(actionUrl, async (route) => {
-    const req = route.request();
-    if (!blocksPosts(req)) return route.continue();
-    const headers = req.headers();
-    const form = await new Response(req.postDataBuffer(), {
-      headers: { "content-type": headers["content-type"] },
-    }).formData();
-    const mode = [...form.keys()].find((key) => /(?:^|_)content_mode$/.test(key));
-    assert.equal(form.get(mode), "replace");
-    form.set(mode, "preserve");
-    const rewritten = new Request(req.url(), { method: "POST", body: form });
-    const buffer = Buffer.from(await rewritten.arrayBuffer());
-    delete headers["content-length"];
-    await route.continue({
-      headers: { ...headers, "content-type": rewritten.headers.get("content-type") },
-      postData: buffer,
+
+  if (process.env.CMS_TEST_FAULT_GATEWAY === "1") {
+    if (!await pageA.locator("#summary").isVisible())
+      await pageA.getByText("Project details, cover and SEO", { exact: true }).click();
+    for (const [marker, timeout] of [["p0-test-rpc-outage", false], ["p0-test-rpc-timeout", true]]) {
+      await pageA.locator("#summary").fill(marker);
+      const start = performance.now();
+      await button(pageA, "Save Draft").click();
+      await assertUnsaved(pageA, retained);
+      if (timeout) assert(performance.now() - start >= 11_000);
+      assert.deepEqual(await readFresh(), committed);
+      if (await button(pageA, "Review latest draft").count()) await reviewUncertain(pageA);
+    }
+    await pageA.locator("#summary").fill(committed.revision.summary);
+  }
+
+  // The upstream request commits. Drop the response at the browser boundary.
+  const loseResult = async (route) => {
+    if (!blocksPosts(route.request())) return route.continue();
+    const response = await route.fetch({ maxRetries: 0 });
+    assert.equal(response.status(), 200);
+    await route.abort("connectionreset");
+  };
+  await pageA.route(actionUrl, loseResult);
+  await button(pageA, "Save Draft").click();
+  await assertUnsaved(pageA, retained);
+  await pageA.unroute(actionUrl, loseResult);
+  let committedWithoutResponse = await readFresh();
+  assert.equal(committedWithoutResponse.revision.content_blocks.blocks[0].content.quote, retained);
+  await newTab.reload();
+  await canvas(newTab).getByText(retained, { exact: true }).waitFor();
+  await reviewUncertain(pageA);
+
+  if (process.env.CMS_TEST_FAULT_GATEWAY === "1") {
+    if (!await pageA.locator("#summary").isVisible())
+      await pageA.getByText("Project details, cover and SEO", { exact: true }).click();
+    await pageA.locator("#summary").fill("p0-test-readback-error");
+    await button(pageA, "Save Draft").click();
+    await pageA.getByRole("alert").filter({ hasText: "latest stored draft" }).waitFor();
+    assert.equal(await pageA.getByText("Draft saved.", { exact: true }).count(), 0);
+    committedWithoutResponse = await readFresh();
+    assert.equal(committedWithoutResponse.revision.summary, "p0-test-readback-error");
+    assert.equal(committedWithoutResponse.revision.content_blocks.blocks[0].content.quote, retained);
+    await reviewUncertain(pageA);
+  }
+
+  // Missing credentials on a still-open editor simulate a session ending.
+  await editFirst(pageA, "Session ended with the editor open");
+  await a.clearCookies();
+  await button(pageA, "Save Draft").click();
+  await assertUnsaved(pageA, "Session ended with the editor open");
+  await pageA.getByRole("alert").filter({ hasText: "Admin sign-in is required" }).waitFor();
+  assert.deepEqual(await readFresh(), committedWithoutResponse);
+  await login(a);
+
+  const recovered = "Recover this from the local browser";
+  const observedWrites = [];
+  await pageA.exposeFunction("recordSnapshotWrite", (duration) => observedWrites.push(duration));
+  await pageA.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      const start = performance.now();
+      original.call(this, key, value);
+      if (key.startsWith("lala-cms-recovery:v1:draft:")) window.recordSnapshotWrite(performance.now() - start);
+    };
+  });
+  await button(pageA, "Enable browser recovery").click();
+  await quoteButton(pageA).first().click();
+  const localField = properties(pageA).getByLabel("Quotation", { exact: true });
+  await localField.fill("");
+  await localField.pressSequentially(recovered, { delay: 5 });
+  const storagePrefix = "lala-cms-recovery:v1:draft:";
+  await pageA.waitForFunction(prefix => Object.keys(localStorage).some(key => key.startsWith(prefix)), storagePrefix);
+  assert.deepEqual(await readFresh(), committedWithoutResponse);
+  const inputBurstWrites = observedWrites.length;
+  assert.equal(inputBurstWrites, 1);
+  pageA.once("dialog", (dialog) => dialog.accept());
+  await pageA.reload();
+  await button(pageA, "Review snapshot").waitFor();
+  await pageA.close();
+  const reopened = await a.newPage();
+  await visit(reopened);
+  assert.equal(await button(newTab, "Review snapshot").count(), 0);
+  await button(reopened, "Review snapshot").click();
+  const compare = reopened.getByRole("region", { name: "Backup comparison" });
+  await compare.waitFor();
+  await compare.getByText("Backup blocks", { exact: true }).click();
+  await compare.getByText(new RegExp(recovered)).waitFor();
+  if (process.env.CMS_TEST_ARTIFACT_DIR)
+    await compare.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "recovery-review.png") });
+  assert.deepEqual(await readFresh(), committedWithoutResponse);
+  await button(compare, "Apply backup to editor").click();
+  await button(reopened, "Save Draft").click();
+  await reopened.getByText("Draft saved.", { exact: true }).waitFor();
+  const recoveredRow = await readFresh();
+  assert.equal(recoveredRow.revision.content_blocks.blocks[0].content.quote, recovered);
+  await reopened.getByRole("link", { name: "Back to Works", exact: true }).click();
+  await reopened.waitForURL(origin + "/admin/works");
+  await visit(reopened);
+  await canvas(reopened).getByText(recovered, { exact: true }).waitFor();
+
+  async function importBackup(value) {
+    const [chooser] = await Promise.all([
+      reopened.waitForEvent("filechooser"), button(reopened, "Import draft backup").click(),
+    ]);
+    await chooser.setFiles({ name: "draft.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(value)) });
+  }
+  await importBackup({ ...backup, projectId: crypto.randomUUID() });
+  await reopened.getByRole("alert").filter({ hasText: "Invalid backup or different project" }).waitFor();
+  const duplicate = structuredClone(backup);
+  duplicate.content_blocks.blocks[1].id = duplicate.content_blocks.blocks[0].id;
+  await importBackup(duplicate);
+  await reopened.getByRole("alert").filter({ hasText: "Invalid backup" }).waitFor();
+  await importBackup({ ...backup, fields: { ...backup.fields, cover_asset_id: crypto.randomUUID() } });
+  await reopened.getByRole("alert").filter({ hasText: "incompatible media" }).waitFor();
+  const legacy = { ...backup, fields: { ...backup.fields, summary: "Imported legacy backup", cover_asset_id: images[1]?.id ?? "" } };
+  delete legacy.version;
+  delete legacy.baseVersion;
+  await importBackup(legacy);
+  await compare.waitFor();
+  assert(await button(compare, "Apply backup to editor").isDisabled());
+  await compare.getByRole("checkbox").check();
+  await button(compare, "Apply backup to editor").click();
+  assert.deepEqual(await readFresh(), recoveredRow);
+  await button(reopened, "Save Draft").click();
+  await reopened.getByText("Draft saved.", { exact: true }).waitFor();
+  const imported = await readFresh();
+  assert.equal(imported.revision.summary, "Imported legacy backup");
+  assert.equal(imported.revision.cover_asset_id, images[1]?.id ?? null);
+  await editFirst(reopened, "Keep this edit if another writer commits");
+
+  // A subsequent writer invalidates the token even after an explicit review.
+  const intervened = await db.rpc("cms_save_case_study", {
+    project, expected: imported.version,
+    fields: { ...fields, summary: "Intervening writer" }, document: imported.revision.content_blocks,
+  });
+  assert.ifError(intervened.error);
+  await button(reopened, "Save Draft").click();
+  await reopened.getByRole("alert").filter({ hasText: "This data changed" }).waitFor();
+  assert.equal((await readFresh()).revision.summary, "Intervening writer");
+
+  reopened.on("dialog", (dialog) => dialog.accept());
+  await button(reopened, "Sign out").click();
+  await reopened.waitForURL(origin + "/admin/login");
+  assert.equal(await reopened.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith("lala-cms-recovery:")).length), 0);
+  await visit(newTab);
+  await editFirst(newTab, "Verified save from the second browser");
+  await button(newTab, "Save Draft").click();
+  await newTab.getByText("Draft saved.", { exact: true }).waitFor();
+  assert.equal((await readFresh()).revision.content_blocks.blocks[0].content.quote,
+    "Verified save from the second browser");
+
+  const unsupported = await b.newPage();
+  await unsupported.addInitScript(() => {
+    Object.defineProperty(window, "localStorage", {
+      get() { throw new DOMException("Fixture storage denial", "SecurityError"); },
     });
   });
-  await button(pageA, "Save Draft").click();
-  await pageA.getByRole("alert").filter({ hasText: "latest stored draft" }).waitFor();
-  assert.equal(await pageA.getByText(/Unsaved changes/).count(), 1);
-  assert.equal(await pageA.getByText("Draft saved.", { exact: true }).count(), 0);
-  assert.deepEqual((await readFresh()).revision.content_blocks, committed.revision.content_blocks);
-  console.log("Create and single save/reload, two independent browser sessions, 10 edits and nested content, exact JSON read-back, metadata/cover/SEO, stale save, HTTP 500, network loss, backup and mismatched read-back passed.");
+  await visit(unsupported);
+  await unsupported.getByRole("alert").filter({ hasText: "Use Download draft backup" }).waitFor();
+  assert(await button(unsupported, "Download draft backup").isVisible());
+  await unsupported.close();
+
+  const profile = await mkdtemp(join(tmpdir(), "cms-recovery-browser-"));
+  const persistentOptions = {
+    executablePath: process.env.CMS_TEST_CHROMIUM || undefined,
+    args: ["--no-sandbox"], viewport: { width: 1440, height: 900 },
+  };
+  let persistent;
+  try {
+    persistent = await chromium.launchPersistentContext(profile, persistentOptions);
+    const first = await login(persistent);
+    await visit(first);
+    await button(first, "Enable browser recovery").click();
+    await editFirst(first, "Retained after browser process closes");
+    await first.waitForFunction(prefix => Object.keys(localStorage).some(key => key.startsWith(prefix)), storagePrefix);
+    await persistent.close();
+    persistent = await chromium.launchPersistentContext(profile, persistentOptions);
+    const second = await login(persistent);
+    await visit(second);
+    await button(second, "Review snapshot").click();
+    await button(second, "Apply backup to editor").click();
+    await canvas(second).getByText("Retained after browser process closes", { exact: true }).waitFor();
+    assert.equal((await readFresh()).revision.summary, "Intervening writer");
+  } finally {
+    await persistent?.close();
+    await rm(profile, { recursive: true, force: true });
+  }
+  console.log(JSON.stringify({ confirmedSaveMs, inputBurstWrites, totalObservedSnapshotWrites: observedWrites.length,
+    localStorageWriteMs: observedWrites[0] }));
+  console.log("Persistence, offline/reset/HTTP failures, committed response loss, session removal, recovery, legacy import, conflict and logout passed.");
 } finally {
   await browser.close();
 }

@@ -152,6 +152,7 @@ export async function getProjectEditor(id: string) {
       ascending: false,
     })
     .limit(1, { referencedTable: "revisions" })
+    .abortSignal(AbortSignal.timeout(12_000))
     .maybeSingle();
   if (error) throw new Error("Project data is temporarily unavailable.");
   if (!row) return null;

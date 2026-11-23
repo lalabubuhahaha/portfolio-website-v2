@@ -6,6 +6,7 @@ import {
   displayDateTime,
   getProjectEditor,
 } from "@/lib/content/cms";
+import { requireAdmin } from "@/lib/cms/session";
 import { ProjectForm } from "../project-form";
 
 type Props = {
@@ -29,6 +30,7 @@ async function EditProject({ params }: Props) {
         : "Published"
       : "Draft";
 
+  const { user } = await requireAdmin();
   return (
     <div className="min-w-0">
       <PageHeader
@@ -50,6 +52,7 @@ async function EditProject({ params }: Props) {
       <ProjectForm
         key={project.id}
         id={project.id}
+        recoveryUser={user.id}
         updatedAt={project.updatedAt}
         initial={project.fields}
         initialContent={project.content}

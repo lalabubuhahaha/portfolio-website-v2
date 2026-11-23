@@ -25,6 +25,8 @@ import { AssetPreview } from "@/components/admin/media/asset-visual";
 import { contentBlocksSchema, type ContentBlocks } from "@/lib/cms/blocks";
 import { reviewLatestDraft, saveDraft, type DraftResult } from "./actions";
 
+import { DraftRecoveryPanel } from "./draft-recovery-panel";
+
 const ContentEditor = dynamic(() => import("@/components/admin/blocks/content-editor"), {
   loading: () => <p role="status" className="p-4 text-sm">Loading content editor…</p>,
 });
@@ -81,6 +83,7 @@ export function ProjectForm({
   id,
   updatedAt,
   archived,
+  recoveryUser,
 }: {
   initial: DraftFields;
   initialContent?: ContentBlocks | null;
@@ -88,6 +91,7 @@ export function ProjectForm({
   id?: string;
   updatedAt?: string;
   archived?: boolean;
+  recoveryUser?: string;
 }) {
   const router = useRouter();
   const [fields, setFields] = useState(initial);
@@ -143,9 +147,15 @@ export function ProjectForm({
         event.stopPropagation();
       }
     }
+    function beforeSignOut(event: Event) {
+      if (!window.confirm("Leave the open draft? Download a backup first if you need to keep your edits."))
+        event.preventDefault();
+    }
+    window.addEventListener("cms:before-sign-out", beforeSignOut);
     window.addEventListener("beforeunload", unload);
     document.addEventListener("click", follow, true);
     return () => {
+      window.removeEventListener("cms:before-sign-out", beforeSignOut);
       window.removeEventListener("beforeunload", unload);
       document.removeEventListener("click", follow, true);
     };
@@ -169,7 +179,7 @@ export function ProjectForm({
 
   function downloadBackup() {
     const url = URL.createObjectURL(new Blob([JSON.stringify({
-      projectId: id, exportedAt: new Date().toISOString(), fields,
+      version: 1, projectId: id, baseVersion: stamp, exportedAt: new Date().toISOString(), fields,
       content_blocks: currentContent.current,
     }, null, 2)], { type: "application/json" }));
     const link = document.createElement("a");
@@ -194,8 +204,7 @@ export function ProjectForm({
     }
     const form = new FormData();
     const snapshot = currentContent.current;
-    const changed = JSON.stringify(snapshot) !== JSON.stringify(savedContent);
-    form.set("content_mode", snapshot === null ? "metadata-only" : changed ? "replace" : "preserve");
+    form.set("content_mode", snapshot === null ? "metadata-only" : "document");
     if (snapshot !== null) {
       const check = contentBlocksSchema.safeParse(snapshot);
       if (!check.success) {
@@ -222,7 +231,8 @@ export function ProjectForm({
       } catch {
         setResult({
           error:
-            "The save response could not be confirmed. Your edits have been kept.",
+            "The save response could not be confirmed. Your edits have been kept. Review the latest draft before retrying.",
+          conflict: id !== undefined,
         });
       } finally {
         inFlight.current = false;
@@ -393,6 +403,18 @@ export function ProjectForm({
               {saveButton}
             </>
           )}
+        </div>
+      )}
+      {id && recoveryUser && stamp && content && !archived && (
+        <div className={showPreview ? "hidden" : undefined}>
+          <DraftRecoveryPanel key={recoveryUser + ":" + id} project={id} user={recoveryUser}
+            version={stamp} dirty={dirty} busy={pending || uploadingMedia || !!result.conflict}
+            fields={fields} content={content}
+            onApply={(backup) => {
+              setFields(backup.fields);
+              changeContent(backup.content_blocks);
+              setResult({});
+            }} />
         </div>
       )}
       {!showPreview && result.error && (

@@ -4,12 +4,14 @@ import { isDeepStrictEqual } from "node:util";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { contentBlocksSchema, MAX_BLOCK_BYTES } from "@/lib/cms/blocks";
-import { requireAdmin } from "@/lib/cms/session";
+import { getAdminSession, requireAdmin } from "@/lib/cms/session";
 import {
   getCoverPreviews,
   getProjectEditor,
   type CoverPreviews,
 } from "@/lib/content/cms";
+import { readBackup } from "@/lib/cms/draft-recovery";
+import { validateRecoveryAssets } from "@/lib/content/media";
 import { WORKS_PAGE_SIZE } from "@/lib/cms/works-filters";
 import {
   emptyDraft,
@@ -43,7 +45,13 @@ async function save(
   updatedAt: string | null,
   form: FormData,
 ): Promise<DraftResult> {
-  const { supabase } = await requireAdmin();
+  const session = await getAdminSession();
+  if (session.state !== "authorized") return {
+    error: session.state === "unavailable"
+      ? "The authentication service is unavailable. Your edits are still here. Download a backup before leaving."
+      : "Admin sign-in is required to save. Your edits are still here. Download a backup or sign in in a separate tab.",
+  };
+  const { supabase } = session;
   if (
     id !== null &&
     (!projectId.safeParse(id).success || !version.safeParse(updatedAt).success)
@@ -64,7 +72,7 @@ async function save(
   const mode = form.get("content_mode");
   const raw = form.get("content_blocks");
   if (
-    (mode !== "preserve" && mode !== "replace" && mode !== "metadata-only") ||
+    (mode !== "document" && mode !== "metadata-only") ||
     (mode === "metadata-only" ? raw !== null : raw === null)
   ) {
     return { error: "The draft request is incomplete. Your edits have been kept." };
@@ -83,10 +91,16 @@ async function save(
     }
     blocks = check.data;
   }
+  if (mode === "metadata-only" && id !== null) {
+    const existing = await getProjectEditor(id).catch(() => null);
+    if (!existing || existing.content !== null || existing.updatedAt !== updatedAt)
+      return { error: "Verify the latest draft before saving these fields. Your edits have been kept.", conflict: true };
+  }
   const args = { project: id, expected: updatedAt, fields: result.data };
-  const { data, error } = blocks && mode === "replace"
-    ? await supabase.rpc("cms_save_case_study", { ...args, document: blocks })
-    : await supabase.rpc("cms_save_draft", args);
+  const deadline = AbortSignal.timeout(12_000);
+  const { data, error } = blocks
+    ? await supabase.rpc("cms_save_case_study", { ...args, document: blocks }).abortSignal(deadline)
+    : await supabase.rpc("cms_save_draft", args).abortSignal(deadline);
   if (error) {
     console.warn("CMS draft RPC rejected", { projectId: id, code: error.code, mode });
     if (
@@ -98,6 +112,8 @@ async function save(
         fields: { slug: ["Choose a different slug."] },
       };
     }
+    if (!error.code || error.code === "57014" || error.code === "PGRST003")
+      return { error: "The save could not be confirmed. Your edits are still here. Review the latest stored draft before retrying.", conflict: id !== null };
     if (error.code === "PT409") {
       return {
         error: "This data changed since you opened the page.",
@@ -148,10 +164,29 @@ export async function saveDraft(
 }
 
 export async function reviewLatestDraft(id: string) {
-  if (!projectId.safeParse(id).success) return null;
+  if (!projectId.safeParse(id).success || (await getAdminSession()).state !== "authorized") return null;
   const project = await getProjectEditor(id);
   if (!project || project.archived) return null;
   return { fields: project.fields, updatedAt: project.updatedAt, content: project.content };
+}
+
+export async function reviewDraftBackup(id: string, expected: string, raw: string) {
+  if (!projectId.safeParse(id).success || !version.safeParse(expected).success)
+    return { error: "Open the matching project to review a backup." };
+  const session = await getAdminSession();
+  if (session.state !== "authorized") return { error: "An active administrator session is required to review the backup." };
+  const backup = readBackup(raw, id);
+  if (!backup) return { error: "Invalid backup or different project. Check the project ID, metadata and block structure." };
+  try {
+    const project = await getProjectEditor(id);
+    if (!project || project.archived || !project.content || project.updatedAt !== expected)
+      return { error: "The stored draft changed or is unavailable. Download your current work and review the latest draft before importing." };
+    if (!await validateRecoveryAssets(session.supabase, backup.fields, backup.content_blocks))
+      return { error: "The backup references missing, unavailable or incompatible media. No changes were applied." };
+    return { backup, stored: { fields: project.fields, content: project.content }, reviewedVersion: project.updatedAt };
+  } catch {
+    return { error: "Could not validate the backup. Keep the file and try again when connected." };
+  }
 }
 
 export async function changeProject(

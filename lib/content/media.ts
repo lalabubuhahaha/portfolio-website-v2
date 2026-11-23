@@ -1,3 +1,5 @@
+import type { ContentBlocks } from "@/lib/cms/blocks";
+import type { DraftFields } from "@/lib/cms/project-fields";
 import { MEDIA_BUCKET, mediaFormat } from "@/lib/cms/media-formats";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -142,4 +144,45 @@ export async function loadMediaAsset(supabase: SupabaseClient, id: string) {
     .createSignedUrl(data.storage_path, MEDIA_URL_TTL);
   if (!signed?.signedUrl) throw new Error("Preview could not be loaded.");
   return { asset: present(data, null), url: signed.signedUrl };
+}
+
+export async function validateRecoveryAssets(
+  supabase: SupabaseClient,
+  fields: DraftFields,
+  document: ContentBlocks,
+) {
+  const refs = new Map<string, Set<"image" | "motion">>();
+  function add(id: string | null, kind: "image" | "motion" = "image") {
+    if (!id) return;
+    const key = id.toLowerCase();
+    const kinds = refs.get(key) ?? new Set();
+    kinds.add(kind);
+    refs.set(key, kinds);
+  }
+  add(fields.cover_asset_id);
+  const stack = [...document.blocks];
+  while (stack.length) {
+    const block = stack.pop()!;
+    if (block.children) stack.push(...block.children);
+    switch (block.type) {
+      case "image":
+      case "image-text": add(block.content.assetId); break;
+      case "gallery": for (const item of block.content.images) add(item.assetId); break;
+      case "video": add(block.content.assetId, "motion"); add(block.content.posterId); break;
+      case "comparison": add(block.content.beforeId); add(block.content.afterId); break;
+    }
+  }
+  const ids = [...refs.keys()];
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50);
+    const { data, error } = await supabase.from("media_assets").select("id,mime_type")
+      .eq("storage_bucket", MEDIA_BUCKET).eq("state", "ready").in("id", batch)
+      .abortSignal(AbortSignal.timeout(12_000));
+    if (error) throw new Error("Could not verify recovery media.");
+    if (data.length !== batch.length || data.some((asset) =>
+      [...(refs.get(asset.id) ?? [])].some((kind) => kind === "image"
+        ? mediaFormat(asset.mime_type)?.kind !== "image"
+        : !["video/mp4", "video/webm", "image/gif"].includes(asset.mime_type)))) return false;
+  }
+  return true;
 }

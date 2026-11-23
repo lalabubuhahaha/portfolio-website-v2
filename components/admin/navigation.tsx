@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, FolderOpen, House, Images, LayoutDashboard, LogOut, Menu, Settings, UserRound } from "lucide-react";
+import { clearBrowserRecovery } from "@/lib/cms/draft-recovery-storage";
 import { signOut } from "@/app/admin/actions";
 import { Button } from "./ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "./ui/sheet";
@@ -39,7 +40,16 @@ function Sidebar({ email, mobile }: { email: string; mobile?: boolean }) {
           <div className="grid size-8 shrink-0 place-items-center rounded-full bg-cms-selected text-xs font-semibold text-cms-primary">{email.slice(0, 1).toUpperCase()}</div>
           <div className="min-w-0"><div className="text-xs font-semibold">Administrator</div><div title={email} className="truncate text-xs text-cms-secondary">{email}</div></div>
         </div>
-        <form action={signOut}>
+        <form action={signOut} onSubmit={(event) => {
+          if (!window.dispatchEvent(new Event("cms:before-sign-out", { cancelable: true }))) {
+            event.preventDefault();
+            return;
+          }
+          try { if (!clearBrowserRecovery(window.localStorage)) event.preventDefault(); }
+          catch {
+            if (!window.confirm("Browser recovery storage could not be cleared. Sign out anyway?")) event.preventDefault();
+          }
+        }}>
           <Button variant="ghost" type="submit" className="w-full justify-start text-cms-secondary"><LogOut />Sign out</Button>
         </form>
         <Button asChild variant="ghost" className="w-full justify-start text-cms-secondary"><Link href="/"><ArrowUpRight />View website</Link></Button>

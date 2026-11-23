@@ -10,7 +10,15 @@ export async function createSupabaseServerClient() {
 
   return createServerClient(config.url, config.key, {
     cookieOptions: adminCookieOptions,
-    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
+    global: {
+      fetch: (input, init) => {
+        const timeout = AbortSignal.timeout(12_000);
+        return fetch(input, {
+          ...init, cache: "no-store",
+          signal: init?.signal ? AbortSignal.any([timeout, init.signal]) : timeout,
+        });
+      },
+    },
     cookies: {
       getAll: () => store.getAll(),
       setAll: (updates) => {
