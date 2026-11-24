@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import {
-  createContext, Fragment, memo, useContext, useEffect, useMemo, useRef, useState,
+  createContext, memo, useContext, useEffect, useMemo, useRef, useState,
   type CSSProperties, type ReactNode,
 } from "react";
 import { figmaLink, safeLink, type ContentBlock, type RichNode } from "@/lib/cms/blocks";
 import type { MediaAsset } from "@/lib/content/media";
+import { BlockVisualFrame } from "./block-visual-settings";
 import { columnCount } from "./registry";
 
 export type BlockAsset = { url: string; asset: Pick<MediaAsset, "mime" | "alt" | "displayName" | "width" | "height"> };
@@ -329,7 +330,7 @@ export const BlockRenderer = memo(function BlockRenderer({
           const children = (block.children ?? []).filter((child) => (child.layout?.column ?? 0) === lane);
           return <div key={lane} className="min-w-0 space-y-7">{renderLane
             ? renderLane(children, lane)
-            : children.map((child) => <BlockRenderer key={child.id} block={child} />)}
+            : <PreviewBlocks blocks={children} />}
           </div>;
         })}
       </div>;
@@ -413,5 +414,5 @@ export const BlockRenderer = memo(function BlockRenderer({
 });
 
 export function PreviewBlocks({ blocks }: { blocks: ContentBlock[] }) {
-  return blocks.map((block) => <Fragment key={block.id}><BlockRenderer block={block} /></Fragment>);
+  return blocks.map((block) => <BlockVisualFrame key={block.id} block={block}><BlockRenderer block={block} /></BlockVisualFrame>);
 }

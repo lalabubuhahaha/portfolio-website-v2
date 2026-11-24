@@ -1,7 +1,10 @@
 "use client";
 
 import { useId, useState, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
+import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { MAX_BLOCK_DEPTH, MAX_BLOCKS, type BlockType, type ContentBlock, type ContentBlocks } from "@/lib/cms/blocks";
 import { Button } from "../ui/button";
 import { Input, Select } from "../ui/fields";
@@ -10,6 +13,7 @@ import { MediaDialog } from "../media/dialog";
 import { BlockProperties, MediaField } from "./block-properties";
 import { blockName, columnCount, createBlock, duplicateBlock, registry } from "./registry";
 
+import { BlockVisualFrame, BlockVisualSettings } from "./block-visual-settings";
 import RichTextEditor from "./rich-text-editor";
 
 type InsertTarget = { kind: "append" }
@@ -39,18 +43,41 @@ function total(blocks: ContentBlock[]): number {
 }
 function editSiblings(blocks: ContentBlock[], siblings: ContentBlock[], transform: (items: ContentBlock[]) => ContentBlock[]): ContentBlock[] {
   if (blocks === siblings) return transform(blocks);
-  return blocks.map((block) => {
+  let updated = false;
+  const next = blocks.map((block) => {
     if (!block.children) return block;
     const children = editSiblings(block.children, siblings, transform);
-    return children === block.children ? block : { ...block, children };
+    if (children === block.children) return block;
+    updated = true;
+    return { ...block, children };
   });
+  return updated ? next : blocks;
 }
 function label(block: ContentBlock) {
   return block.type === "heading" && block.content.text ? block.content.text : blockName(block.type);
 }
 
+function OutlineBlock({ block, disabled, children, nested }: {
+  block: ContentBlock; disabled: boolean; children: ReactNode; nested: ReactNode;
+}) {
+  const { setNodeRef, setActivatorNodeRef, transform, transition, attributes, listeners, isDragging } =
+    useSortable({ id: block.id, disabled });
+  return <li>
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`relative flex items-center gap-1 motion-reduce:transition-none! ${isDragging ? "z-10 bg-white" : ""}`}>
+      {!disabled && <Button ref={setActivatorNodeRef} type="button" variant="ghost"
+        className="size-8 shrink-0 touch-none cursor-grab px-0"
+        {...attributes} {...listeners} aria-label={`Drag ${label(block)}`}>
+        <GripVertical aria-hidden />
+      </Button>}
+      {children}
+    </div>
+    {nested}
+  </li>;
+}
+
 export default function ContentEditor({
-  doc, onChange, preview, onUploading, busy, readOnly, title,
+  doc, onChange, preview, onUploading, busy, readOnly, title, contentReset,
 }: {
   doc: ContentBlocks | null;
   onChange: (doc: ContentBlocks) => void;
@@ -59,6 +86,7 @@ export default function ContentEditor({
   preview: boolean;
   readOnly: boolean;
   title: string;
+  contentReset: number;
 }) {
   const [selection, setSelection] = useState("");
   const [query, setQuery] = useState("");
@@ -68,6 +96,10 @@ export default function ContentEditor({
   const [feedback, setFeedback] = useState("");
   const [openerId, setOpenerId] = useState("");
   const prefix = useId();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   if (!doc) return (
     <p role="alert" className="rounded-lg border border-cms-border bg-white p-4 text-sm">
       This draft contains older or unsupported blocks. Their original data is preserved.
@@ -197,10 +229,30 @@ export default function ContentEditor({
     </>;
   }
 
+  function reorder({ active, over }: DragEndEvent) {
+    if (!mutable || !over || active.id === over.id) return;
+    const from = locate(blocks, String(active.id));
+    const to = locate(blocks, String(over.id));
+    if (!from || !to || from.siblings !== to.siblings ||
+      (from.block.layout?.column ?? 0) !== (to.block.layout?.column ?? 0)) {
+      setFeedback("Drop within the same level and column. Use Move to column to move between columns.");
+      return;
+    }
+    const lane = from.block.layout?.column ?? 0;
+    update(from.siblings, (items) => {
+      const laneItems = items.filter((item) => (item.layout?.column ?? 0) === lane);
+      const reordered = arrayMove(laneItems, laneItems.indexOf(from.block), laneItems.indexOf(to.block));
+      let index = 0;
+      return items.map((item) => (item.layout?.column ?? 0) === lane ? reordered[index++] : item);
+    });
+    setFeedback(label(from.block) + " reordered.");
+  }
+
   function outline(items: ContentBlock[], depth = 1): ReactNode {
-    return <ol className={depth > 1 ? "ml-2 border-l border-cms-border pl-2" : "space-y-1"}>
-      {items.map((block, index) => <li key={block.id}>
-        <div className="flex items-center gap-1">
+    return <SortableContext items={items.map((block) => block.id)} strategy={verticalListSortingStrategy}>
+      <ol className={depth > 1 ? "ml-2 border-l border-cms-border pl-2" : "space-y-1"}>
+        {items.map((block, index) => <OutlineBlock key={block.id} block={block} disabled={!mutable}
+          nested={!!block.children?.length && outline(block.children, depth + 1)}>
           <Button type="button" variant={block.id === selection ? "outline" : "ghost"}
             aria-pressed={block.id === selection}
             onClick={() => select(block.id, true)} className="h-auto min-h-8 min-w-0 flex-1 justify-start whitespace-normal px-2 text-left text-xs">
@@ -208,10 +260,9 @@ export default function ContentEditor({
             {label(block)}
           </Button>
           {mutable && block.id === selection && moveControls({ block, siblings: items, index, depth })}
-        </div>
-        {!!block.children?.length && outline(block.children, depth + 1)}
-      </li>)}
-    </ol>;
+        </OutlineBlock>)}
+      </ol>
+    </SortableContext>;
   }
 
   function canvas(items: ContentBlock[], depth = 1): ReactNode {
@@ -231,6 +282,7 @@ export default function ContentEditor({
                 className="rounded px-2 py-1 text-xs text-cms-primary hover:bg-cms-background">+ Insert {kind}</button>
             ))}
           </div>
+          <BlockVisualFrame block={block}>
           {active && block.type === "heading" && !readOnly ? (
             <input data-block-edit aria-label="Heading text" maxLength={200} disabled={busy}
               value={block.content.text} onChange={(event) => replace({ ...block, content: { ...block.content, text: event.currentTarget.value } })}
@@ -241,7 +293,7 @@ export default function ContentEditor({
               style={{ textAlign: block.content.alignment ?? "left" }}
             />
           ) : active && block.type === "rich-text" && !readOnly ? (
-            <RichTextEditor doc={block.content.doc} disabled={busy}
+            <RichTextEditor key={contentReset} doc={block.content.doc} disabled={busy}
               onChange={(doc) => replace({ ...block, content: { ...block.content, doc } })} />
           ) : block.type === "rich-text" && !readOnly ? (
             <div className="cursor-text rounded-md p-1 hover:bg-cms-background"
@@ -263,6 +315,7 @@ export default function ContentEditor({
                 </div>
               ) : undefined} />
           )}
+          </BlockVisualFrame>
           {active && block.type === "image" && !readOnly && (
             <fieldset disabled={busy} className="mt-3">
               <MediaField label={block.content.assetId ? "Replace image" : "Add image"} value={block.content.assetId}
@@ -309,6 +362,7 @@ export default function ContentEditor({
           </Select>
         </label>
       )}
+      <BlockVisualSettings block={selectedBlock} onChange={replace} />
       <BlockProperties key={selectedBlock.id} block={selectedBlock} onChange={replace} onUploading={onUploading} />
     </> : <p className="text-sm text-cms-secondary">Select a block to edit its properties.</p>}
   </fieldset>;
@@ -339,7 +393,8 @@ export default function ContentEditor({
             <details className="border-t border-cms-border pt-3">
               <summary className="cursor-pointer font-semibold">Content Outline</summary>
               <div className="mt-2 max-h-64 overflow-y-auto">
-                {blocks.length ? outline(blocks) : <p className="text-xs text-cms-secondary">No blocks yet.</p>}
+                {blocks.length ? <DndContext id={prefix + "-outline"} sensors={sensors}
+                  collisionDetection={closestCenter} onDragEnd={reorder}>{outline(blocks)}</DndContext> : <p className="text-xs text-cms-secondary">No blocks yet.</p>}
               </div>
             </details>
           </aside>

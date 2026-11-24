@@ -14,7 +14,7 @@ import { reviewDraftBackup } from "./actions";
 type Review = Awaited<ReturnType<typeof reviewDraftBackup>>;
 
 export function DraftRecoveryPanel({
-  project, user, version, dirty, busy, fields, content, offline, onApply,
+  project, user, version, dirty, busy, fields, content, offline, onReview, onApply,
 }: {
   project: string;
   user: string;
@@ -24,6 +24,7 @@ export function DraftRecoveryPanel({
   fields: DraftFields;
   content: ContentBlocks;
   offline: boolean;
+  onReview: () => void;
   onApply: (backup: DraftBackup) => void;
 }) {
   const id = useRef<string>(null);
@@ -131,6 +132,7 @@ export function DraftRecoveryPanel({
     }
   }
   async function stage(raw: string) {
+    onReview();
     setError("");
     if (!navigator.onLine) {
       setError("Reconnect to compare a backup with the stored draft. Your local copy is still available.");

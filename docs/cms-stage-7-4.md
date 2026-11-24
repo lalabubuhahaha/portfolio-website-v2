@@ -79,3 +79,7 @@ The sticky toolbar shows Unsaved Changes, Saving…, Saved successfully after ve
 | Draft backup and recovery | PASS |
 
 The acceptance applies to the four checks above. The original root cause of [CMS-INC-001](cms-incidents/CMS-INC-001.md) remains Unconfirmed, and residual data-loss risk remains.
+
+### Stage 7.4.1 UX acceptance
+
+**Deferred — UX Improvements Required.** The user chose to defer UX improvements. Outstanding items are tracked in the [Stage 7.4.1 UX backlog](cms-stage-7-4-1-ux-backlog.md).

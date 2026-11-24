@@ -517,6 +517,80 @@ try {
     await persistent?.close();
     await rm(profile, { recursive: true, force: true });
   }
+  await visit(newTab);
+  const original = await readFresh();
+  const autosave = newTab.getByRole("checkbox", { name: "Autosave", exact: true });
+  assert.equal(await autosave.isChecked(), false);
+  const firstQuote = original.revision.content_blocks.blocks[0].content.quote;
+  const secondQuote = original.revision.content_blocks.blocks[1].content.quote;
+  const quoteValues = () => canvas(newTab).locator("blockquote").allTextContents();
+
+  await quoteButton(newTab).first().click();
+  const panel = properties(newTab);
+  await panel.getByText("Visual settings", { exact: true }).click();
+  await panel.getByLabel("Block width").selectOption("narrow");
+  await panel.getByLabel("Vertical padding").selectOption("roomy");
+  await panel.getByLabel("Block background").selectOption("accent");
+  await canvas(newTab).locator(".max-w-xl.py-8.bg-cms-selected blockquote").first().waitFor();
+
+  const outline = newTab.getByRole("complementary", { name: "Block Library" });
+  await outline.getByText("Content Outline", { exact: true }).click();
+  const handles = outline.getByRole("button", { name: "Drag Quote", exact: true });
+  await handles.first().focus();
+  for (const key of ["Space", "ArrowDown", "Space"]) {
+    await newTab.keyboard.press(key);
+    await newTab.waitForTimeout(150);
+  }
+  assert.deepEqual((await quoteValues()).slice(0, 2), [secondQuote, firstQuote]);
+  await button(newTab, "Undo blocks").click();
+  assert.deepEqual((await quoteValues()).slice(0, 2), [firstQuote, secondQuote]);
+  await button(newTab, "Redo blocks").click();
+  assert.deepEqual((await quoteValues()).slice(0, 2), [secondQuote, firstQuote]);
+
+  await button(canvas(newTab), "Select Rich Text block").click();
+  const historyRich = canvas(newTab).locator(".tiptap");
+  await historyRich.waitFor();
+  const oldCopy = await historyRich.innerText();
+  await newTab.waitForFunction(() => document.activeElement?.classList.contains("tiptap"));
+  await newTab.keyboard.insertText(" and history");
+  await button(newTab, "Undo blocks").click();
+  await historyRich.getByText(oldCopy.trim(), { exact: true }).waitFor();
+  await button(newTab, "Redo blocks").click();
+  await historyRich.getByText(/and history/).waitFor();
+  await button(newTab, "Preview").click();
+  const stage75Preview = newTab.getByRole("article", { name: "Case study preview" });
+  await stage75Preview.locator(".max-w-xl.py-8.bg-cms-selected blockquote").first().waitFor();
+  await button(newTab, "Back to editor").click();
+  assert.deepEqual(await readFresh(), original);
+
+  await b.setOffline(true);
+  await autosave.check();
+  await newTab.waitForTimeout(3300);
+  assert.equal(await newTab.getByText("Saved successfully", { exact: true }).count(), 0);
+  assert.deepEqual(await readFresh(), original);
+  await b.setOffline(false);
+  await newTab.getByText("Saved successfully", { exact: true }).waitFor();
+  const autosaved = await readFresh();
+  assert.notEqual(autosaved.version, original.version);
+  assert.equal(autosaved.revision.content_blocks.blocks[0].content.quote, secondQuote);
+  assert.equal(autosaved.revision.content_blocks.blocks[1].layout.visualWidth, "narrow");
+  assert.match(JSON.stringify(autosaved.revision.content_blocks), /and history/);
+
+  const interferingWrite = await db.rpc("cms_save_case_study", {
+    project, expected: autosaved.version, fields: { ...fields, summary: "Newer version during autosave" },
+    document: autosaved.revision.content_blocks,
+  });
+  assert.ifError(interferingWrite.error);
+  await editFirst(newTab, "Keep this failed autosave edit");
+  await newTab.getByRole("alert").filter({ hasText: "This data changed" }).waitFor();
+  assert.equal((await readFresh()).revision.summary, "Newer version during autosave");
+  assert.equal(await properties(newTab).getByLabel("Quotation", { exact: true }).inputValue(), "Keep this failed autosave edit");
+  await button(newTab, "Review latest draft").click();
+  await newTab.getByRole("radio", { name: /Keep my case study/ }).check();
+  await button(newTab, "Apply changes to latest draft").click();
+  assert.equal(await autosave.isChecked(), false);
+  console.log("Stage 7.5 visual presets, keyboard drag, block and Rich Text history, opt-in offline-safe autosave and real autosave conflict passed.");
+
   console.log(JSON.stringify({ delayedSaveSampleMs, inputBurstWrites, totalObservedSnapshotWrites: observedWrites.length,
     localStorageWriteMs: observedWrites[0] }));
   console.log("Persistence, offline/reset/HTTP failures, committed response loss, session removal, recovery, legacy import, conflict and logout passed.");

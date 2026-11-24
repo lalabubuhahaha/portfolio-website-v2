@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
   useSyncExternalStore,
@@ -23,6 +24,7 @@ import {
 import { MediaPicker } from "@/components/admin/media/media-picker";
 import { SingleMediaUpload } from "@/components/admin/media/single-media-upload";
 import { AssetPreview } from "@/components/admin/media/asset-visual";
+import { blockHistory, startBlockHistory } from "@/lib/cms/block-history";
 import { contentBlocksSchema, type ContentBlocks } from "@/lib/cms/blocks";
 import { reviewLatestDraft, saveDraft, type DraftResult } from "./actions";
 
@@ -115,6 +117,11 @@ export function ProjectForm({
   const [content, setContent] = useState(initialContent);
   const [savedContent, setSavedContent] = useState(initialContent);
   const currentContent = useRef(initialContent);
+  const history = useRef(startBlockHistory(initialContent));
+  const [contentReset, setContentReset] = useState(0);
+  const [historyControls, setHistoryControls] = useState({ undo: false, redo: false });
+  const [autosave, setAutosave] = useState(false);
+  const [composing, setComposing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [contentChoice, setContentChoice] = useState<"local" | "latest">();
   const [detailsOpen, setDetailsOpen] = useState(!id);
@@ -191,10 +198,18 @@ export function ProjectForm({
     }));
   }
 
-  function changeContent(document: ContentBlocks | null) {
-    currentContent.current = document;
-    setContent(document);
+  function updateDocument(action: Parameters<typeof blockHistory>[1]) {
+    const next = blockHistory(history.current, action);
+    history.current = next;
+    if (action.type !== "edit") setContentReset((current) => current + 1);
+    currentContent.current = next.current;
+    setContent(next.current);
+    setHistoryControls({ undo: next.before.length > 0, redo: next.after.length > 0 });
     setSuccess(false);
+  }
+
+  function changeContent(document: ContentBlocks | null) {
+    updateDocument({ type: "edit", document });
   }
 
   function downloadBackup() {
@@ -211,7 +226,12 @@ export function ProjectForm({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending || uploadingMedia || inFlight.current || archived || result.conflict) return;
+    persistDraft();
+  }
+
+  function persistDraft(automatic = false) {
+    if (pending || composing || uploadingMedia || inFlight.current || archived || result.conflict ||
+      (automatic && (!autosave || !id || !content || !dirty || showPreview || result.error))) return;
     setSuccess(false);
     if (isOffline()) {
       setResult({ error: "You’re offline. Your edits are still open. Reconnect to save or download a draft backup." });
@@ -222,8 +242,10 @@ export function ProjectForm({
       const errors = check.error.flatten().fieldErrors;
       setResult({ error: "Check the highlighted fields.", fields: errors });
       const first = Object.keys(errors)[0];
-      setDetailsOpen(true);
-      requestAnimationFrame(() => document.getElementById(first ?? "")?.focus());
+      if (!automatic) {
+        setDetailsOpen(true);
+        requestAnimationFrame(() => document.getElementById(first ?? "")?.focus());
+      }
       return;
     }
     const form = new FormData();
@@ -266,8 +288,18 @@ export function ProjectForm({
     });
   }
 
+  const persistAutomatically = useEffectEvent(() => persistDraft(true));
+  useEffect(() => {
+    if (!autosave || !id || !content || !dirty || offline || composing || pending ||
+      saving || uploadingMedia || archived || showPreview || result.error || result.conflict) return;
+    const timer = window.setTimeout(() => persistAutomatically(), 3000);
+    return () => window.clearTimeout(timer);
+  }, [autosave, id, content, fields, dirty, offline, composing, pending, saving, uploadingMedia,
+    archived, showPreview, result.error, result.conflict]);
+
   function review() {
     if (!id || pending) return;
+    setAutosave(false);
     setReviewError("");
     if (isOffline()) {
       setReviewError("Reconnect to review the latest stored draft. Your edits are still open.");
@@ -288,7 +320,7 @@ export function ProjectForm({
     if (!latest || !comparison || (contentsOverlap && !contentChoice)) return;
     setFields(comparison.merged);
     setSaved(latest.fields);
-    changeContent(contentDirty && contentChoice !== "latest" ? currentContent.current : latest.content);
+    updateDocument({ type: "reset", document: contentDirty && contentChoice !== "latest" ? currentContent.current : latest.content });
     setSavedContent(latest.content);
     setContentChoice(undefined);
     setStamp(latest.updatedAt);
@@ -415,7 +447,8 @@ export function ProjectForm({
   );
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-5">
+    <form onSubmit={submit} onCompositionStart={() => setComposing(true)}
+      onCompositionEnd={() => setComposing(false)} noValidate className="space-y-5">
       {id && (
         <div className="sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-xl border border-cms-border bg-white p-3">
           <Button asChild variant="ghost">
@@ -435,11 +468,24 @@ export function ProjectForm({
               {recoveryUser && content !== null && !archived && <Button type="button" variant="ghost"
                 onClick={() => document.getElementById("draft-recovery")?.focus()}>Draft recovery</Button>}
               {content !== null && <Button type="button" variant="ghost" onClick={downloadBackup}>Download draft backup</Button>}
+              {content && !archived && <>
+                <Button type="button" variant="outline" disabled={pending || uploadingMedia || !historyControls.undo}
+                  onClick={() => updateDocument({ type: "undo" })}>Undo blocks</Button>
+                <Button type="button" variant="outline" disabled={pending || uploadingMedia || !historyControls.redo}
+                  onClick={() => updateDocument({ type: "redo" })}>Redo blocks</Button>
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={autosave} onChange={(event) => setAutosave(event.currentTarget.checked)} />
+                  Autosave
+                </label>
+              </>}
               {saveButton}
             </>
           )}
           {offline && <p role="status" className="basis-full text-sm text-cms-secondary">
             Offline. You can keep editing and download a backup. Reconnect to save or navigate.
+          </p>}
+          {autosave && result.error && <p className="basis-full text-sm text-cms-secondary">
+            Autosave paused. Review any conflict and use Save Draft to resume.
           </p>}
           {saving && <p role="status" className="basis-full text-sm text-cms-secondary">Saving…</p>}
           {success && !saving && !result.error && <p role="status" className="basis-full text-sm font-semibold text-emerald-700">
@@ -455,9 +501,11 @@ export function ProjectForm({
           <DraftRecoveryPanel key={recoveryUser + ":" + id} project={id} user={recoveryUser}
             version={stamp} dirty={dirty} busy={pending || uploadingMedia || !!result.conflict}
             fields={fields} content={content} offline={offline}
+            onReview={() => setAutosave(false)}
             onApply={(backup) => {
               setFields(backup.fields);
-              changeContent(backup.content_blocks);
+              setAutosave(false);
+              updateDocument({ type: "reset", document: backup.content_blocks });
               setResult({});
             }} />
         </div>
@@ -554,7 +602,7 @@ export function ProjectForm({
           <section aria-label={showPreview ? "Draft preview" : "Content Editor"} className="space-y-3">
             <h2 className="text-lg font-semibold">{showPreview ? "Draft preview" : "Content Editor"}</h2>
             <ContentEditor doc={content} title={fields.title} readOnly={!!archived} preview={showPreview}
-              busy={pending || uploadingMedia} onUploading={setEditingMedia}
+              busy={pending || uploadingMedia} contentReset={contentReset} onUploading={setEditingMedia}
               onChange={changeContent} />
           </section>
         </>
