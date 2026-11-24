@@ -63,3 +63,19 @@ On the Stage 7.4.2 baseline, a cold Chromium context opened the editor online, s
 The canvas now loads the Rich Text module alongside its own code. Click text to start editing, or use the existing keyboard-accessible edit control. Marked links in editable text remain text in the canvas; Preview retains link navigation. With Chromium Offline and the same editor already loaded, clicking and typing Rich Text produced no requests or navigation. An offline Save shows explicit failure and keeps the current draft, and reconnecting enables latest-version review and import. This is support for an in-memory editor that has already loaded. Opening or reloading a page while offline still depends on the browser and network.
 
 The sticky toolbar shows Unsaved Changes, Saving…, Saved successfully after verified database read-back, Save failed with the next action, and the last stored time in Taipei. The saved time only advances after a verified save or explicit review of the latest stored draft. The existing transaction, authorization and concurrency rules remain in place.
+
+### Stage 7.4.3 production acceptance
+
+- **Date** 2026-11-24 (Asia/Taipei)
+- **Status** Accepted
+- **Result** PASS (4/4), reported by the user after manual testing in production
+- **Additional notes** None
+
+| Check | Result |
+| --- | --- |
+| Save success feedback | PASS |
+| Rich Text offline editing | PASS |
+| Offline save failure handling | PASS |
+| Draft backup and recovery | PASS |
+
+The acceptance applies to the four checks above. The original root cause of [CMS-INC-001](cms-incidents/CMS-INC-001.md) remains Unconfirmed, and residual data-loss risk remains.
