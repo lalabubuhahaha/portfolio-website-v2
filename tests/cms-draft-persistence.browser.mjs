@@ -268,7 +268,6 @@ try {
   await button(offlinePage, "Review snapshot").click();
   const offlineCompare = offlinePage.getByRole("region", { name: "Backup comparison" });
   await offlineCompare.waitFor();
-  await offlineCompare.getByText("Backup blocks", { exact: true }).click();
   await offlineCompare.getByText(/typed offline/).waitFor();
   if (process.env.CMS_TEST_ARTIFACT_DIR)
     await offlineCompare.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "recovery-comparison.png") });
@@ -417,7 +416,6 @@ try {
   await button(reopened, "Review snapshot").click();
   const compare = reopened.getByRole("region", { name: "Backup comparison" });
   await compare.waitFor();
-  await compare.getByText("Backup blocks", { exact: true }).click();
   await compare.getByText(new RegExp(recovered)).waitFor();
   if (process.env.CMS_TEST_ARTIFACT_DIR)
     await compare.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "recovery-review.png") });
@@ -433,11 +431,91 @@ try {
   await button(reopened, "Save Draft").click();
   await reopened.getByText("Saved successfully", { exact: true }).waitFor();
   const recoveredRow = await readFresh();
+  const otherSession = await b.newPage();
+  await visit(otherSession);
+  await canvas(otherSession).getByText(recovered, { exact: true }).waitFor();
+  await otherSession.close();
   assert.equal(recoveredRow.revision.content_blocks.blocks[0].content.quote, recovered);
   await reopened.getByRole("link", { name: "Back to Works", exact: true }).click();
   await reopened.waitForURL(origin + "/admin/works");
   await visit(reopened);
   await canvas(reopened).getByText(recovered, { exact: true }).waitFor();
+
+  const recoveryPhone = await browser.newContext({
+    viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
+  });
+  try {
+    const phone = await login(recoveryPhone);
+    await visit(phone);
+    await button(phone, "Enable local recovery").click();
+    await phone.getByRole("button", { name: "Disable local recovery" }).waitFor();
+    const snapshot = {
+      version: 1, projectId: project, baseVersion: recoveredRow.version,
+      exportedAt: new Date().toISOString(),
+      fields: { ...backup.fields, title: "Mobile Recovery Test", summary: "Snapshot project summary" },
+      content_blocks: structuredClone(recoveredRow.revision.content_blocks),
+    };
+    snapshot.content_blocks.blocks.splice(1, 1);
+    snapshot.content_blocks.blocks.unshift(makeBlock("heading", { text: "Added recovery heading" }));
+    const nested = snapshot.content_blocks.blocks.find((block) => block.type === "columns");
+    nested.children.find((block) => block.type === "rich-text").content.doc = {
+      type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Snapshot nested paragraph" }] }],
+    };
+    nested.children.find((block) => block.type === "gallery").content.caption = "Snapshot gallery caption";
+    const assetName = await db.from("media_assets").select("display_name,file_name").eq("id", images[0].id).single();
+    assert.ifError(assetName.error);
+    await phone.evaluate((value) => {
+      const consent = Object.keys(localStorage).find((key) => key.startsWith("lala-cms-recovery:v1:consent:"));
+      const user = consent.split(":").at(-1);
+      const key = "lala-cms-recovery:v1:draft:" + user + ":" + value.projectId + ":preview-fixture";
+      localStorage.setItem(key, JSON.stringify({ expiresAt: Date.now() + 86400000, raw: JSON.stringify(value) }));
+    }, snapshot);
+    await phone.reload();
+    await editFirst(phone, "Unsaved mobile edits to preserve");
+    await button(phone, "Review snapshot").click();
+    const phoneCompare = phone.getByRole("region", { name: "Backup comparison" });
+    await phoneCompare.getByText("Mobile Recovery Test", { exact: true }).waitFor();
+    await phone.waitForFunction(() => {
+      const section = document.activeElement;
+      const toolbar = document.getElementById("draft-save-toolbar");
+      if (section?.getAttribute("aria-label") !== "Backup comparison" || !toolbar) return false;
+      const top = section.getBoundingClientRect().top;
+      return top >= toolbar.getBoundingClientRect().bottom && top < innerHeight;
+    });
+    for (const expected of [/Taipei/, /including nested content/, /Unsaved mobile edits to preserve/,
+      /Snapshot nested paragraph/, /Snapshot gallery caption/, /You have unsaved edits/]) {
+      await phoneCompare.getByText(expected).first().waitFor();
+    }
+    await phoneCompare.getByText("Image 1: " + (assetName.data.display_name ?? assetName.data.file_name), { exact: true }).first().waitFor();
+    for (const status of ["Added", "Modified", "Removed"]) {
+      await phoneCompare.getByText(status, { exact: true }).first().waitFor();
+    }
+    assert(await phoneCompare.getByText(/Unchanged blocks/).isVisible());
+    assert.equal(await phoneCompare.locator("pre").count(), 0);
+    if (process.env.CMS_TEST_ARTIFACT_DIR) {
+      await phone.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "recovery-preview-mobile.png") });
+      await phoneCompare.screenshot({
+        path: join(process.env.CMS_TEST_ARTIFACT_DIR, "recovery-preview-mobile-details.png"),
+        style: "#draft-save-toolbar { visibility: hidden !important; }",
+      });
+    }
+    phone.once("dialog", (dialog) => dialog.dismiss());
+    await button(phoneCompare, "Apply backup to editor").click();
+    assert(await phoneCompare.isVisible());
+    assert.deepEqual(await readFresh(), recoveredRow);
+    phone.once("dialog", (dialog) => dialog.accept());
+    await button(phoneCompare, "Apply backup to editor").click();
+    await canvas(phone).getByText("Added recovery heading", { exact: true }).waitFor();
+    assert.deepEqual(await readFresh(), recoveredRow);
+    phone.once("dialog", (dialog) => dialog.accept());
+    await button(phone, "Restore previous edits").click();
+    await canvas(phone).getByText("Unsaved mobile edits to preserve", { exact: true }).waitFor();
+    assert.equal(await canvas(phone).getByText("Added recovery heading", { exact: true }).count(), 0);
+    assert.deepEqual(await readFresh(), recoveredRow);
+  } finally {
+    await recoveryPhone.close();
+  }
+  console.log("Recovery preview showed nested edits, media names and all change states on Chromium mobile; cancel and restore preserved unsaved edits.");
 
   async function importBackup(value) {
     const [chooser] = await Promise.all([
@@ -453,6 +531,7 @@ try {
   await reopened.getByRole("alert").filter({ hasText: "Invalid backup" }).waitFor();
   await importBackup({ ...backup, fields: { ...backup.fields, cover_asset_id: crypto.randomUUID() } });
   await reopened.getByRole("alert").filter({ hasText: "incompatible media" }).waitFor();
+  assert.equal(await button(reopened, "Apply backup to editor").count(), 0);
   const legacy = { ...backup, fields: { ...backup.fields, summary: "Imported legacy backup", cover_asset_id: images[1]?.id ?? "" } };
   delete legacy.version;
   delete legacy.baseVersion;

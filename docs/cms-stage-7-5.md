@@ -8,7 +8,7 @@ The [CMS Roadmap](cms-roadmap.md) defines visual settings, drag ordering, undo/r
 - **Autosave** is off by default and applies to the open draft tab when enabled. After three seconds of inactivity, it runs the same authorized, version-checked write and database read-back as Save Draft. It waits during offline mode, uploads, text composition, Preview and a save in progress. Errors pause automatic requests. Beginning a conflict or recovery review turns the option off, so applying a reviewed version still requires an explicit Save Draft. Reconnecting with autosave enabled can schedule an unsent dirty draft for verification against its current version.
 - The existing draft, private media, backup/recovery and published revision boundaries apply. This release requires no migration.
 
-## Stage 7.5 production acceptance
+## Initial Stage 7.5 production acceptance
 
 **Status** NOT ACCEPTED. The user passed Undo / Redo, Autosave, and Offline / Conflict Protection. Block Appearance Settings and Content Outline Reordering failed because the user could not operate them. Manual Save After Draft Recovery remains unverified. See the [Stage 7.5.1 fixes and updated checklist](cms-stage-7-5-1.md).
 
@@ -29,3 +29,7 @@ Use a disposable draft in the intended deployment and a second authenticated bro
 - CMS tests passed (16), Gravity tests passed (32), and Portrait tests passed (7).
 - Chromium against the production build and a disposable Supabase instance passed canvas and Preview settings, keyboard drag ordering, block and Rich Text undo/redo, and database read-back after autosave. It verified the default-off state, offline editing, reconnect, a competing write, and explicit recovery review. The existing persistence suite also exercised a separate authenticated browser, failure handling, response loss, offline recovery and JSON import.
 - Transactional Works, Media and Case Study SQL checks passed on the disposable database and rolled back. Hosted acceptance and pointer/touch sorting are pending manual verification.
+
+## Follow-up production acceptance after Stage 7.5.1
+
+**Status** Conditionally Passed — Recovery UX Risk Open. Production manual testing passed all six functional checks, including applying a backup and saving it manually. The user could recover the draft but could not tell what the snapshot contained before applying it. See the [Stage 7.5.2 recovery preview and retest](cms-stage-7-5-2.md).

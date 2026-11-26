@@ -172,17 +172,19 @@ export async function validateRecoveryAssets(
       case "comparison": add(block.content.beforeId); add(block.content.afterId); break;
     }
   }
+  const names: Record<string, string> = {};
   const ids = [...refs.keys()];
   for (let i = 0; i < ids.length; i += 50) {
     const batch = ids.slice(i, i + 50);
-    const { data, error } = await supabase.from("media_assets").select("id,mime_type")
+    const { data, error } = await supabase.from("media_assets").select("id,mime_type,display_name,file_name")
       .eq("storage_bucket", MEDIA_BUCKET).eq("state", "ready").in("id", batch)
       .abortSignal(AbortSignal.timeout(12_000));
     if (error) throw new Error("Could not verify recovery media.");
     if (data.length !== batch.length || data.some((asset) =>
       [...(refs.get(asset.id) ?? [])].some((kind) => kind === "image"
         ? mediaFormat(asset.mime_type)?.kind !== "image"
-        : !["video/mp4", "video/webm", "image/gif"].includes(asset.mime_type)))) return false;
+        : !["video/mp4", "video/webm", "image/gif"].includes(asset.mime_type)))) return null;
+    for (const asset of data) names[asset.id] = asset.display_name ?? asset.file_name;
   }
-  return true;
+  return names;
 }

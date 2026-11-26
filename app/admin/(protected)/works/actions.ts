@@ -181,9 +181,10 @@ export async function reviewDraftBackup(id: string, expected: string, raw: strin
     const project = await getProjectEditor(id);
     if (!project || project.archived || !project.content || project.updatedAt !== expected)
       return { error: "The stored draft changed or is unavailable. Download your current work and review the latest draft before importing." };
-    if (!await validateRecoveryAssets(session.supabase, backup.fields, backup.content_blocks))
+    const mediaNames = await validateRecoveryAssets(session.supabase, backup.fields, backup.content_blocks);
+    if (!mediaNames)
       return { error: "The backup references missing, unavailable or incompatible media. No changes were applied." };
-    return { backup, stored: { fields: project.fields, content: project.content }, reviewedVersion: project.updatedAt };
+    return { backup, mediaNames, reviewedVersion: project.updatedAt };
   } catch {
     return { error: "Could not validate the backup. Keep the file and try again when connected." };
   }

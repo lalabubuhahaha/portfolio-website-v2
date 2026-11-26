@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/admin/ui/button";
 import type { ContentBlocks } from "@/lib/cms/blocks";
 import type { DraftFields } from "@/lib/cms/project-fields";
@@ -9,6 +9,7 @@ import {
   snapshotPrefix, writeSnapshot, type RecoveryItem,
 } from "@/lib/cms/draft-recovery-storage";
 import type { DraftBackup } from "@/lib/cms/draft-recovery";
+import { RecoveryComparison } from "./recovery-comparison";
 import { reviewDraftBackup } from "./actions";
 
 type Review = Awaited<ReturnType<typeof reviewDraftBackup>>;
@@ -36,7 +37,24 @@ export function DraftRecoveryPanel({
   const [storageError, setStorageError] = useState("");
   const [error, setError] = useState("");
   const [reviewing, setReviewing] = useState(false);
-  const [review, setReview] = useState<Review>();
+  const [review, setReview] = useState<{
+    result: Review; raw: string; source: "snapshot" | "backup"; expiresAt?: number;
+  }>();
+  const comparison = useRef<HTMLElement>(null);
+  const openEditor = useRef({ version, fields, content, busy });
+  useLayoutEffect(() => {
+    if (openEditor.current.version !== version || openEditor.current.fields !== fields ||
+      openEditor.current.content !== content || openEditor.current.busy !== busy)
+      openEditor.current = { version, fields, content, busy };
+  }, [version, fields, content, busy]);
+  useEffect(() => {
+    const panel = comparison.current;
+    if (!review || !panel) return;
+    const toolbarHeight = document.getElementById("draft-save-toolbar")?.getBoundingClientRect().height ?? 0;
+    panel.style.scrollMarginTop = `${toolbarHeight + 12}px`;
+    panel.focus({ preventScroll: true });
+    panel.scrollIntoView({ block: "start" });
+  }, [review]);
   const [acceptVersion, setAcceptVersion] = useState(false);
   const consent = consentKey(user);
 
@@ -113,6 +131,7 @@ export function DraftRecoveryPanel({
         disableUserRecovery(store, user);
         setItems([]);
         setSnapshot(undefined);
+        setReview(undefined);
       } else {
         store.setItem(consent, "enabled");
         setItems(listSnapshots(store, user, project).filter((item) => item.key !== id.current));
@@ -131,7 +150,7 @@ export function DraftRecoveryPanel({
       setStorageError("Could not remove this browser snapshot.");
     }
   }
-  async function stage(raw: string) {
+  async function stage(raw: string, source: "snapshot" | "backup", expiresAt?: number) {
     onReview();
     setError("");
     if (!navigator.onLine) {
@@ -144,23 +163,54 @@ export function DraftRecoveryPanel({
     try {
       const checked = await reviewDraftBackup(project, version, raw);
       if (checked.error) setError(checked.error);
-      else setReview(checked);
+      else setReview({ result: checked, raw, source, expiresAt });
     } catch {
       setError("The backup could not be reviewed. Keep your file and try again when connected.");
     } finally { setReviewing(false); }
   }
 
   const currentSnapshot = snapshot?.fields === fields && snapshot.content === content && snapshot.version === version;
-  const candidate = review?.backup;
-  const stored = review?.stored;
-  const changedVersion = candidate?.baseVersion !== review?.reviewedVersion;
+  const candidate = review?.result.backup;
+  const changedVersion = candidate?.baseVersion !== review?.result.reviewedVersion;
+
+  async function apply() {
+    if (!review || !candidate || busy || offline || reviewing || review.result.reviewedVersion !== version ||
+      (changedVersion && !acceptVersion)) return;
+    if (review.expiresAt !== undefined && review.expiresAt <= Date.now()) {
+      setReview(undefined);
+      setError("This browser snapshot has expired. Choose another backup.");
+      return;
+    }
+    if (dirty && !window.confirm("Replace the unsaved edits in this editor? You can restore them from the toolbar before saving.")) return;
+    const editorAtConfirmation = openEditor.current;
+    setReviewing(true);
+    setError("");
+    try {
+      const checked = await reviewDraftBackup(project, version, review.raw);
+      if (!mounted.current) return;
+      if (checked.error || !checked.backup) {
+        setReview(undefined);
+        setError(checked.error ?? "This backup could not be applied.");
+      } else if (openEditor.current !== editorAtConfirmation) {
+        setError("The open editor changed during the check. Compare the latest differences before applying.");
+      } else if (review.expiresAt !== undefined && review.expiresAt <= Date.now()) {
+        setReview(undefined);
+        setError("This browser snapshot has expired. Choose another backup.");
+      } else {
+        onApply(checked.backup);
+        setReview(undefined);
+      }
+    } catch {
+      setError("Could not check the backup. Your open edits are still here. Try again when connected.");
+    } finally { setReviewing(false); }
+  }
   return (
     <section id="draft-recovery" tabIndex={-1} aria-label="Draft recovery" className="scroll-mt-44 rounded-xl border border-cms-border bg-white p-4 text-sm">
       <h2 className="font-semibold">Draft recovery</h2>
       <p className="mt-1 text-cms-secondary">Browser recovery is for private devices. Snapshots are kept in this browser for up to 24 hours while this feature is enabled. Use a downloaded backup for a separate copy.</p>
       <p className="mt-1 text-cms-secondary">Enable local recovery before editing. After reopening this draft in the same browser, choose Review snapshot to compare any unsaved copy.</p>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" variant="outline" aria-pressed={enabled} onClick={toggle}>
+        <Button type="button" variant="outline" aria-pressed={enabled} disabled={reviewing} onClick={toggle}>
           {enabled ? "Disable local recovery" : "Enable local recovery"}
         </Button>
         <Button type="button" variant="outline" disabled={offline || busy || reviewing} onClick={() => input.current?.click()}>Import draft backup</Button>
@@ -168,8 +218,9 @@ export function DraftRecoveryPanel({
           const file = event.currentTarget.files?.[0];
           event.currentTarget.value = "";
           if (!file) return;
+          setReview(undefined);
           if (file.size > RECOVERY_LIMIT) { setError("This backup exceeds the size limit."); return; }
-          try { await stage(await file.text()); }
+          try { await stage(await file.text(), "backup"); }
           catch { setError("Could not read the backup file."); }
         }} />
       </div>
@@ -189,7 +240,7 @@ export function DraftRecoveryPanel({
             if (item.expiresAt <= Date.now()) {
               discard(item.key);
               setError("This browser snapshot has expired.");
-            } else void stage(item.raw);
+            } else void stage(item.raw, "snapshot", item.expiresAt);
           }}>Review snapshot</Button>
           <Button type="button" variant="ghost" onClick={() => {
             if (item.expiresAt <= Date.now()) { discard(item.key); return; }
@@ -204,38 +255,25 @@ export function DraftRecoveryPanel({
             onClick={() => { if (window.confirm("Discard this browser snapshot?")) discard(item.key); }}>Discard snapshot</Button>
         </li>)}
       </ul>}
-      {candidate && stored && (
-        <section aria-label="Backup comparison" className="mt-4 space-y-2 rounded-lg border border-cms-border p-3">
-          <h3 className="font-semibold">Review backup differences</h3>
-          <p>Apply backup to editor loads the copy here and turns off Autosave. Review the result, then click Save Draft in the editor toolbar to save it to the server.</p>
-          {review.reviewedVersion !== version && <p role="alert">The editor version changed. Review the backup again.</p>}
-          {changedVersion && <label className="flex items-center gap-2">
-            <input type="checkbox" checked={acceptVersion} onChange={(event) => setAcceptVersion(event.target.checked)} />
-            This backup has an older or unknown base version. I reviewed the stored draft below.
+      {candidate && review && (
+        <section ref={comparison} tabIndex={-1} aria-label="Backup comparison"
+          className="mt-4 space-y-3 rounded-lg border border-cms-border p-3">
+          <h3 className="font-semibold">Compare with your open editor</h3>
+          <p>Apply backup to editor replaces the project details and blocks shown here. The stored draft changes only when you click Save Draft.</p>
+          {dirty && <p className="rounded bg-cms-background p-2 font-medium">
+            You have unsaved edits. If you apply this copy, use Restore previous edits in the toolbar to bring them back before saving.
+          </p>}
+          {review.result.reviewedVersion !== version && <p role="alert">The editor version changed. Review the backup again.</p>}
+          {changedVersion && <label className="flex items-start gap-2">
+            <input type="checkbox" checked={acceptVersion} onChange={(event) => setAcceptVersion(event.target.checked)} disabled={reviewing} />
+            This copy is older than the stored draft or its starting version is unknown. I reviewed the differences and want to continue.
           </label>}
-          <dl className="space-y-2">
-            {(Object.keys(candidate.fields) as (keyof DraftFields)[]).filter((key) => candidate.fields[key] !== stored.fields[key]).map((key) => <div key={key} className="break-all">
-              <dt className="font-semibold">{key}</dt>
-              <dd>Stored · {stored.fields[key] || "Empty"}</dd>
-              <dd>Backup · {candidate.fields[key] || "Empty"}</dd>
-            </div>)}
-          </dl>
-          <div className="grid gap-2 md:grid-cols-2">
-            {[["Stored blocks", stored.content], ["Backup blocks", candidate.content_blocks]].map(([label, value]) =>
-              <details key={String(label)} className="min-w-0">
-                <summary className="cursor-pointer font-medium">{String(label)}</summary>
-                <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all text-xs">{JSON.stringify(value, null, 2)}</pre>
-              </details>)}
-          </div>
-          {dirty && <p>The open editor also has unsaved work. Download its backup before replacing it if you need to keep it.</p>}
+          <RecoveryComparison current={{ fields, content }} backup={candidate} media={review.result.mediaNames ?? {}} source={review.source} />
           <div className="flex flex-wrap gap-2">
-            <Button type="button" disabled={busy || review.reviewedVersion !== version || (changedVersion && !acceptVersion)}
-              onClick={() => {
-                if (dirty && !window.confirm("Replace the current unsaved editor contents with this backup?")) return;
-                onApply(candidate);
-                setReview(undefined);
-              }}>Apply backup to editor</Button>
-            <Button type="button" variant="ghost" onClick={() => setReview(undefined)}>Cancel review</Button>
+            <Button type="button"
+              disabled={offline || busy || reviewing || review.result.reviewedVersion !== version || (changedVersion && !acceptVersion)}
+              onClick={() => void apply()}>Apply backup to editor</Button>
+            <Button type="button" variant="ghost" disabled={reviewing} onClick={() => setReview(undefined)}>Cancel review</Button>
           </div>
         </section>
       )}

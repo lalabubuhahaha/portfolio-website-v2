@@ -122,6 +122,7 @@ export function ProjectForm({
   const [historyControls, setHistoryControls] = useState({ undo: false, redo: false });
   const [autosave, setAutosave] = useState(false);
   const [recoveredDraft, setRecoveredDraft] = useState(false);
+  const [beforeRecovery, setBeforeRecovery] = useState<{ fields: DraftFields; content: ContentBlocks | null }>();
   const [composing, setComposing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [contentChoice, setContentChoice] = useState<"local" | "latest">();
@@ -275,6 +276,7 @@ export function ProjectForm({
         setSavedContent(snapshot);
         setStamp(next.verified.updatedAt);
         setRecoveredDraft(false);
+        setBeforeRecovery(undefined);
         setSuccess(true);
         if (!id) router.replace(works + "/" + next.verified.id);
       } catch {
@@ -452,7 +454,7 @@ export function ProjectForm({
     <form onSubmit={submit} onCompositionStart={() => setComposing(true)}
       onCompositionEnd={() => setComposing(false)} noValidate className="space-y-5">
       {id && (
-        <div className="sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-xl border border-cms-border bg-white p-3">
+        <div id="draft-save-toolbar" className="sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-xl border border-cms-border bg-white p-3">
           <Button asChild variant="ghost">
             <Link href={works}><ArrowLeft aria-hidden /> Back to Works</Link>
           </Button>
@@ -484,6 +486,16 @@ export function ProjectForm({
                   Autosave
                 </label>
               </>}
+              {beforeRecovery && <Button type="button" variant="outline"
+                disabled={pending || uploadingMedia || !!result.conflict}
+                onClick={() => {
+                  if (!window.confirm("Restore the edits you had before recovery? This replaces the content currently open in the editor.")) return;
+                  setFields(beforeRecovery.fields);
+                  updateDocument({ type: "reset", document: beforeRecovery.content });
+                  setBeforeRecovery(undefined);
+                  setRecoveredDraft(false);
+                  setResult({});
+                }}>Restore previous edits</Button>}
               {saveButton}
             </>
           )}
@@ -512,6 +524,7 @@ export function ProjectForm({
             fields={fields} content={content} offline={offline}
             onReview={() => setAutosave(false)}
             onApply={(backup) => {
+              setBeforeRecovery({ fields, content });
               setRecoveredDraft(true);
               setFields(backup.fields);
               setAutosave(false);
