@@ -412,6 +412,8 @@ try {
   const reopened = await a.newPage();
   await visit(reopened);
   assert.equal(await button(newTab, "Review snapshot").count(), 0);
+  const recoveryAutosave = reopened.getByRole("checkbox", { name: "Autosave", exact: true });
+  await recoveryAutosave.check();
   await button(reopened, "Review snapshot").click();
   const compare = reopened.getByRole("region", { name: "Backup comparison" });
   await compare.waitFor();
@@ -421,6 +423,13 @@ try {
     await compare.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "recovery-review.png") });
   assert.deepEqual(await readFresh(), committedWithoutResponse);
   await button(compare, "Apply backup to editor").click();
+  const recoveredNotice = reopened.getByRole("status").filter({ hasText: "Recovered edits are open" });
+  await recoveredNotice.waitFor();
+  assert.equal(await recoveryAutosave.isChecked(), false);
+  assert.equal(await recoveryAutosave.isDisabled(), true);
+  assert.deepEqual(await readFresh(), committedWithoutResponse);
+  if (process.env.CMS_TEST_ARTIFACT_DIR)
+    await recoveredNotice.locator("..").screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "recovery-manual-save.png") });
   await button(reopened, "Save Draft").click();
   await reopened.getByText("Saved successfully", { exact: true }).waitFor();
   const recoveredRow = await readFresh();
@@ -525,17 +534,65 @@ try {
   const secondQuote = original.revision.content_blocks.blocks[1].content.quote;
   const quoteValues = () => canvas(newTab).locator("blockquote").allTextContents();
 
-  await quoteButton(newTab).first().click();
-  const panel = properties(newTab);
-  await panel.getByText("Visual settings", { exact: true }).click();
-  await panel.getByLabel("Block width").selectOption("narrow");
-  await panel.getByLabel("Vertical padding").selectOption("roomy");
-  await panel.getByLabel("Block background").selectOption("accent");
-  await canvas(newTab).locator(".max-w-xl.py-8.bg-cms-selected blockquote").first().waitFor();
+  const appearanceButton = button(canvas(newTab), "Appearance").first();
+  await appearanceButton.click();
+  await canvas(newTab).getByRole("button", { name: "Appearance", expanded: true }).waitFor();
+  const appearance = canvas(newTab).getByRole("group", { name: "Block appearance" });
+  await appearance.getByLabel("Width", { exact: true }).selectOption("narrow");
+  await appearance.getByLabel("Vertical spacing").selectOption("roomy");
+  await appearance.getByLabel("Background").selectOption("accent");
+  const frame = canvas(newTab).locator(".max-w-xl.py-8.bg-cms-selected").first();
+  await frame.getByText(firstQuote, { exact: true }).waitFor();
+  assert(await frame.evaluate((node) => node.offsetWidth < node.parentElement.clientWidth));
+  if (process.env.CMS_TEST_ARTIFACT_DIR)
+    await appearance.locator("../..").screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "block-appearance-desktop.png") });
 
-  const outline = newTab.getByRole("complementary", { name: "Block Library" });
-  await outline.getByText("Content Outline", { exact: true }).click();
+  const outline = newTab.getByRole("region", { name: "Content Outline" });
   const handles = outline.getByRole("button", { name: "Drag Quote", exact: true });
+  await handles.first().waitFor();
+  if (process.env.CMS_TEST_ARTIFACT_DIR)
+    await outline.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "content-outline-desktop.png") });
+  const firstHandle = await handles.nth(0).boundingBox();
+  const secondHandle = await handles.nth(1).boundingBox();
+  const x = firstHandle.x + firstHandle.width / 2;
+  const y = firstHandle.y + firstHandle.height / 2;
+  await newTab.mouse.move(x, y);
+  await newTab.mouse.down();
+  await newTab.mouse.move(x, secondHandle.y + secondHandle.height / 2, { steps: 12 });
+  await newTab.mouse.up();
+  assert.deepEqual((await quoteValues()).slice(0, 2), [secondQuote, firstQuote]);
+  await button(newTab, "Undo blocks").click();
+
+  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    const phone = await login(mobile);
+    await visit(phone);
+    await button(canvas(phone), "Appearance").first().tap();
+    const phoneAppearance = canvas(phone).getByRole("group", { name: "Block appearance" });
+    await phoneAppearance.getByLabel("Width", { exact: true }).selectOption("narrow");
+    assert(await canvas(phone).locator(".max-w-xl").first().evaluate((node) => node.offsetWidth < node.parentElement.clientWidth));
+    if (process.env.CMS_TEST_ARTIFACT_DIR)
+      await phoneAppearance.locator("../..").screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "block-appearance-mobile.png") });
+    const phoneOutline = phone.getByRole("region", { name: "Content Outline" });
+    const phoneHandles = phoneOutline.getByRole("button", { name: "Drag Quote", exact: true });
+    await phoneHandles.first().scrollIntoViewIfNeeded();
+    if (process.env.CMS_TEST_ARTIFACT_DIR)
+      await phoneOutline.screenshot({ path: join(process.env.CMS_TEST_ARTIFACT_DIR, "content-outline-mobile.png") });
+    const start = await phoneHandles.nth(0).boundingBox();
+    const end = await phoneHandles.nth(1).boundingBox();
+    const cdp = await mobile.newCDPSession(phone);
+    const touchX = start.x + start.width / 2;
+    const touchY = start.y + start.height / 2;
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: touchX, y: touchY }] });
+    for (let step = 1; step <= 10; step++) {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: touchX, y: touchY + (end.y - start.y) * step / 10 }] });
+    }
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    assert.deepEqual((await canvas(phone).locator("blockquote").allTextContents()).slice(0, 2), [secondQuote, firstQuote]);
+  } finally {
+    await mobile.close();
+  }
+
   await handles.first().focus();
   for (const key of ["Space", "ArrowDown", "Space"]) {
     await newTab.keyboard.press(key);
@@ -575,6 +632,11 @@ try {
   assert.equal(autosaved.revision.content_blocks.blocks[0].content.quote, secondQuote);
   assert.equal(autosaved.revision.content_blocks.blocks[1].layout.visualWidth, "narrow");
   assert.match(JSON.stringify(autosaved.revision.content_blocks), /and history/);
+  const freshAppearance = await b.newPage();
+  await visit(freshAppearance);
+  assert.deepEqual((await canvas(freshAppearance).locator("blockquote").allTextContents()).slice(0, 2), [secondQuote, firstQuote]);
+  await canvas(freshAppearance).locator(".max-w-xl.py-8.bg-cms-selected blockquote").filter({ hasText: firstQuote }).waitFor();
+  await freshAppearance.close();
 
   const interferingWrite = await db.rpc("cms_save_case_study", {
     project, expected: autosaved.version, fields: { ...fields, summary: "Newer version during autosave" },
@@ -589,7 +651,7 @@ try {
   await newTab.getByRole("radio", { name: /Keep my case study/ }).check();
   await button(newTab, "Apply changes to latest draft").click();
   assert.equal(await autosave.isChecked(), false);
-  console.log("Stage 7.5 visual presets, keyboard drag, block and Rich Text history, opt-in offline-safe autosave and real autosave conflict passed.");
+  console.log("Stage 7.5.1 appearance, mouse/touch/keyboard drag, block and Rich Text history, opt-in offline-safe autosave and real autosave conflict passed.");
 
   console.log(JSON.stringify({ delayedSaveSampleMs, inputBurstWrites, totalObservedSnapshotWrites: observedWrites.length,
     localStorageWriteMs: observedWrites[0] }));

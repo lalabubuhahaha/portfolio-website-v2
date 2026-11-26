@@ -2,7 +2,7 @@
 
 import { useId, useState, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
-import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors, type CollisionDetection, type DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { MAX_BLOCK_DEPTH, MAX_BLOCKS, type BlockType, type ContentBlock, type ContentBlocks } from "@/lib/cms/blocks";
@@ -66,7 +66,7 @@ function OutlineBlock({ block, disabled, children, nested }: {
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`relative flex items-center gap-1 motion-reduce:transition-none! ${isDragging ? "z-10 bg-white" : ""}`}>
       {!disabled && <Button ref={setActivatorNodeRef} type="button" variant="ghost"
-        className="size-8 shrink-0 touch-none cursor-grab px-0"
+        className="size-9 shrink-0 touch-none cursor-grab border border-cms-border bg-cms-background px-0 active:cursor-grabbing"
         {...attributes} {...listeners} aria-label={`Drag ${label(block)}`}>
         <GripVertical aria-hidden />
       </Button>}
@@ -89,6 +89,7 @@ export default function ContentEditor({
   contentReset: number;
 }) {
   const [selection, setSelection] = useState("");
+  const [appearance, setAppearance] = useState("");
   const [query, setQuery] = useState("");
   const [insertion, setInsertion] = useState("append");
   const [picker, setPicker] = useState<InsertTarget>();
@@ -126,6 +127,7 @@ export default function ContentEditor({
 
   function select(id: string, locateCanvas = false, revealProperties = false) {
     if (busy) return;
+    if (id !== selection) setAppearance("");
     setSelection(id);
     setInsertion("append");
     if (locateCanvas) document.getElementById(canvasId(id))?.scrollIntoView({ block: "nearest" });
@@ -229,6 +231,14 @@ export default function ContentEditor({
     </>;
   }
 
+  const outlineCollision: CollisionDetection = (args) => {
+    const source = locate(blocks, String(args.active.id));
+    if (!source) return [];
+    const lane = source.block.layout?.column ?? 0;
+    const ids = new Set(source.siblings.filter((block) => (block.layout?.column ?? 0) === lane).map((block) => block.id));
+    return closestCenter({ ...args, droppableContainers: args.droppableContainers.filter(({ id }) => ids.has(String(id))) });
+  };
+
   function reorder({ active, over }: DragEndEvent) {
     if (!mutable || !over || active.id === over.id) return;
     const from = locate(blocks, String(active.id));
@@ -251,7 +261,7 @@ export default function ContentEditor({
   function outline(items: ContentBlock[], depth = 1): ReactNode {
     return <SortableContext items={items.map((block) => block.id)} strategy={verticalListSortingStrategy}>
       <ol className={depth > 1 ? "ml-2 border-l border-cms-border pl-2" : "space-y-1"}>
-        {items.map((block, index) => <OutlineBlock key={block.id} block={block} disabled={!mutable}
+        {items.map((block, index) => <OutlineBlock key={block.id} block={block} disabled={!mutable || (siblingIndex({ block, siblings: items, index, depth }, -1) < 0 && siblingIndex({ block, siblings: items, index, depth }, 1) < 0)}
           nested={!!block.children?.length && outline(block.children, depth + 1)}>
           <Button type="button" variant={block.id === selection ? "outline" : "ghost"}
             aria-pressed={block.id === selection}
@@ -277,11 +287,24 @@ export default function ContentEditor({
               className={`rounded px-2 py-1 text-xs font-medium ${active ? "bg-cms-selected text-cms-primary" : "text-cms-secondary hover:bg-cms-background"}`}>
               {active ? blockName(block.type) : "Edit " + blockName(block.type)}
             </button>
+            {!readOnly && <Button type="button" variant="outline" className="h-8 px-2 text-xs"
+              disabled={!mutable} aria-expanded={active && appearance === block.id}
+              aria-controls={canvasId(block.id) + "-appearance"}
+              onClick={() => {
+                select(block.id);
+                setAppearance(appearance === block.id ? "" : block.id);
+              }}>Appearance</Button>}
             {active && mutable && count < MAX_BLOCKS && (["above", "below"] as const).map((kind) => (
               <button key={kind} id={canvasId(block.id) + "-" + kind} type="button" onClick={(event) => openLibrary({ kind, id: block.id }, event.currentTarget)}
                 className="rounded px-2 py-1 text-xs text-cms-primary hover:bg-cms-background">+ Insert {kind}</button>
             ))}
           </div>
+          {!readOnly && <div id={canvasId(block.id) + "-appearance"} hidden={!active || appearance !== block.id}>
+            {active && appearance === block.id && <fieldset disabled={!mutable} className="mb-3 rounded-lg border border-cms-border p-3">
+              <legend className="px-1 text-sm font-semibold">Block appearance</legend>
+              <BlockVisualSettings block={block} onChange={replace} />
+            </fieldset>}
+          </div>}
           <BlockVisualFrame block={block}>
           {active && block.type === "heading" && !readOnly ? (
             <input data-block-edit aria-label="Heading text" maxLength={200} disabled={busy}
@@ -362,7 +385,6 @@ export default function ContentEditor({
           </Select>
         </label>
       )}
-      <BlockVisualSettings block={selectedBlock} onChange={replace} />
       <BlockProperties key={selectedBlock.id} block={selectedBlock} onChange={replace} onUploading={onUploading} />
     </> : <p className="text-sm text-cms-secondary">Select a block to edit its properties.</p>}
   </fieldset>;
@@ -375,7 +397,7 @@ export default function ContentEditor({
           {blocks.length ? <PreviewBlocks blocks={blocks} /> : <p className="text-cms-secondary">This draft has no case study content.</p>}
         </article>
       ) : (
-        <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(9rem,0.85fr)_minmax(0,3fr)_minmax(12rem,1fr)]">
+        <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(11rem,0.85fr)_minmax(0,3fr)_minmax(12rem,1fr)]">
           <aside id={prefix + "-library"} aria-label="Block Library" className="min-w-0 space-y-4 rounded-xl border border-cms-border bg-white p-4">
             <details>
               <summary className="cursor-pointer font-semibold">Block Library</summary>
@@ -390,13 +412,16 @@ export default function ContentEditor({
                 {blockChoices(query, (type) => add(type), count >= MAX_BLOCKS || cannotAddChild, true)}
               </fieldset>
             </details>
-            <details className="border-t border-cms-border pt-3">
-              <summary className="cursor-pointer font-semibold">Content Outline</summary>
+            <section aria-label="Content Outline" className="border-t border-cms-border pt-3">
+              <h3 className="font-semibold">Content Outline</h3>
+              {blocks.length > 0 && mutable && <p className="mt-1 text-xs text-cms-secondary">
+                Drag the dotted handle within the same level and column. Or select a row and use its up/down buttons.
+              </p>}
               <div className="mt-2 max-h-64 overflow-y-auto">
                 {blocks.length ? <DndContext id={prefix + "-outline"} sensors={sensors}
-                  collisionDetection={closestCenter} onDragEnd={reorder}>{outline(blocks)}</DndContext> : <p className="text-xs text-cms-secondary">No blocks yet.</p>}
+                  collisionDetection={outlineCollision} onDragEnd={reorder}>{outline(blocks)}</DndContext> : <p className="text-xs text-cms-secondary">No blocks yet.</p>}
               </div>
-            </details>
+            </section>
           </aside>
           <article aria-label="Visual editing canvas" className="order-3 min-h-64 min-w-0 space-y-9 lg:order-none break-words rounded-xl bg-white px-4 py-8 text-cms-foreground sm:px-7 lg:px-10">
             <div className="flex flex-wrap items-center gap-3">

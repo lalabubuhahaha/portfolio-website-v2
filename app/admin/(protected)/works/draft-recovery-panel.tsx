@@ -158,6 +158,7 @@ export function DraftRecoveryPanel({
     <section id="draft-recovery" tabIndex={-1} aria-label="Draft recovery" className="scroll-mt-44 rounded-xl border border-cms-border bg-white p-4 text-sm">
       <h2 className="font-semibold">Draft recovery</h2>
       <p className="mt-1 text-cms-secondary">Browser recovery is for private devices. Snapshots are kept in this browser for up to 24 hours while this feature is enabled. Use a downloaded backup for a separate copy.</p>
+      <p className="mt-1 text-cms-secondary">Enable local recovery before editing. After reopening this draft in the same browser, choose Review snapshot to compare any unsaved copy.</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button type="button" variant="outline" aria-pressed={enabled} onClick={toggle}>
           {enabled ? "Disable local recovery" : "Enable local recovery"}
@@ -206,7 +207,7 @@ export function DraftRecoveryPanel({
       {candidate && stored && (
         <section aria-label="Backup comparison" className="mt-4 space-y-2 rounded-lg border border-cms-border p-3">
           <h3 className="font-semibold">Review backup differences</h3>
-          <p>Applying the backup replaces the open editor fields and blocks. Save Draft is a separate action.</p>
+          <p>Apply backup to editor loads the copy here and turns off Autosave. Review the result, then click Save Draft in the editor toolbar to save it to the server.</p>
           {review.reviewedVersion !== version && <p role="alert">The editor version changed. Review the backup again.</p>}
           {changedVersion && <label className="flex items-center gap-2">
             <input type="checkbox" checked={acceptVersion} onChange={(event) => setAcceptVersion(event.target.checked)} />

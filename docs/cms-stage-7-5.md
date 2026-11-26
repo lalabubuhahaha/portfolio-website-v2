@@ -8,7 +8,11 @@ The [CMS Roadmap](cms-roadmap.md) defines visual settings, drag ordering, undo/r
 - **Autosave** is off by default and applies to the open draft tab when enabled. After three seconds of inactivity, it runs the same authorized, version-checked write and database read-back as Save Draft. It waits during offline mode, uploads, text composition, Preview and a save in progress. Errors pause automatic requests. Beginning a conflict or recovery review turns the option off, so applying a reviewed version still requires an explicit Save Draft. Reconnecting with autosave enabled can schedule an unsent dirty draft for verification against its current version.
 - The existing draft, private media, backup/recovery and published revision boundaries apply. This release requires no migration.
 
-## Manual acceptance checklist
+## Stage 7.5 production acceptance
+
+**Status** NOT ACCEPTED. The user passed Undo / Redo, Autosave, and Offline / Conflict Protection. Block Appearance Settings and Content Outline Reordering failed because the user could not operate them. Manual Save After Draft Recovery remains unverified. See the [Stage 7.5.1 fixes and updated checklist](cms-stage-7-5-1.md).
+
+## Original Stage 7.5 manual acceptance checklist
 
 Use a disposable draft in the intended deployment and a second authenticated browser.
 

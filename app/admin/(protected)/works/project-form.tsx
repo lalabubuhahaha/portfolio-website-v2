@@ -121,6 +121,7 @@ export function ProjectForm({
   const [contentReset, setContentReset] = useState(0);
   const [historyControls, setHistoryControls] = useState({ undo: false, redo: false });
   const [autosave, setAutosave] = useState(false);
+  const [recoveredDraft, setRecoveredDraft] = useState(false);
   const [composing, setComposing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [contentChoice, setContentChoice] = useState<"local" | "latest">();
@@ -273,6 +274,7 @@ export function ProjectForm({
         setSaved(fields);
         setSavedContent(snapshot);
         setStamp(next.verified.updatedAt);
+        setRecoveredDraft(false);
         setSuccess(true);
         if (!id) router.replace(works + "/" + next.verified.id);
       } catch {
@@ -474,7 +476,11 @@ export function ProjectForm({
                 <Button type="button" variant="outline" disabled={pending || uploadingMedia || !historyControls.redo}
                   onClick={() => updateDocument({ type: "redo" })}>Redo blocks</Button>
                 <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={autosave} onChange={(event) => setAutosave(event.currentTarget.checked)} />
+                  <input type="checkbox" checked={autosave} disabled={recoveredDraft && dirty}
+                    onChange={(event) => {
+                      setRecoveredDraft(false);
+                      setAutosave(event.currentTarget.checked);
+                    }} />
                   Autosave
                 </label>
               </>}
@@ -486,6 +492,9 @@ export function ProjectForm({
           </p>}
           {autosave && result.error && <p className="basis-full text-sm text-cms-secondary">
             Autosave paused. Review any conflict and use Save Draft to resume.
+          </p>}
+          {recoveredDraft && dirty && !showPreview && <p role="status" className="basis-full text-sm text-cms-secondary">
+            Recovered edits are open in this editor. Autosave is off so you can review them. When ready, click Save Draft.
           </p>}
           {saving && <p role="status" className="basis-full text-sm text-cms-secondary">Saving…</p>}
           {success && !saving && !result.error && <p role="status" className="basis-full text-sm font-semibold text-emerald-700">
@@ -503,6 +512,7 @@ export function ProjectForm({
             fields={fields} content={content} offline={offline}
             onReview={() => setAutosave(false)}
             onApply={(backup) => {
+              setRecoveredDraft(true);
               setFields(backup.fields);
               setAutosave(false);
               updateDocument({ type: "reset", document: backup.content_blocks });
